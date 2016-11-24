@@ -19,8 +19,8 @@ from acmacs_base import timeit
 # ----------------------------------------------------------------------
 
 def main(args):
-    # db = seqdb.Seqdb()
-    # db_updater = SeqdbUpdater(db, filename=args.path_to_db, normalize_names=False, load=False)
+    db = seqdb.Seqdb()
+    db_updater = SeqdbUpdater(db, filename=args.path_to_db, normalize_names=False, load=False)
     for filename in args.input:
         data = fasta_m.read_fasta_with_name_parsing(fasta_file=filename, lab="", virus_type="")
         module_logger.info('{} entries to update seqdb with'.format(len(data)))
