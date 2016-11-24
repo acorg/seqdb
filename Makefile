@@ -45,10 +45,7 @@ all: check-acmacsd-root $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX)
 install: check-acmacsd-root $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX)
 	ln -sf $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) $(ACMACSD_ROOT)/py
 	ln -sf $(abspath py)/* $(ACMACSD_ROOT)/py
-	ln -sf $(abspath bin)/seqdb-night-build $(ACMACSD_ROOT)/bin
-	ln -sf $(abspath bin)/seqdb-update $(ACMACSD_ROOT)/bin
-	ln -sf $(abspath bin)/seqdb-find $(ACMACSD_ROOT)/bin
-	ln -sf $(abspath bin)/seqdb-stat-for-ssm-report $(ACMACSD_ROOT)/bin
+	ln -sf $(abspath bin)/seqdb-* $(ACMACSD_ROOT)/bin
 
 -include $(BUILD)/*.d
 
