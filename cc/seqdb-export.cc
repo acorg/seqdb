@@ -4,7 +4,6 @@
 
 #include "seqdb-export.hh"
 #include "json-writer.hh"
-#include "acmacs-base/read-file.hh"
 
 // ----------------------------------------------------------------------
 
@@ -38,7 +37,7 @@ template <typename RW> inline JsonWriterT<RW>& operator <<(JsonWriterT<RW>& writ
 
 void seqdb_export(std::string aFilename, const Seqdb& aSeqdb, size_t aIndent)
 {
-    acmacs_base::write_file(aFilename, json(aSeqdb, "seqdb", aIndent));
+    export_to_json(aSeqdb, "seqdb", aFilename, aIndent);
 }
 
 // ----------------------------------------------------------------------
