@@ -3,6 +3,7 @@
 #include "seqdb.hh"
 // #include "clades.hh"
 // #include "string.hh"
+#include "seqdb-export.hh"
 #include "acmacs-base/read-file.hh"
 
 // ----------------------------------------------------------------------
@@ -512,7 +513,7 @@ void Seqdb::load(std::string filename)
 
 void Seqdb::save(std::string filename, size_t indent) const
 {
-    // acmacs_base::write_file(filename, to_json(indent));
+    seqdb_export(filename, *this, indent);
 
 } // Seqdb::save
 
