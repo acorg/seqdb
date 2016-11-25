@@ -438,6 +438,7 @@ class Seqdb
     inline SeqdbIterator end() { return SeqdbIterator(*this); }
     inline ConstSeqdbIterator begin() const { return ConstSeqdbIterator(*this, 0, 0); }
     inline ConstSeqdbIterator end() const { return ConstSeqdbIterator(*this); }
+    inline const auto& entries() const { return mEntries; }
     inline auto begin_entry() { return mEntries.begin(); }
     inline auto end_entry() { return mEntries.end(); }
 

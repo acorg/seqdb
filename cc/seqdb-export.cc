@@ -7,14 +7,23 @@
 
 // ----------------------------------------------------------------------
 
+static constexpr const char* SEQDB_JSON_DUMP_VERSION = "sequence-database-v2";
+
+// ----------------------------------------------------------------------
+
+template <typename RW> inline JsonWriterT<RW>& operator <<(JsonWriterT<RW>& writer, const SeqdbEntry& entry)
+{
+    return writer << StartObject
+                  << EndObject;
+}
+
+// ----------------------------------------------------------------------
+
 template <typename RW> inline JsonWriterT<RW>& operator <<(JsonWriterT<RW>& writer, const Seqdb& seqdb)
 {
-    writer.StartObject();
-    writer.Key("  version");
-    writer.String("sequence-database-v2");
-    writer.Key("data");
-    return writer << StartArray
-                  << EndArray
+    return writer << StartObject
+                  << JsonObjectKey("  version") << SEQDB_JSON_DUMP_VERSION
+                  << JsonObjectKey("data") << seqdb.entries()
                   << EndObject;
 
     // << StartObject
@@ -48,7 +57,7 @@ void seqdb_import(std::string buffer, Seqdb& aSeqdb)
         buffer = acmacs_base::read_stdin();
     else
         buffer = acmacs_base::read_file(buffer);
-    if (buffer[0] == '{') { // && buffer.find("\"  version\": \"sequence-database-v2\"") != std::string::npos) {
+    if (buffer[0] == '{') { // && buffer.find("\"  version\": " + SEQDB_JSON_DUMP_VERSION) != std::string::npos) {
         // SeqdbReaderEventHandler handler{aSeqdb};
         // rapidjson::Reader reader;
         // rapidjson::StringStream ss(buffer.c_str());
