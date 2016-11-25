@@ -159,7 +159,7 @@ PYBIND11_PLUGIN(seqdb_backend)
 
     py::class_<Seqdb>(m, "Seqdb")
             .def(py::init<>())
-            .def("from_json", &Seqdb::from_json, py::doc("reads seqdb from json"))
+              // .def("from_json", &Seqdb::from_json, py::doc("reads seqdb from json"))
             .def("load", &Seqdb::load, py::arg("filename") = std::string(), py::doc("reads seqdb from file containing json"))
               //.def("json", &Seqdb::to_json, py::arg("indent") = size_t(0))
             .def("save", &Seqdb::save, py::arg("filename") = std::string(), py::arg("indent") = size_t(0), py::doc("writes seqdb into file in json format"))

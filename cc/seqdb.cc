@@ -486,26 +486,26 @@ SeqdbEntrySeq Seqdb::find_by_seq_id(std::string aSeqId) const
 // json
 // ----------------------------------------------------------------------
 
-void Seqdb::from_json(std::string data)
-{
-    // try {
-    //     json::parse(data, *this);
-    // }
-    // catch (json::parsing_error& err) {
-    //     std::cerr << "tree parsing error: "<< err.what() << std::endl;
-    //     throw;
-    // }
+// void Seqdb::from_json(std::string data)
+// {
+//     // try {
+//     //     json::parse(data, *this);
+//     // }
+//     // catch (json::parsing_error& err) {
+//     //     std::cerr << "tree parsing error: "<< err.what() << std::endl;
+//     //     throw;
+//     // }
 
-} // Seqdb::from_json
+// } // Seqdb::from_json
 
 // ----------------------------------------------------------------------
 
-void Seqdb::load(std::string filename)
+void Seqdb::load(std::string /*filename*/)
 {
     // if (filename.empty()) {
     //     filename = std::string(getenv("HOME")) + "/WHO/seqdb.json.xz";
     // }
-    from_json(acmacs_base::read_file(filename));
+    // from_json(acmacs_base::read_file(filename));
 
 } // Seqdb::from_json_file
 

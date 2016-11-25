@@ -45,6 +45,8 @@ class Shift
             return static_cast<int>(mShift);
         }
 
+    inline ShiftT raw() const { return mShift; }
+
     inline operator std::string() const
         {
             switch (mShift) {

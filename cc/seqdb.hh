@@ -71,10 +71,10 @@ class SeqdbSeq
     inline const std::vector<std::string> lab_ids_for_lab(std::string lab) const { auto i = mLabIds.find(lab); return i == mLabIds.end() ? std::vector<std::string>() : i->second; }
     inline const std::vector<std::string> lab_ids() const { std::vector<std::string> r; for (const auto& lid: mLabIds) { for (const auto& id: lid.second) { r.emplace_back(lid.first + "#" + id); } } return r; }
     inline bool match_labid(std::string lab, std::string id) const { auto i = mLabIds.find(lab); return i != mLabIds.end() && std::find(i->second.begin(), i->second.end(), id) != i->second.end(); }
-    inline const std::vector<std::string>& passages() const { return mPassages; }
+    inline const auto& passages() const { return mPassages; }
     inline std::string passage() const { return mPassages.empty() ? std::string() : mPassages[0]; }
     inline bool passage_present(std::string aPassage) const { return mPassages.empty() ? aPassage.empty() : std::find(mPassages.begin(), mPassages.end(), aPassage) != mPassages.end(); }
-    inline const std::vector<std::string>& reassortant() const { return mReassortant; }
+    inline const auto& reassortant() const { return mReassortant; }
     inline std::string gene() const { return mGene; }
 
     inline const std::vector<std::string>& hi_names() const { return mHiNames; }
@@ -85,8 +85,10 @@ class SeqdbSeq
       // if aAligned && aLeftPartSize > 0 - include signal peptide and other stuff to the left from the beginning of the aligned sequence
     std::string amino_acids(bool aAligned, size_t aLeftPartSize = 0) const;
     std::string nucleotides(bool aAligned, size_t aLeftPartSize = 0) const;
-    inline int amino_acids_shift() const { return mAminoAcidsShift; } // throws if sequence was not aligned
-    inline int nucleotides_shift() const { return mNucleotidesShift; }  // throws if sequence was not aligned
+    inline Shift amino_acids_shift() const { return mAminoAcidsShift; } // throws if sequence was not aligned
+    inline Shift nucleotides_shift() const { return mNucleotidesShift; }  // throws if sequence was not aligned
+    // inline int amino_acids_shift_raw() const { return mAminoAcidsShift.raw(); }
+    // inline int nucleotides_shift_raw() const { return mNucleotidesShift.raw(); }
 
     //   // Empty passages must not be removed! this is just for testing purposes
     // inline void remove_empty_passages()
@@ -120,31 +122,15 @@ class SeqdbSeq
     friend class SeqdbIterator;
     friend class SeqdbIteratorBase;
 
-    // friend inline auto json_fields(SeqdbSeq& a)
-    //     {
-    //         return std::make_tuple(
-    //             "p", json::field(&a.mPassages, json::output_if_not_empty),
-    //             "n", json::field(&a.mNucleotides, json::output_if_not_empty),
-    //             "a", json::field(&a.mAminoAcids, json::output_if_not_empty),
-    //             "t", json::field(&a.mNucleotidesShift, &Shift::to_json, &Shift::from_json), // if mNucleotidesShift.aligned()
-    //             "s", json::field(&a.mAminoAcidsShift, &Shift::to_json, &Shift::from_json), // if mAminoAcidsShift.aligned()
-    //             "l", json::field(&a.mLabIds, json::output_if_not_empty),
-    //             "g", json::field(&a.mGene, json::output_if_not_empty),
-    //             "h", json::field(&a.mHiNames, json::output_if_not_empty),
-    //             "r", json::field(&a.mReassortant, json::output_if_not_empty),
-    //             "c", json::field(&a.mClades, json::output_if_not_empty)
-    //                                );
-    //     }
-
 }; // class SeqdbSeq
 
 // ----------------------------------------------------------------------
 
-inline std::ostream& operator<<(std::ostream& out, const SeqdbSeq& seq)
-{
-    throw std::runtime_error("Not implemented");
-      // return out << json::dump(seq, 0);
-}
+// inline std::ostream& operator<<(std::ostream& out, const SeqdbSeq& seq)
+// {
+//     throw std::runtime_error("Not implemented");
+//       // return out << json::dump(seq, 0);
+// }
 
 // ----------------------------------------------------------------------
 
@@ -164,6 +150,7 @@ class SeqdbEntry
     inline std::string virus_type() const { return mVirusType; }
     inline void virus_type(std::string aVirusType) { mVirusType = aVirusType; }
     void add_date(std::string aDate);
+    inline const auto& dates() const { return mDates; }
     inline std::string date() const { return mDates.empty() ? std::string() : mDates.back(); }
     inline std::string lineage() const { return mLineage; }
     void update_lineage(std::string aLineage, Messages& aMessages);
@@ -194,6 +181,7 @@ class SeqdbEntry
             return r;
         }
 
+    inline const auto& seqs() const { return mSeq; }
     inline auto begin_seq() { return mSeq.begin(); }
     inline auto end_seq() { return mSeq.end(); }
     inline auto begin_seq() const { return mSeq.begin(); }
@@ -218,19 +206,6 @@ class SeqdbEntry
     friend class SeqdbIteratorBase;
     friend class SeqdbIterator;
     friend class ConstSeqdbIterator;
-
-    // friend inline auto json_fields(SeqdbEntry& a)
-    //     {
-    //         return std::make_tuple(
-    //             "N", json::field(&a.mName, json::output_if_not_empty),
-    //             "c", json::field(&a.mCountry, json::output_if_not_empty),
-    //             "C", json::field(&a.mContinent, json::output_if_not_empty),
-    //             "d", json::field(&a.mDates, json::output_if_not_empty),
-    //             "l", json::field(&a.mLineage, json::output_if_not_empty),
-    //             "v", json::field(&a.mVirusType, json::output_if_not_empty),
-    //             "s", &a.mSeq
-    //                                );
-    //     }
 
 }; // class SeqdbEntry
 
@@ -400,9 +375,8 @@ class Seqdb
  public:
     inline Seqdb() {}
 
-    void from_json(std::string data);
+    // void from_json(std::string data);
     void load(std::string filename);
-    // inline std::string to_json(size_t indent = 0) const { return json::dump(*this, static_cast<int>(indent)); }
     void save(std::string filename, size_t indent = 0) const;
 
     inline size_t number_of_entries() const { return mEntries.size(); }
@@ -462,17 +436,7 @@ class Seqdb
     friend class SeqdbIterator;
     friend class ConstSeqdbIterator;
 
-    static constexpr const char* SEQDB_JSON_DUMP_VERSION = "sequence-database-v2";
-    std::string mJsonDumpVersion = SEQDB_JSON_DUMP_VERSION;
-
-    // friend inline auto json_fields(Seqdb& a)
-    //     {
-    //         return std::make_tuple(
-    //             "  version", &a.mJsonDumpVersion,
-    //             "data", &a.mEntries
-    //                                );
-    //     }
-};
+}; // class Seqdb
 
 // ----------------------------------------------------------------------
 
