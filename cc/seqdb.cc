@@ -54,7 +54,7 @@ bool SeqdbSeq::match_update_amino_acids(std::string aAminoAcids)
 
 void SeqdbSeq::add_passage(std::string aPassage)
 {
-    if (std::find(mPassages.begin(), mPassages.end(), aPassage) == mPassages.end())
+    if (!aPassage.empty() && std::find(mPassages.begin(), mPassages.end(), aPassage) == mPassages.end())
         mPassages.push_back(aPassage);
 
 } // SeqdbSeq::add_passage
@@ -80,7 +80,7 @@ void SeqdbSeq::update_gene(std::string aGene, Messages& aMessages, bool replace_
 
 void SeqdbSeq::add_reassortant(std::string aReassortant)
 {
-    if (std::find(mReassortant.begin(), mReassortant.end(), aReassortant) == mReassortant.end())
+    if (!aReassortant.empty() && std::find(mReassortant.begin(), mReassortant.end(), aReassortant) == mReassortant.end())
         mReassortant.push_back(aReassortant);
 
 } // SeqdbSeq::add_reassortant
