@@ -80,6 +80,192 @@ void seqdb_export(std::string aFilename, const Seqdb& aSeqdb, size_t aIndent)
 
 // ----------------------------------------------------------------------
 
+class Error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
+class Failure : public std::exception { public: using std::exception::exception; };
+class Pop : public std::exception { public: using std::exception::exception; };
+
+class HandlerBase
+{
+ public:
+    inline HandlerBase(Seqdb& aSeqdb) : mSeqdb(aSeqdb), mIgnore(false) {}
+    virtual ~HandlerBase();
+
+    inline virtual HandlerBase* StartObject() { std::cerr << "HandlerBase StartObject " << typeid(*this).name() << std::endl; throw Failure(); }
+    inline virtual HandlerBase* EndObject() { throw Pop(); }
+    inline virtual HandlerBase* StartArray() { throw Failure(); }
+    inline virtual HandlerBase* EndArray() { throw Pop(); }
+    inline virtual HandlerBase* Double(double d) { std::cerr << "Double: " << d << std::endl; throw Failure(); }
+    inline virtual HandlerBase* Int(int i) { std::cerr << "Int: " << i << std::endl; throw Failure(); }
+    inline virtual HandlerBase* Uint(unsigned u) { std::cerr << "Uint: " << u << std::endl; throw Failure(); }
+
+    inline virtual HandlerBase* Key(const char* str, rapidjson::SizeType length)
+        {
+            if ((length == 1 && *str == '_') || (length > 0 && *str == '?')) {
+                mIgnore = true;
+            }
+            else {
+                std::cerr << "Key: \"" << std::string(str, length) << '"' << std::endl;
+                throw Failure();
+            }
+            return nullptr;
+        }
+
+    inline virtual HandlerBase* String(const char* str, rapidjson::SizeType length)
+        {
+            if (mIgnore) {
+                mIgnore = false;
+            }
+            else {
+                std::cerr << "String: \"" << std::string(str, length) << '"' << std::endl;
+                throw Failure();
+            }
+            return nullptr;
+        }
+
+ protected:
+    Seqdb& mSeqdb;
+    bool mIgnore;
+};
+
+HandlerBase::~HandlerBase()
+{
+}
+
+// ----------------------------------------------------------------------
+
+class SeqdbRootHandler : public HandlerBase
+{
+ private:
+    enum class Keys { Unknown, Version, Data };
+    static const std::vector<std::pair<std::string, Keys>> sKeys;
+
+ public:
+    inline SeqdbRootHandler(Seqdb& aSeqdb) : HandlerBase(aSeqdb), mKey(Keys::Unknown) {}
+
+    inline virtual HandlerBase* Key(const char* str, rapidjson::SizeType length)
+        {
+            HandlerBase* result = nullptr;
+            Keys new_key = Keys::Unknown;
+            const std::string found_key(str, length);
+            for (const auto& key: sKeys) {
+                if (key.first == found_key) {
+                    new_key = key.second;
+                    break;
+                }
+            }
+            mKey = Keys::Unknown;
+            switch (new_key) {
+              case Keys::Version:
+              case Keys::Data:
+                  mKey = new_key;
+                  break;
+              case Keys::Unknown:
+                  result = HandlerBase::Key(str, length);
+                  break;
+            }
+            return result;
+        }
+
+    inline virtual HandlerBase* String(const char* str, rapidjson::SizeType length)
+        {
+            HandlerBase* result = nullptr;
+            switch (mKey) {
+              case Keys::Version:
+                  if (strncmp(str, SEQDB_JSON_DUMP_VERSION, std::min(length, static_cast<rapidjson::SizeType>(strlen(SEQDB_JSON_DUMP_VERSION))))) {
+                      std::cerr << "Unsupported version: \"" << std::string(str, length) << '"' << std::endl;
+                      throw Failure();
+                  }
+                  break;
+              case Keys::Data:
+              case Keys::Unknown:
+                  result = HandlerBase::String(str, length);
+                  break;
+            }
+            return result;
+        }
+
+ private:
+    Keys mKey;
+
+};
+
+#pragma GCC diagnostic push
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
+#pragma GCC diagnostic ignored "-Wglobal-constructors"
+#endif
+const std::vector<std::pair<std::string, SeqdbRootHandler::Keys>> SeqdbRootHandler::sKeys {
+    {"  version", Keys::Version},
+    {" data", Keys::Data},
+};
+#pragma GCC diagnostic pop
+
+// ----------------------------------------------------------------------
+
+class DocRootHandler : public HandlerBase
+{
+ public:
+    inline DocRootHandler(Seqdb& aSeqdb) : HandlerBase(aSeqdb) {}
+
+    inline virtual HandlerBase* StartObject() { return new SeqdbRootHandler(mSeqdb); }
+};
+
+// ----------------------------------------------------------------------
+
+class SeqdbReaderEventHandler : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, SeqdbReaderEventHandler>
+{
+ private:
+    template <typename... Args> inline bool handler(HandlerBase* (HandlerBase::*aHandler)(Args... args), Args... args)
+        {
+            try {
+                auto new_handler = ((*mHandler.top()).*aHandler)(args...);
+                if (new_handler)
+                    mHandler.emplace(new_handler);
+            }
+            catch (Pop&) {
+                if (mHandler.empty())
+                    return false;
+                mHandler.pop();
+            }
+            catch (Failure&) {
+                return false;
+            }
+            return true;
+        }
+
+ public:
+    inline SeqdbReaderEventHandler(Seqdb& aSeqdb)
+        : mSeqdb(aSeqdb)
+        {
+            mHandler.emplace(new DocRootHandler(mSeqdb));
+        }
+
+    inline bool StartObject() { return handler(&HandlerBase::StartObject); }
+    inline bool EndObject(rapidjson::SizeType /*memberCount*/) { return handler(&HandlerBase::EndObject); }
+    inline bool StartArray() { return handler(&HandlerBase::StartArray); }
+    inline bool EndArray(rapidjson::SizeType /*elementCount*/) { return handler(&HandlerBase::EndArray); }
+    inline bool Key(const char* str, rapidjson::SizeType length, bool /*copy*/) { return handler(&HandlerBase::Key, str, length); }
+    inline bool String(const Ch* str, rapidjson::SizeType length, bool /*copy*/) { return handler(&HandlerBase::String, str, length); }
+    inline bool Int(int i) { return handler(&HandlerBase::Int, i); }
+    inline bool Uint(unsigned u) { return handler(&HandlerBase::Uint, u); }
+    inline bool Double(double d) { return handler(&HandlerBase::Double, d); }
+
+      // inline bool Bool(bool /*b*/) { return false; }
+      // inline bool Null() { std::cout << "Null()" << std::endl; return false; }
+      // inline bool Int64(int64_t i) { std::cout << "Int64(" << i << ")" << std::endl; return false; }
+      // inline bool Uint64(uint64_t u) { std::cout << "Uint64(" << u << ")" << std::endl; return false; }
+
+ private:
+    Seqdb& mSeqdb;
+    std::stack<std::unique_ptr<HandlerBase>> mHandler;
+
+      // ----------------------------------------------------------------------
+
+    // friend void seqdb_import(std::string, Seqdb&);
+};
+
+// ----------------------------------------------------------------------
+
 void seqdb_import(std::string buffer, Seqdb& aSeqdb)
 {
     if (buffer == "-")
@@ -87,14 +273,12 @@ void seqdb_import(std::string buffer, Seqdb& aSeqdb)
     else
         buffer = acmacs_base::read_file(buffer);
     if (buffer[0] == '{') { // && buffer.find("\"  version\": " + SEQDB_JSON_DUMP_VERSION) != std::string::npos) {
-        // SeqdbReaderEventHandler handler{aSeqdb};
-        // rapidjson::Reader reader;
-        // rapidjson::StringStream ss(buffer.c_str());
-        // reader.Parse(ss, handler);
-        // if (reader.HasParseError())
-        //     throw Error("cannot import seqdb: data parsing failed at state " + std::to_string(static_cast<unsigned>(handler.state.top())) + " at pos " + std::to_string(reader.GetErrorOffset()) + ": " +  GetParseError_En(reader.GetParseErrorCode()) + "\n" + buffer.substr(reader.GetErrorOffset(), 50));
-        // if (!handler.in_init_state())
-        //     throw Error("internal: not in init state on parsing completion");
+        SeqdbReaderEventHandler handler{aSeqdb};
+        rapidjson::Reader reader;
+        rapidjson::StringStream ss(buffer.c_str());
+        reader.Parse(ss, handler);
+        if (reader.HasParseError())
+            throw Error("cannot import seqdb: data parsing failed at pos " + std::to_string(reader.GetErrorOffset()) + ": " +  GetParseError_En(reader.GetParseErrorCode()) + "\n" + buffer.substr(reader.GetErrorOffset(), 50));
     }
     else
         throw std::runtime_error("cannot import seqdb: unrecognized source format");

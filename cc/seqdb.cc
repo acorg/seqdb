@@ -500,12 +500,9 @@ SeqdbEntrySeq Seqdb::find_by_seq_id(std::string aSeqId) const
 
 // ----------------------------------------------------------------------
 
-void Seqdb::load(std::string /*filename*/)
+void Seqdb::load(std::string filename)
 {
-    // if (filename.empty()) {
-    //     filename = std::string(getenv("HOME")) + "/WHO/seqdb.json.xz";
-    // }
-    // from_json(acmacs_base::read_file(filename));
+    seqdb_import(filename, *this);
 
 } // Seqdb::from_json_file
 
