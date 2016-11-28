@@ -17,6 +17,7 @@
 
 class Seqdb;
 class SeqdbIterator;
+class HiDb;
 
 // ----------------------------------------------------------------------
 
@@ -98,6 +99,8 @@ class SeqdbSeq
 
     std::string& amino_acids() { return mAminoAcids; }
     std::string& nucleotides() { return mNucleotides; }
+
+    std::vector<std::string> make_all_reassortant_passage_variants() const;
 
     //   // Empty passages must not be removed! this is just for testing purposes
     // inline void remove_empty_passages()
@@ -189,12 +192,14 @@ class SeqdbEntry
             mSeq.erase(std::remove_if(mSeq.begin(), mSeq.end(), [](auto& seq) { return !seq.translated(); }), mSeq.end());
         }
 
-    inline const std::vector<std::string> cdcids() const
+    inline std::vector<std::string> cdcids() const
         {
             std::vector<std::string> r;
             std::for_each(mSeq.begin(), mSeq.end(), [&r](auto const & seq) {auto seq_cdcids = seq.cdcids(); r.insert(r.end(), std::make_move_iterator(seq_cdcids.begin()), std::make_move_iterator(seq_cdcids.end())); });
             return r;
         }
+
+    std::vector<std::string> make_all_names() const;
 
     inline const auto& seqs() const { return mSeq; }
     inline auto& seqs() { return mSeq; }
@@ -421,7 +426,7 @@ class Seqdb
     std::string report_not_aligned(size_t prefix_size) const;
     std::vector<std::string> all_hi_names() const;
     void remove_hi_names();
-    void match_hidb();
+    void match_hidb(std::string aHiDbDir);
 
       // iterating over sequences with filtering
     inline SeqdbIterator begin() { return SeqdbIterator(*this, 0, 0); }
@@ -452,6 +457,9 @@ class Seqdb
     friend class SeqdbIteratorBase;
     friend class SeqdbIterator;
     friend class ConstSeqdbIterator;
+
+    typedef std::map<std::string, std::unique_ptr<HiDb>> HiDbPtrs;
+    const HiDb& get_hidb(std::string aVirusType, HiDbPtrs& aPtrs, std::string aHiDbDir);
 
 }; // class Seqdb
 

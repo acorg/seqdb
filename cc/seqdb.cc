@@ -214,6 +214,23 @@ std::string SeqdbSeq::nucleotides(bool aAligned, size_t aLeftPartSize) const
 
 // ----------------------------------------------------------------------
 
+std::vector<std::string> SeqdbSeq::make_all_reassortant_passage_variants() const
+{
+    std::vector<std::string> result;
+    if (mReassortant.empty()) {
+        result = mPassages;
+    }
+    else {
+        for (const auto& reassortant: mReassortant) {
+            std::transform(mPassages.begin(), mPassages.end(), std::back_inserter(result), [&reassortant](const auto& passage) -> std::string { return reassortant + " " + passage; });
+        }
+    }
+    return result;
+
+} // SeqdbSeq::make_all_reassortant_passage_variants
+
+// ----------------------------------------------------------------------
+
 void SeqdbEntry::add_date(std::string aDate)
 {
     auto insertion_pos = std::lower_bound(mDates.begin(), mDates.end(), aDate);
@@ -281,6 +298,19 @@ std::string SeqdbEntry::add_or_update_sequence(std::string aSequence, std::strin
     return messages;
 
 } // SeqdbEntry::add_or_update_sequence
+
+// ----------------------------------------------------------------------
+
+std::vector<std::string> SeqdbEntry::make_all_names() const
+{
+    std::vector<std::string> result;
+    for (const auto& seq: seqs()) {
+        const auto variants = seq.make_all_reassortant_passage_variants();
+        std::transform(variants.begin(), variants.end(), std::back_inserter(result), [this](const auto& var) -> std::string { return mName + " " + var; });
+    }
+    return result;
+
+} // SeqdbEntry::make_all_names
 
 // ----------------------------------------------------------------------
 
@@ -441,18 +471,56 @@ void Seqdb::remove_hi_names()
 
 // ----------------------------------------------------------------------
 
-void Seqdb::match_hidb()
+void Seqdb::match_hidb(std::string aHiDbDir)
 {
+    HiDbPtrs hidb_ptrs;
+
     for (auto& entry: mEntries) {
-        std::cout << entry.virus_type() << " " << entry.name() << std::endl;
-        for (auto& seq: entry.mSeq) {
-            // if (seq.reassortant().size() > 1)
-            //     std::cerr << "Warning: multiple reassortant data for a sequence, HiDb matching uses just the first one: " << seq.reassortant() << std::endl;
-            std::cout << "  " << seq.reassortant() << " " << seq.passages() << " " << seq.lab_ids() << std::endl;
+        const HiDb& hidb = get_hidb(entry.virus_type(), hidb_ptrs, aHiDbDir);
+        std::cout << entry.virus_type() << " " << entry.name() << " " << entry.cdcids() << std::endl;
+        const std::vector<std::string> names = entry.make_all_names();
+          // std::cout << "  " << names << std::endl;
+        for (const auto& name: names) {
+            std::cout << "  " << name << std::endl;
+            const auto found = hidb.find_antigens_with_score(name);
+            for (const auto& f: found) {
+                std::cout << "    " << f.second << " " << f.first->data().full_name() << std::endl;
+            }
         }
+
+        // for (auto& seq: entry.mSeq) {
+        //     if (!seq.reassortant().empty())
+        //     // if (seq.reassortant().size() > 1)
+        //     //     std::cerr << "Warning: multiple reassortant data for a sequence, HiDb matching uses just the first one: " << seq.reassortant() << std::endl;
+        //     // std::cout << "  " << seq.reassortant() << " " << seq.passages() << " " << seq.lab_ids() << std::endl;
+        // }
     }
 
 } // Seqdb::match_hidb
+
+// ----------------------------------------------------------------------
+
+const HiDb& Seqdb::get_hidb(std::string aVirusType, HiDbPtrs& aPtrs, std::string aHiDbDir)
+{
+    auto h = aPtrs.find(aVirusType);
+    if (h == aPtrs.end()) {
+        std::string filename;
+        if (aVirusType == "A(H1N1)")
+            filename = aHiDbDir + "/hidb4.h1.json.xz";
+        else if (aVirusType == "A(H3N2)")
+            filename = aHiDbDir + "/hidb4.h3.json.xz";
+        else if (aVirusType == "B")
+            filename = aHiDbDir + "/hidb4.b.json.xz";
+        else
+            throw std::runtime_error("No HiDb for " + aVirusType);
+        std::unique_ptr<HiDb> hidb{new HiDb{}};
+          // std::cout << "opening " << filename << std::endl;
+        hidb->importFrom(filename);
+        h = aPtrs.emplace(aVirusType, std::move(hidb)).first;
+    }
+    return *h->second;
+
+} // Seqdb::get_hidb
 
 // ----------------------------------------------------------------------
 
@@ -465,10 +533,10 @@ SeqdbEntrySeq Seqdb::find_by_seq_id(std::string aSeqId) const
         if (entry != nullptr) {
             const auto passage_distinct = string::split(std::string(aSeqId, passage_separator + 2), "__", string::Split::KeepEmpty);
             auto index = passage_distinct.size() == 1 ? 0 : std::stoi(passage_distinct[1]);
-            for (auto seq = entry->begin_seq(); seq != entry->end_seq(); ++seq) {
-                if (seq->passage() == passage_distinct[0]) {
+            for (const auto& seq: entry->seqs()) {
+                if (seq.passage() == passage_distinct[0]) {
                     if (index == 0) {
-                        result.assign(*entry, *seq);
+                        result.assign(*entry, seq);
                         break;
                     }
                     else

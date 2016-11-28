@@ -205,8 +205,8 @@ def detect_reassortant(entry):
     if entry.get("name") and not entry.get("reassortant"):
         m = sReReassortant.match(entry["name"])
         if m and m.group(2):
-            entry["reassortant"] = m.group(2)
-            entry["name"] = m.group(1)
+            entry["reassortant"] = m.group(2).strip()
+            entry["name"] = m.group(1).strip()
 
 # ----------------------------------------------------------------------
 

@@ -27,7 +27,7 @@ def main(args):
         # pprint.pprint(data)
         db_updater.add(data)
     if args.match_hidb:
-        db_updater.match_hidb()
+        db_updater.match_hidb(Path(args.hidb_dir).expanduser())
     if args.add_clades:
         db_updater.add_clades()               # clades must be updated after matching with hidb, because matching provides info about B lineage
     # print(db.report())
@@ -49,7 +49,7 @@ with timeit(sys.argv[0]):
         parser.add_argument('-n', '--no-save', action='store_false', dest='save', default=True, help='Do not save resulting database.')
         # parser.add_argument('--gene', action='store', dest='default_gene', default="HA", help='default gene.')
         # parser.add_argument('--acmacs', action='store', dest='acmacs_url', default='https://localhost:1168', help='AcmacsWeb server host and port, e.g. https://localhost:1168.')
-        # parser.add_argument('--hidb', action='store', dest='path_to_hidb', default="~/WHO/hidb.json.xz", help='Path to HI database.')
+        parser.add_argument('--hidb-dir', action='store', dest='hidb_dir', default="~/AD/data", help='Path to the directory with hidb4.*.json.xz files.')
         parser.add_argument('--match-hidb', action='store_true', dest='match_hidb', default=False, help='Match names against HiDb.')
         parser.add_argument('--clades', action='store_true', dest='add_clades', default=False, help='Add clade information to seqdb.')
         parser.add_argument('--report-identical', action='store_true', dest='report_identical', default=False, help='Report identical sequences.')
