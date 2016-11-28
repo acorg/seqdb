@@ -421,6 +421,7 @@ class Seqdb
     std::string report_not_aligned(size_t prefix_size) const;
     std::vector<std::string> all_hi_names() const;
     void remove_hi_names();
+    void match_hidb();
 
       // iterating over sequences with filtering
     inline SeqdbIterator begin() { return SeqdbIterator(*this, 0, 0); }

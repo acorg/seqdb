@@ -4,6 +4,7 @@
 #include "clades.hh"
 #include "seqdb-export.hh"
 #include "acmacs-base/read-file.hh"
+#include "acmacs-base/stream.hh"
 
 // ----------------------------------------------------------------------
 
@@ -436,6 +437,21 @@ void Seqdb::remove_hi_names()
     }
 
 } // Seqdb::remove_hi_names
+
+// ----------------------------------------------------------------------
+
+void Seqdb::match_hidb()
+{
+    for (auto& entry: mEntries) {
+        std::cout << entry.virus_type() << " " << entry.name() << std::endl;
+        for (auto& seq: entry.mSeq) {
+            // if (seq.reassortant().size() > 1)
+            //     std::cerr << "Warning: multiple reassortant data for a sequence, HiDb matching uses just the first one: " << seq.reassortant() << std::endl;
+            std::cout << "  " << seq.reassortant() << " " << seq.passages() << " " << seq.lab_ids() << std::endl;
+        }
+    }
+
+} // Seqdb::match_hidb
 
 // ----------------------------------------------------------------------
 

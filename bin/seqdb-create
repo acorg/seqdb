@@ -20,12 +20,14 @@ from acmacs_base import timeit
 
 def main(args):
     db = seqdb.Seqdb()
-    db_updater = SeqdbUpdater(db, filename=args.path_to_db, normalize_names=False, load=False)
+    db_updater = SeqdbUpdater(db, filename=args.path_to_db, load=False)
     for filename in args.input:
         data = fasta_m.read_fasta_with_name_parsing(fasta_file=filename, lab="", virus_type="")
         module_logger.info('{} entries to update seqdb with'.format(len(data)))
         # pprint.pprint(data)
         db_updater.add(data)
+    if args.match_hidb:
+        db_updater.match_hidb()
     if args.add_clades:
         db_updater.add_clades()               # clades must be updated after matching with hidb, because matching provides info about B lineage
     # print(db.report())
@@ -48,6 +50,7 @@ with timeit(sys.argv[0]):
         # parser.add_argument('--gene', action='store', dest='default_gene', default="HA", help='default gene.')
         # parser.add_argument('--acmacs', action='store', dest='acmacs_url', default='https://localhost:1168', help='AcmacsWeb server host and port, e.g. https://localhost:1168.')
         # parser.add_argument('--hidb', action='store', dest='path_to_hidb', default="~/WHO/hidb.json.xz", help='Path to HI database.')
+        parser.add_argument('--match-hidb', action='store_true', dest='match_hidb', default=False, help='Match names against HiDb.')
         parser.add_argument('--clades', action='store_true', dest='add_clades', default=False, help='Add clade information to seqdb.')
         parser.add_argument('--report-identical', action='store_true', dest='report_identical', default=False, help='Report identical sequences.')
         parser.add_argument('--report-not-aligned-prefixes', type=int, action='store', dest='report_not_aligned_prefixes', default=None, help='Report prefixes of not aligned aa sequences up to the specified length (signal peptide is often 16).')
