@@ -38,7 +38,7 @@ template <typename RW> inline JsonWriterT<RW>& operator <<(JsonWriterT<RW>& writ
                   << if_not_empty(SeqdbJsonKey::AminoAcids, seq.amino_acids(false))
                   << if_aligned(SeqdbJsonKey::NucleotideShift, seq.nucleotides_shift())
                   << if_aligned(SeqdbJsonKey::AminoAcidShift, seq.amino_acids_shift())
-                  << if_not_empty(SeqdbJsonKey::LabIds, seq.lab_ids())
+                  << if_not_empty(SeqdbJsonKey::LabIds, seq.lab_ids_raw())
                   << if_not_empty(SeqdbJsonKey::Gene, seq.gene())
                   << if_not_empty(SeqdbJsonKey::HiNames, seq.hi_names())
                   << if_not_empty(SeqdbJsonKey::Reassortant, seq.reassortant())
@@ -133,6 +133,190 @@ HandlerBase::~HandlerBase()
 
 // ----------------------------------------------------------------------
 
+class StringListHandler : public HandlerBase
+{
+ public:
+    inline StringListHandler(Seqdb& aSeqdb, std::vector<std::string>& aList)
+        : HandlerBase(aSeqdb), mList(aList), mStarted(false) {}
+
+    inline virtual HandlerBase* StartArray()
+        {
+            if (mStarted)
+                throw Failure();
+            mStarted = true;
+            return nullptr;
+        }
+
+    inline virtual HandlerBase* EndObject() { throw Failure(); }
+
+    inline virtual HandlerBase* String(const char* str, rapidjson::SizeType length)
+        {
+            mList.emplace_back(str, length);
+            return nullptr;
+        }
+
+ private:
+    std::vector<std::string>& mList;
+    bool mStarted;
+
+}; // class StringListHandler
+
+// ----------------------------------------------------------------------
+
+class MapListHandler : public HandlerBase
+{
+ public:
+    inline MapListHandler(Seqdb& aSeqdb, std::map<std::string, std::vector<std::string>>& aMap)
+        : HandlerBase(aSeqdb), mMap(aMap), mStarted(false) {}
+
+    inline virtual HandlerBase* StartObject()
+        {
+            if (mStarted)
+                throw Failure();
+            mStarted = true;
+            return nullptr;
+        }
+
+    inline virtual HandlerBase* EndArray() { throw Failure(); }
+
+    inline virtual HandlerBase* Key(const char* str, rapidjson::SizeType length)
+        {
+            return new StringListHandler(mSeqdb, mMap[{str, length}]);
+        }
+
+ private:
+    std::map<std::string, std::vector<std::string>>& mMap;
+    bool mStarted;
+
+}; // class MapListHandler
+
+// ----------------------------------------------------------------------
+
+class SeqHandler : public HandlerBase
+{
+ public:
+    inline SeqHandler(Seqdb& aSeqdb, std::vector<SeqdbSeq>& aSeqs)
+        : HandlerBase(aSeqdb), mSeqs(aSeqs), mStarted(false), mKey(SeqdbJsonKey::Unknown) {}
+
+    inline virtual HandlerBase* StartArray()
+        {
+            if (mStarted)
+                throw Failure();
+            mStarted = true;
+            return nullptr;
+        }
+
+    inline virtual HandlerBase* StartObject()
+        {
+            if (!mStarted)
+                throw Failure();
+            mSeqs.emplace_back();
+            return nullptr;
+        }
+
+    inline virtual HandlerBase* EndObject()
+        {
+            return nullptr;
+        }
+
+    inline virtual HandlerBase* Key(const char* str, rapidjson::SizeType length)
+        {
+            if (!mStarted)
+                throw Failure();
+            if (length != 1)
+                throw Failure();
+            mKey = static_cast<SeqdbJsonKey>(*str);
+            HandlerBase* result = nullptr;
+#pragma GCC diagnostic push
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+#endif
+            switch (mKey) {
+              case SeqdbJsonKey::AminoAcids:
+              case SeqdbJsonKey::Nucleotides:
+              case SeqdbJsonKey::Gene:
+              case SeqdbJsonKey::AminoAcidShift:
+              case SeqdbJsonKey::NucleotideShift:
+                  break;
+              case SeqdbJsonKey::Clades:
+                  result = new StringListHandler(mSeqdb, mSeqs.back().clades());
+                  break;
+              case SeqdbJsonKey::HiNames:
+                  result = new StringListHandler(mSeqdb, mSeqs.back().hi_names());
+                  break;
+              case SeqdbJsonKey::LabIds:
+                  result = new MapListHandler(mSeqdb, mSeqs.back().lab_ids_raw());
+                  break;
+              case SeqdbJsonKey::Passages:
+                  result = new StringListHandler(mSeqdb, mSeqs.back().passages());
+                  break;
+              case SeqdbJsonKey::Reassortant:
+                  result = new StringListHandler(mSeqdb, mSeqs.back().reassortant());
+                  break;
+              default:
+                  break;
+            }
+#pragma GCC diagnostic pop
+            return result;
+        }
+
+    inline virtual HandlerBase* Int(int i)
+        {
+#pragma GCC diagnostic push
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+#endif
+            switch (mKey) {
+              case SeqdbJsonKey::AminoAcidShift:
+                  mSeqs.back().amino_acids_shift_raw() = i;
+                  break;
+              case SeqdbJsonKey::NucleotideShift:
+                  mSeqs.back().nucleotides_shift_raw() = i;
+                  break;
+              default:
+                  throw Failure();
+            }
+#pragma GCC diagnostic pop
+            return nullptr;
+        }
+
+    inline virtual HandlerBase* Uint(unsigned u)
+        {
+            return Int(static_cast<int>(u));
+        }
+
+    inline virtual HandlerBase* String(const char* str, rapidjson::SizeType length)
+        {
+#pragma GCC diagnostic push
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+#endif
+            switch (mKey) {
+              case SeqdbJsonKey::AminoAcids:
+                  mSeqs.back().amino_acids().assign(str, length);
+                  break;
+              case SeqdbJsonKey::Nucleotides:
+                  mSeqs.back().nucleotides().assign(str, length);
+                  break;
+              case SeqdbJsonKey::Gene:
+                  mSeqs.back().gene().assign(str, length);
+                  break;
+              default:
+                  throw Failure();
+            }
+#pragma GCC diagnostic pop
+            return nullptr;
+        }
+
+ private:
+    std::vector<SeqdbSeq>& mSeqs;
+    bool mStarted;
+    SeqdbJsonKey mKey;
+
+}; // class SeqHandler
+
+// ----------------------------------------------------------------------
+
 class DataHandler : public HandlerBase
 {
  public:
@@ -170,31 +354,51 @@ class DataHandler : public HandlerBase
             if (length != 1)
                 throw Failure();
             mKey = static_cast<SeqdbJsonKey>(*str);
-            return nullptr;
-        }
-
-    inline virtual HandlerBase* Int(int i)
-        {
+            HandlerBase* result = nullptr;
+#pragma GCC diagnostic push
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+#endif
             switch (mKey) {
-              case SeqdbJsonKey::AminoAcidShift:
+              case SeqdbJsonKey::Dates:
+                  result = new StringListHandler(mSeqdb, mData.back().dates());
                   break;
-              case SeqdbJsonKey::NucleotideShift:
+              case SeqdbJsonKey::SequenceSet:
+                  result = new SeqHandler(mSeqdb, mData.back().seqs());
                   break;
               default:
-                  throw Failure();
+                  break;
             }
-            return nullptr;
+#pragma GCC diagnostic pop
+            return result;
         }
 
     inline virtual HandlerBase* String(const char* str, rapidjson::SizeType length)
         {
+#pragma GCC diagnostic push
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+#endif
             switch (mKey) {
               case SeqdbJsonKey::Name:
                   mData.back().name().assign(str, length);
                   break;
+              case SeqdbJsonKey::Continent:
+                  mData.back().continent().assign(str, length);
+                  break;
+              case SeqdbJsonKey::Country:
+                  mData.back().country().assign(str, length);
+                  break;
+              case SeqdbJsonKey::Lineage:
+                  mData.back().lineage().assign(str, length);
+                  break;
+              case SeqdbJsonKey::VirusType:
+                  mData.back().virus_type().assign(str, length);
+                  break;
               default:
                   throw Failure();
             }
+#pragma GCC diagnostic pop
             return nullptr;
         }
 
@@ -218,7 +422,6 @@ class SeqdbRootHandler : public HandlerBase
     inline virtual HandlerBase* Key(const char* str, rapidjson::SizeType length)
         {
             HandlerBase* result = nullptr;
-            Keys new_key = Keys::Unknown;
             const std::string found_key(str, length);
             if (found_key == "  version")
                 mKey = Keys::Version;

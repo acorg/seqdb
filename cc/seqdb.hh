@@ -58,6 +58,7 @@ class SeqdbSeq
     void add_lab_id(std::string aLab, std::string aLabId);
     void update_clades(std::string aVirusType, std::string aLineage);
     inline const std::vector<std::string>& clades() const { return mClades; }
+    inline std::vector<std::string>& clades() { return mClades; }
 
     inline bool is_short() const { return mAminoAcids.empty() ? mNucleotides.size() < (MINIMUM_SEQUENCE_AA_LENGTH * 3) : mAminoAcids.size() < MINIMUM_SEQUENCE_AA_LENGTH; }
     inline bool translated() const { return !mAminoAcids.empty(); }
@@ -70,12 +71,17 @@ class SeqdbSeq
     inline const std::vector<std::string> cdcids() const { auto i = mLabIds.find("CDC"); return i == mLabIds.end() ? std::vector<std::string>() : i->second; }
     inline const std::vector<std::string> lab_ids_for_lab(std::string lab) const { auto i = mLabIds.find(lab); return i == mLabIds.end() ? std::vector<std::string>() : i->second; }
     inline const std::vector<std::string> lab_ids() const { std::vector<std::string> r; for (const auto& lid: mLabIds) { for (const auto& id: lid.second) { r.emplace_back(lid.first + "#" + id); } } return r; }
+    inline const auto& lab_ids_raw() const { return mLabIds; }
+    inline auto& lab_ids_raw() { return mLabIds; }
     inline bool match_labid(std::string lab, std::string id) const { auto i = mLabIds.find(lab); return i != mLabIds.end() && std::find(i->second.begin(), i->second.end(), id) != i->second.end(); }
     inline const auto& passages() const { return mPassages; }
+    inline auto& passages() { return mPassages; }
     inline std::string passage() const { return mPassages.empty() ? std::string() : mPassages[0]; }
     inline bool passage_present(std::string aPassage) const { return mPassages.empty() ? aPassage.empty() : std::find(mPassages.begin(), mPassages.end(), aPassage) != mPassages.end(); }
     inline const auto& reassortant() const { return mReassortant; }
+    inline auto& reassortant() { return mReassortant; }
     inline std::string gene() const { return mGene; }
+    inline std::string& gene() { return mGene; }
 
     inline const std::vector<std::string>& hi_names() const { return mHiNames; }
     inline std::vector<std::string>& hi_names() { return mHiNames; }
@@ -87,8 +93,11 @@ class SeqdbSeq
     std::string nucleotides(bool aAligned, size_t aLeftPartSize = 0) const;
     inline Shift amino_acids_shift() const { return mAminoAcidsShift; } // throws if sequence was not aligned
     inline Shift nucleotides_shift() const { return mNucleotidesShift; }  // throws if sequence was not aligned
-    // inline int amino_acids_shift_raw() const { return mAminoAcidsShift.raw(); }
-    // inline int nucleotides_shift_raw() const { return mNucleotidesShift.raw(); }
+    inline int& amino_acids_shift_raw() { return mAminoAcidsShift.raw(); }
+    inline int& nucleotides_shift_raw() { return mNucleotidesShift.raw(); }
+
+    std::string& amino_acids() { return mAminoAcids; }
+    std::string& nucleotides() { return mNucleotides; }
 
     //   // Empty passages must not be removed! this is just for testing purposes
     // inline void remove_empty_passages()
@@ -155,6 +164,7 @@ class SeqdbEntry
     inline void virus_type(std::string aVirusType) { mVirusType = aVirusType; }
     void add_date(std::string aDate);
     inline const auto& dates() const { return mDates; }
+    inline auto& dates() { return mDates; }
     inline std::string date() const { return mDates.empty() ? std::string() : mDates.back(); }
     inline std::string lineage() const { return mLineage; }
     inline std::string& lineage() { return mLineage; }
@@ -187,6 +197,7 @@ class SeqdbEntry
         }
 
     inline const auto& seqs() const { return mSeq; }
+    inline auto& seqs() { return mSeq; }
     inline auto begin_seq() { return mSeq.begin(); }
     inline auto end_seq() { return mSeq.end(); }
     inline auto begin_seq() const { return mSeq.begin(); }

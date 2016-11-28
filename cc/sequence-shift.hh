@@ -46,6 +46,7 @@ class Shift
         }
 
     inline ShiftT raw() const { return mShift; }
+    inline ShiftT& raw() { return mShift; }
 
     inline operator std::string() const
         {

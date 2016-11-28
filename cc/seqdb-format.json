@@ -10,7 +10,7 @@
             "c": ["clade"],
             "g": "gene: HA|NA",
             "h": ["hi-name"],
-            "l": {"lab" :["lab_id"]},
+            "l": {"lab": ["lab_id"]},
             "n": "sequence-nucleotides",
             "p": ["passage"],
             "r": ["reassortant"],
