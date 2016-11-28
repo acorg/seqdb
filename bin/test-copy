@@ -5,7 +5,7 @@
 Exports seqdb data into fasta.
 """
 
-import sys, os
+import sys, os, traceback
 if sys.version_info.major != 3: raise RuntimeError("Run script with python3")
 from pathlib import Path
 sys.path[:0] = [str(Path(os.environ["ACMACSD_ROOT"]).resolve().joinpath("py"))]

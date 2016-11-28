@@ -8,7 +8,9 @@ enum class SeqdbJsonKey : char
     Name='N', Dates='d', Continent='C', Country='c', Lineage='l', VirusType='v',
     SequenceSet='s',
     AminoAcids='a', Nucleotides='n', Clades='c', Gene='g', HiNames='h', LabIds='l',
-    Passages='p', Reassortant='r', AminoAcidShift='s', NucleotideShift='t'
+    Passages='p', Reassortant='r', AminoAcidShift='s', NucleotideShift='t',
+
+    Unknown
 };
 
 // ----------------------------------------------------------------------

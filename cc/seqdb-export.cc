@@ -133,11 +133,84 @@ HandlerBase::~HandlerBase()
 
 // ----------------------------------------------------------------------
 
+class DataHandler : public HandlerBase
+{
+ public:
+    inline DataHandler(Seqdb& aSeqdb, std::vector<SeqdbEntry>& aData)
+        : HandlerBase(aSeqdb), mData(aData), mStarted(false), mKey(SeqdbJsonKey::Unknown) {}
+
+    inline virtual HandlerBase* StartArray()
+        {
+            if (mStarted) {
+                throw Failure();
+            }
+            else {
+                mStarted = true;
+            }
+            return nullptr;
+        }
+
+    inline virtual HandlerBase* StartObject()
+        {
+            if (!mStarted)
+                throw Failure();
+            mData.emplace_back();
+            return nullptr;
+        }
+
+    inline virtual HandlerBase* EndObject()
+        {
+            return nullptr;
+        }
+
+    inline virtual HandlerBase* Key(const char* str, rapidjson::SizeType length)
+        {
+            if (!mStarted)
+                throw Failure();
+            if (length != 1)
+                throw Failure();
+            mKey = static_cast<SeqdbJsonKey>(*str);
+            return nullptr;
+        }
+
+    inline virtual HandlerBase* Int(int i)
+        {
+            switch (mKey) {
+              case SeqdbJsonKey::AminoAcidShift:
+                  break;
+              case SeqdbJsonKey::NucleotideShift:
+                  break;
+              default:
+                  throw Failure();
+            }
+            return nullptr;
+        }
+
+    inline virtual HandlerBase* String(const char* str, rapidjson::SizeType length)
+        {
+            switch (mKey) {
+              case SeqdbJsonKey::Name:
+                  mData.back().name().assign(str, length);
+                  break;
+              default:
+                  throw Failure();
+            }
+            return nullptr;
+        }
+
+ private:
+    std::vector<SeqdbEntry>& mData;
+    bool mStarted;
+    SeqdbJsonKey mKey;
+
+}; // class DataHandler
+
+// ----------------------------------------------------------------------
+
 class SeqdbRootHandler : public HandlerBase
 {
  private:
     enum class Keys { Unknown, Version, Data };
-    static const std::vector<std::pair<std::string, Keys>> sKeys;
 
  public:
     inline SeqdbRootHandler(Seqdb& aSeqdb) : HandlerBase(aSeqdb), mKey(Keys::Unknown) {}
@@ -147,22 +220,12 @@ class SeqdbRootHandler : public HandlerBase
             HandlerBase* result = nullptr;
             Keys new_key = Keys::Unknown;
             const std::string found_key(str, length);
-            for (const auto& key: sKeys) {
-                if (key.first == found_key) {
-                    new_key = key.second;
-                    break;
-                }
-            }
-            mKey = Keys::Unknown;
-            switch (new_key) {
-              case Keys::Version:
-              case Keys::Data:
-                  mKey = new_key;
-                  break;
-              case Keys::Unknown:
-                  result = HandlerBase::Key(str, length);
-                  break;
-            }
+            if (found_key == "  version")
+                mKey = Keys::Version;
+            else if (found_key == "data")
+                result = new DataHandler(mSeqdb, mSeqdb.entries());
+            else
+                result = HandlerBase::Key(str, length);
             return result;
         }
 
@@ -188,17 +251,6 @@ class SeqdbRootHandler : public HandlerBase
     Keys mKey;
 
 };
-
-#pragma GCC diagnostic push
-#ifdef __clang__
-#pragma GCC diagnostic ignored "-Wexit-time-destructors"
-#pragma GCC diagnostic ignored "-Wglobal-constructors"
-#endif
-const std::vector<std::pair<std::string, SeqdbRootHandler::Keys>> SeqdbRootHandler::sKeys {
-    {"  version", Keys::Version},
-    {" data", Keys::Data},
-};
-#pragma GCC diagnostic pop
 
 // ----------------------------------------------------------------------
 

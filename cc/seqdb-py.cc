@@ -112,7 +112,7 @@ PYBIND11_PLUGIN(seqdb_backend)
             ;
 
     py::class_<SeqdbEntry>(m, "SeqdbEntry")
-            .def_property_readonly("name", &SeqdbEntry::name)
+            .def_property_readonly("name", static_cast<std::string (SeqdbEntry::*)() const>(&SeqdbEntry::name))
             .def_property("continent", static_cast<std::string (SeqdbEntry::*)() const>(&SeqdbEntry::continent), static_cast<void (SeqdbEntry::*)(std::string)>(&SeqdbEntry::continent))
             .def_property("country", static_cast<std::string (SeqdbEntry::*)() const>(&SeqdbEntry::country), static_cast<void (SeqdbEntry::*)(std::string)>(&SeqdbEntry::country))
             .def_property("virus_type", static_cast<std::string (SeqdbEntry::*)() const>(&SeqdbEntry::virus_type), static_cast<void (SeqdbEntry::*)(std::string)>(&SeqdbEntry::virus_type))
@@ -121,7 +121,7 @@ PYBIND11_PLUGIN(seqdb_backend)
             .def("add_or_update_sequence", &SeqdbEntry::add_or_update_sequence, py::arg("sequence"), py::arg("passage"), py::arg("reassortant"), py::arg("lab"), py::arg("lab_id"), py::arg("gene"))
             .def("cdcids", &SeqdbEntry::cdcids)
             .def("date", &SeqdbEntry::date)
-            .def_property_readonly("lineage", &SeqdbEntry::lineage)
+            .def_property_readonly("lineage", static_cast<std::string (SeqdbEntry::*)() const>(&SeqdbEntry::lineage))
             .def("update_lineage", [](SeqdbEntry& entry, std::string lineage) -> std::string { Messages msg; entry.update_lineage(lineage, msg); return msg; }, py::arg("lineage"))
             .def("__iter__", [](py::object entry) { return PySeqdbSeqIterator(entry.cast<SeqdbEntry&>()); })
             ;

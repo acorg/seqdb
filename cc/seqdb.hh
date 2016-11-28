@@ -141,18 +141,23 @@ class SeqdbEntry
     inline SeqdbEntry(std::string aName) : mName(aName) {}
 
     inline std::string name() const { return mName; }
+    inline std::string& name() { return mName; }
     inline std::string country() const { return mCountry; }
+    inline std::string& country() { return mCountry; }
     inline void country(std::string aCountry) { mCountry = aCountry; }
     inline std::string continent() const { return mContinent; }
+    inline std::string& continent() { return mContinent; }
     inline void continent(std::string aContinent) { mContinent = aContinent; }
     inline bool empty() const { return mSeq.empty(); }
 
     inline std::string virus_type() const { return mVirusType; }
+    inline std::string& virus_type() { return mVirusType; }
     inline void virus_type(std::string aVirusType) { mVirusType = aVirusType; }
     void add_date(std::string aDate);
     inline const auto& dates() const { return mDates; }
     inline std::string date() const { return mDates.empty() ? std::string() : mDates.back(); }
     inline std::string lineage() const { return mLineage; }
+    inline std::string& lineage() { return mLineage; }
     void update_lineage(std::string aLineage, Messages& aMessages);
     void update_subtype(std::string aSubtype, Messages& aMessages);
       // returns warning message or an empty string
@@ -375,7 +380,6 @@ class Seqdb
  public:
     inline Seqdb() {}
 
-    // void from_json(std::string data);
     void load(std::string filename);
     void save(std::string filename, size_t indent = 0) const;
 
@@ -413,6 +417,7 @@ class Seqdb
     inline ConstSeqdbIterator begin() const { return ConstSeqdbIterator(*this, 0, 0); }
     inline ConstSeqdbIterator end() const { return ConstSeqdbIterator(*this); }
     inline const auto& entries() const { return mEntries; }
+    inline auto& entries() { return mEntries; }
     inline auto begin_entry() { return mEntries.begin(); }
     inline auto end_entry() { return mEntries.end(); }
 

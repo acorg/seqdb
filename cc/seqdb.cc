@@ -483,22 +483,6 @@ SeqdbEntrySeq Seqdb::find_by_seq_id(std::string aSeqId) const
 } // Seqdb::find_by_seq_id
 
 // ----------------------------------------------------------------------
-// json
-// ----------------------------------------------------------------------
-
-// void Seqdb::from_json(std::string data)
-// {
-//     // try {
-//     //     json::parse(data, *this);
-//     // }
-//     // catch (json::parsing_error& err) {
-//     //     std::cerr << "tree parsing error: "<< err.what() << std::endl;
-//     //     throw;
-//     // }
-
-// } // Seqdb::from_json
-
-// ----------------------------------------------------------------------
 
 void Seqdb::load(std::string filename)
 {
