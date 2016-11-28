@@ -199,14 +199,14 @@ def _check_sequence(sequence, name, filename, line_no):
 
 # ----------------------------------------------------------------------
 
-# sReReassortant = re.compile(r"^(.+)((?:X|BX|NYMC|VI|NIB(?:SC)?|RESVIR|IVR)-?\d+[A-C]?)$")
+sReReassortant = re.compile(r"^(.+)((?:X|BX|NYMC|VI|NIB(?:SC)?|RESVIR|IVR)-?\d+[A-C]?)$")
 
-# def detect_reassortant(entry):
-#     if entry.get("name") and not entry.get("reassortant"):
-#         m = sReReassortant.match(entry["name"])
-#         if m and m.group(2):
-#             entry["reassortant"] = m.group(2)
-#             entry["name"] = m.group(1)
+def detect_reassortant(entry):
+    if entry.get("name") and not entry.get("reassortant"):
+        m = sReReassortant.match(entry["name"])
+        if m and m.group(2):
+            entry["reassortant"] = m.group(2)
+            entry["name"] = m.group(1)
 
 # ----------------------------------------------------------------------
 
@@ -215,7 +215,7 @@ def read_fasta(fasta_file):
 
     def make_entry(raw_name, sequence):
         entry = {"sequence": sequence, "name": raw_name.upper()}
-        # detect_reassortant(entry)
+        detect_reassortant(entry)
         return entry
 
     r = [make_entry(raw_name, sequence) for raw_name, sequence in read_from_string(read_text(fasta_file), fasta_file)]
@@ -237,7 +237,7 @@ def read_fasta_with_name_parsing(fasta_file, lab, virus_type, **_):
         for f in ["name", "passage", "lab_id", "virus_type", "lineage"]:
             if entry.get(f):
                 entry[f] = entry[f].upper()
-        # detect_reassortant(entry)
+        detect_reassortant(entry)
         return entry
 
     r = [make_entry(raw_name, sequence) for raw_name, sequence in read_from_string(read_text(fasta_file), fasta_file)]

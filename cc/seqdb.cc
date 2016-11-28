@@ -5,6 +5,7 @@
 #include "seqdb-export.hh"
 #include "acmacs-base/read-file.hh"
 #include "acmacs-base/stream.hh"
+#include "hidb/hidb.hh"
 
 // ----------------------------------------------------------------------
 
