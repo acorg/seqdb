@@ -26,8 +26,8 @@ def main(args):
         module_logger.info('{} entries to update seqdb with'.format(len(data)))
         # pprint.pprint(data)
         db_updater.add(data)
-    # if args.add_clades:
-    #     db_updater.add_clades()               # clades must be updated after matching with hidb, because matching provides info about B lineage
+    if args.add_clades:
+        db_updater.add_clades()               # clades must be updated after matching with hidb, because matching provides info about B lineage
     # print(db.report())
     # if args.report_identical:
     #     print(db.report_identical())

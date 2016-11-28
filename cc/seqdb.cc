@@ -1,8 +1,7 @@
 #include <typeinfo>
 
 #include "seqdb.hh"
-// #include "clades.hh"
-// #include "string.hh"
+#include "clades.hh"
 #include "seqdb-export.hh"
 #include "acmacs-base/read-file.hh"
 
@@ -152,14 +151,17 @@ AlignAminoAcidsData SeqdbSeq::align(bool aForce, Messages& aMessages)
 void SeqdbSeq::update_clades(std::string aVirusType, std::string aLineage)
 {
     if (aligned()) {
-        // if (aVirusType == "B" && aLineage == "YAMAGATA") {
-        //     mClades = clades_b_yamagata(mAminoAcids, mAminoAcidsShift);
-        // }
-        // else if (aVirusType == "A(H1N1)") {
-        //     mClades = clades_h1pdm(mAminoAcids, mAminoAcidsShift);
-        // }
-        // else if (aVirusType == "A(H3N2)") {
-        //     mClades = clades_h3n2(mAminoAcids, mAminoAcidsShift);
+        if (aVirusType == "B" && aLineage == "YAMAGATA") {
+            mClades = clades_b_yamagata(mAminoAcids, mAminoAcidsShift);
+        }
+        else if (aVirusType == "A(H1N1)") {
+            mClades = clades_h1pdm(mAminoAcids, mAminoAcidsShift);
+        }
+        else if (aVirusType == "A(H3N2)") {
+            mClades = clades_h3n2(mAminoAcids, mAminoAcidsShift);
+        }
+        // else {
+        //     std::cerr << "Cannot update clades for virus type " << aVirusType << std::endl;
         // }
     }
 
