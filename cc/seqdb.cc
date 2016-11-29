@@ -482,10 +482,23 @@ void Seqdb::match_hidb(std::string aHiDbDir)
           // std::cout << "  " << names << std::endl;
         for (const auto& name: names) {
             std::cout << "  " << name << std::endl;
-            const auto found = hidb.find_antigens_with_score(name);
-            for (const auto& f: found) {
-                std::cout << "    " << f.second << " " << f.first->data().full_name() << std::endl;
+            const auto found = hidb.find_antigens(name);
+            if (!found.empty()) {
+                for (const auto& f: found) {
+                    std::cout << "    " << f->data().full_name() << std::endl;
+                }
             }
+            else {
+                const auto found_fuzzy = hidb.find_antigens_fuzzy(name);
+                for (const auto& f: found_fuzzy) {
+                    std::cout << " ~~ " << f->data().full_name() << std::endl;
+                }
+            }
+
+            // const auto found = hidb.find_antigens_with_score(name);
+            // for (const auto& f: found) {
+            //     std::cout << "    " << f.second << " " << f.first->data().full_name() << std::endl;
+            // }
         }
 
         // for (auto& seq: entry.mSeq) {
