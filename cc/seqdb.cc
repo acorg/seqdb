@@ -5,6 +5,7 @@
 #include "seqdb-export.hh"
 #include "acmacs-base/read-file.hh"
 #include "acmacs-base/stream.hh"
+#include "acmacs-base/timeit.hh"
 #include "hidb/hidb.hh"
 
 // ----------------------------------------------------------------------
@@ -481,6 +482,7 @@ void Seqdb::match_hidb(std::string aHiDbDir)
         const std::vector<std::string> names = entry.make_all_names();
           // std::cout << "  " << names << std::endl;
         for (const auto& name: names) {
+            Timeit timeit{">> " + name + " time: ", std::cerr};
             std::cout << "  " << name << std::endl;
             const auto found = hidb.find_antigens(name);
             if (!found.empty()) {
