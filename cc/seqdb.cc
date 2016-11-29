@@ -490,23 +490,31 @@ void Seqdb::match_hidb(std::string aHiDbDir)
             }
             else {
                 const auto found_fuzzy = hidb.find_antigens_fuzzy(name);
-                for (const auto& f: found_fuzzy) {
-                    std::cout << " ~~ " << f->data().full_name() << std::endl;
+                if (!found_fuzzy.empty()) {
+                    for (const auto& f: found_fuzzy) {
+                        std::cout << "  ~  " << f->data().full_name() << std::endl;
+                    }
+                }
+                else {
+                    const auto found_extra_fuzzy = hidb.find_antigens_extra_fuzzy(name);
+                    for (const auto& f: found_extra_fuzzy) {
+                        std::cout << "  ~~ " << f->data().full_name() << std::endl;
+                    }
                 }
             }
 
-            // const auto found = hidb.find_antigens_with_score(name);
-            // for (const auto& f: found) {
-            //     std::cout << "    " << f.second << " " << f.first->data().full_name() << std::endl;
-            // }
+              // const auto found = hidb.find_antigens_with_score(name);
+              // for (const auto& f: found) {
+              //     std::cout << "    " << f.second << " " << f.first->data().full_name() << std::endl;
+              // }
         }
 
-        // for (auto& seq: entry.mSeq) {
-        //     if (!seq.reassortant().empty())
-        //     // if (seq.reassortant().size() > 1)
-        //     //     std::cerr << "Warning: multiple reassortant data for a sequence, HiDb matching uses just the first one: " << seq.reassortant() << std::endl;
-        //     // std::cout << "  " << seq.reassortant() << " " << seq.passages() << " " << seq.lab_ids() << std::endl;
-        // }
+          // for (auto& seq: entry.mSeq) {
+          //     if (!seq.reassortant().empty())
+          //     // if (seq.reassortant().size() > 1)
+          //     //     std::cerr << "Warning: multiple reassortant data for a sequence, HiDb matching uses just the first one: " << seq.reassortant() << std::endl;
+          //     // std::cout << "  " << seq.reassortant() << " " << seq.passages() << " " << seq.lab_ids() << std::endl;
+          // }
     }
 
 } // Seqdb::match_hidb
