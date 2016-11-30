@@ -75,6 +75,22 @@ def date(date):
             raise ValueError("Invalid date: {!r}, YYYY[MM[DD]] expected")
     return date
 
+# ----------------------------------------------------------------------
+
+sRePassages = [
+    [re.compile(r"^\s*(CS|ORIGINAL)(?:\([^\)]*\))?\s*$"), r"OR"],
+    [re.compile(r"(?<![A-Z_])C(X|\d+)"), r"MDCK\1"],
+    [re.compile(r"(?<![A-Z_])S(X|\d+)"), r"SIAT\1"],
+    [re.compile(r"(?<![A-Z_])M(X|\d+)"), r"MK\1"],
+    [re.compile(r"(?<![A-Z_])(E|SIAT|MK|MDCK)X"), r"\1?"],
+    [re.compile(r"\s*,\s*"), r"/"],
+    ]
+
+def passage(passage):
+    for re_sub in sRePassages:
+        passage = re_sub[0].sub(re_sub[1], passage)
+    return passage
+
 # ======================================================================
 ### Local Variables:
 ### eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))

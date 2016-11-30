@@ -34,7 +34,6 @@ class SeqdbUpdater:
 
     def add(self, data):
         """data is list of dicts {"date":, "lab":, "name":, "passage":, "sequence":, "virus_type":, "gene":}"""
-        # self._normalize(data)
         num_added = 0
         for entry in data:
             self._add_sequence(entry)
@@ -64,6 +63,7 @@ class SeqdbUpdater:
     sReName = re.compile(r"^(A\(H\d+N\d+\)|B)/")
 
     def _add_sequence(self, data):
+        self._normalize(data)
         name = data.get("name")
         if name:
             if name[1] in ["/", "("] and data.get("virus_type") and name[0] != data["virus_type"][0]:
@@ -95,6 +95,13 @@ class SeqdbUpdater:
             module_logger.warning("{}: {}".format(data["name"], message.replace("\n", " ")))
         # if self.hidb:
         #     self._match_hidb(entry, data)
+
+    # ----------------------------------------------------------------------
+
+    def _normalize(self, data):
+        from .normalize import passage
+        if data.get("passage"):
+            data["passage"] = passage(data["passage"])
 
     # ----------------------------------------------------------------------
 
