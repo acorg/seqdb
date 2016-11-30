@@ -82,6 +82,7 @@ class SeqdbSeq
     inline bool passage_present(std::string aPassage) const { return mPassages.empty() ? aPassage.empty() : std::find(mPassages.begin(), mPassages.end(), aPassage) != mPassages.end(); }
     inline const auto& reassortant() const { return mReassortant; }
     inline auto& reassortant() { return mReassortant; }
+    inline bool reassortant_match(std::string aReassortant) const { return mReassortant.empty() ? aReassortant.empty() : std::find(mReassortant.begin(), mReassortant.end(), aReassortant) != mReassortant.end(); }
     inline std::string gene() const { return mGene; }
     inline std::string& gene() { return mGene; }
 

@@ -536,11 +536,11 @@ void Seqdb::match_hidb(std::string aHiDbDir)
         std::vector<const hidb::AntigenData*> found;
         find_in_hidb(found, entry, hidb_ptrs, aHiDbDir);
 
-
         if (!found.empty()) {
             if (found.size() == 1 && entry.seqs().size() == 1) {
                 const std::string found_reassortant = found[0]->data().reassortant();
                 const std::string seq_reassortant = entry.seqs()[0].reassortant().empty() ? std::string() : entry.seqs()[0].reassortant()[0];
+                  // TODO
                 if (found_reassortant != seq_reassortant) {
                     report_entry(std::cout, entry);
                     report_found(std::cout, found);
@@ -549,12 +549,24 @@ void Seqdb::match_hidb(std::string aHiDbDir)
             else {
                 report_entry(std::cout, entry);
                 report_found(std::cout, found);
+                for (auto& seq: entry.seqs()) {
+                    for (const auto& f: found) {
+                        if (seq.reassortant_match(f->data().reassortant())) {
+                            std::vector<string_match::score_t> scores;
+                            const auto& f_passage = f->data().passage();
+                            std::transform(seq.passages().begin(), seq.passages().end(), std::back_inserter(scores), [&f_passage](const auto& passage) { return string_match::match(passage, f_passage); });
+                            const auto score = *std::max_element(scores.begin(), scores.end());
+                            std::cout << "  @" << seq.passages() << " @ " << f_passage << " " << score << std::endl;
+                        }
+                    }
+                }
             }
             ++matched_entries;
         }
-          // else {
-          //     std::cout << "  ??" << std::endl;
-          // }
+        else {
+              // TODO
+              // std::cout << "  ??" << std::endl;
+        }
     }
 
     std::cout << "Matched " << matched_entries << " of " << mEntries.size() << std::endl;
