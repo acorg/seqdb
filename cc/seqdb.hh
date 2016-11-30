@@ -18,7 +18,7 @@
 
 class Seqdb;
 class SeqdbIterator;
-class HiDb;
+namespace hidb { class HiDb; }
 
 // ----------------------------------------------------------------------
 
@@ -464,8 +464,8 @@ class Seqdb
     friend class ConstSeqdbIterator;
 
     class NoHiDb : public std::exception {};
-    typedef std::map<std::string, std::unique_ptr<HiDb>> HiDbPtrs;
-    const HiDb& get_hidb(std::string aVirusType, HiDbPtrs& aPtrs, std::string aHiDbDir);
+    typedef std::map<std::string, std::unique_ptr<hidb::HiDb>> HiDbPtrs;
+    const hidb::HiDb& get_hidb(std::string aVirusType, HiDbPtrs& aPtrs, std::string aHiDbDir);
 
 }; // class Seqdb
 

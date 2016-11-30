@@ -510,12 +510,12 @@ void Seqdb::match_hidb(std::string aHiDbDir)
     size_t matched_entries = 0;
     for (auto& entry: mEntries) {
         try {
-            const HiDb& hidb = get_hidb(entry.virus_type(), hidb_ptrs, aHiDbDir);
+            const hidb::HiDb& hidb = get_hidb(entry.virus_type(), hidb_ptrs, aHiDbDir);
               // Timeit timeit{"TT " + entry.name() + " time: ", std::cerr};
 
               // report_entry(std::cout, entry);
 
-            std::vector<const AntigenData*> found;
+            std::vector<const hidb::AntigenData*> found;
             const auto cdcids = entry.cdcids();
             if (!cdcids.empty()) {
                 for (const auto& cdcid: cdcids) {
@@ -604,7 +604,7 @@ void Seqdb::match_hidb(std::string aHiDbDir)
 
 // ----------------------------------------------------------------------
 
-const HiDb& Seqdb::get_hidb(std::string aVirusType, HiDbPtrs& aPtrs, std::string aHiDbDir)
+const hidb::HiDb& Seqdb::get_hidb(std::string aVirusType, HiDbPtrs& aPtrs, std::string aHiDbDir)
 {
     auto h = aPtrs.find(aVirusType);
     if (h == aPtrs.end()) {
@@ -619,7 +619,7 @@ const HiDb& Seqdb::get_hidb(std::string aVirusType, HiDbPtrs& aPtrs, std::string
             throw NoHiDb{};
           //throw std::runtime_error("No HiDb for " + aVirusType);
 
-        std::unique_ptr<HiDb> hidb{new HiDb{}};
+        std::unique_ptr<hidb::HiDb> hidb{new hidb::HiDb{}};
           // std::cout << "opening " << filename << std::endl;
         hidb->importFrom(filename);
         h = aPtrs.emplace(aVirusType, std::move(hidb)).first;
