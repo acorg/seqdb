@@ -492,19 +492,28 @@ void Seqdb::match_hidb(std::string aHiDbDir)
 {
     HiDbPtrs hidb_ptrs;
 
+    auto report_entry = [](std::ostream& out, const auto& entry) {
+        out << entry.virus_type() << " " << entry.name() << std::endl;
+        for (auto& seq: entry.seqs()) {
+            out << "  ";
+            if (!seq.reassortant().empty())
+                out << 'R' << seq.reassortant().size() << seq.reassortant() << " ";
+            out << seq.passages().size() << seq.passages() << " #" << seq.cdcids().size() << seq.cdcids() << std::endl;
+        }
+    };
+
+    auto report_found = [](std::ostream& out, const auto& found) {
+        for (const auto& e: found)
+            out << "  >> " << e->data().full_name() << std::endl;
+    };
+
     size_t matched_entries = 0;
     for (auto& entry: mEntries) {
         try {
             const HiDb& hidb = get_hidb(entry.virus_type(), hidb_ptrs, aHiDbDir);
-            Timeit timeit{"TT " + entry.name() + " time: ", std::cerr};
+              // Timeit timeit{"TT " + entry.name() + " time: ", std::cerr};
 
-            std::cout << entry.virus_type() << " " << entry.name() << std::endl;
-            for (auto& seq: entry.seqs()) {
-                std::cout << "  ";
-                if (!seq.reassortant().empty())
-                    std::cout << 'R' << seq.reassortant().size() << seq.reassortant() << " ";
-                std::cout << seq.passages().size() << seq.passages() << " #" << seq.cdcids().size() << seq.cdcids() << std::endl;
-            }
+              // report_entry(std::cout, entry);
 
             std::vector<const AntigenData*> found;
             const auto cdcids = entry.cdcids();
@@ -521,13 +530,23 @@ void Seqdb::match_hidb(std::string aHiDbDir)
             found.erase(std::unique(found.begin(), found.end()), found.end());
 
             if (!found.empty()) {
-                for (const auto& e: found)
-                    std::cout << "  >> " << e->data().full_name() << std::endl;
+                if (found.size() == 1 && entry.seqs().size() == 1) {
+                    const std::string found_reassortant = found[0]->data().reassortant();
+                    const std::string seq_reassortant = entry.seqs()[0].reassortant().empty() ? std::string() : entry.seqs()[0].reassortant()[0];
+                    if (found_reassortant != seq_reassortant) {
+                        report_entry(std::cout, entry);
+                        report_found(std::cout, found);
+                    }
+                }
+                else {
+                    report_entry(std::cout, entry);
+                    report_found(std::cout, found);
+                }
                 ++matched_entries;
             }
-            else {
-                std::cout << "  ??" << std::endl;
-            }
+            // else {
+            //     std::cout << "  ??" << std::endl;
+            // }
         }
         catch (NoHiDb&) {
         }
