@@ -99,9 +99,11 @@ class SeqdbUpdater:
     # ----------------------------------------------------------------------
 
     def _normalize(self, data):
-        from .normalize import passage
+        from .normalize import passage, reassortant
         if data.get("passage"):
             data["passage"] = passage(data["passage"])
+        if data.get("reassortant"):
+            data["reassortant"] = reassortant(data["reassortant"])
 
     # ----------------------------------------------------------------------
 

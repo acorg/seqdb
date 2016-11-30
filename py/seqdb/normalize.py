@@ -91,6 +91,16 @@ def passage(passage):
         passage = re_sub[0].sub(re_sub[1], passage)
     return passage
 
+# ----------------------------------------------------------------------
+
+sReReassortants = [
+    [re.compile(r"^\s*X\s*-?\s*(\d+[A-C])$"), r"NYMC-\1"],
+    ]
+def reassortant(reassortant):
+    for re_sub in sReReassortants:
+        reassortant = re_sub[0].sub(re_sub[1], reassortant)
+    return reassortant
+
 # ======================================================================
 ### Local Variables:
 ### eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
