@@ -8,6 +8,7 @@
 #include <iterator>
 #include <deque>
 #include <map>
+#include <numeric>
 
 #include "sequence-shift.hh"
 #include "amino-acids.hh"
@@ -69,8 +70,8 @@ class SeqdbSeq
     inline bool has_lab(std::string aLab) const { return mLabIds.find(aLab) != mLabIds.end(); }
     inline std::string lab() const { return mLabIds.empty() ? std::string() : mLabIds.begin()->first; }
     inline std::string lab_id() const { return mLabIds.empty() ? std::string() : (mLabIds.begin()->second.empty() ? std::string() : mLabIds.begin()->second[0]); }
-    inline const std::vector<std::string> cdcids() const { auto i = mLabIds.find("CDC"); return i == mLabIds.end() ? std::vector<std::string>() : i->second; }
-    inline const std::vector<std::string> lab_ids_for_lab(std::string lab) const { auto i = mLabIds.find(lab); return i == mLabIds.end() ? std::vector<std::string>() : i->second; }
+    inline const std::vector<std::string> cdcids() const { auto i = mLabIds.find("CDC"); return i == mLabIds.end() ? std::vector<std::string>{} : i->second; }
+    inline const std::vector<std::string> lab_ids_for_lab(std::string lab) const { auto i = mLabIds.find(lab); return i == mLabIds.end() ? std::vector<std::string>{} : i->second; }
     inline const std::vector<std::string> lab_ids() const { std::vector<std::string> r; for (const auto& lid: mLabIds) { for (const auto& id: lid.second) { r.emplace_back(lid.first + "#" + id); } } return r; }
     inline const auto& lab_ids_raw() const { return mLabIds; }
     inline auto& lab_ids_raw() { return mLabIds; }
@@ -196,6 +197,8 @@ class SeqdbEntry
         {
             std::vector<std::string> r;
             std::for_each(mSeq.begin(), mSeq.end(), [&r](auto const & seq) {auto seq_cdcids = seq.cdcids(); r.insert(r.end(), std::make_move_iterator(seq_cdcids.begin()), std::make_move_iterator(seq_cdcids.end())); });
+            std::sort(r.begin(), r.end());
+            r.erase(std::unique(r.begin(), r.end()), r.end());
             return r;
         }
 
@@ -400,6 +403,7 @@ class Seqdb
     void save(std::string filename, size_t indent = 0) const;
 
     inline size_t number_of_entries() const { return mEntries.size(); }
+    inline size_t number_of_seqs() const { return std::accumulate(mEntries.begin(), mEntries.end(), 0U, [](size_t acc, const auto& e) { return acc + e.seqs().size(); }); }
 
     inline SeqdbEntry* find_by_name(std::string aName)
         {

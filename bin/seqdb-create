@@ -26,6 +26,7 @@ def main(args):
         module_logger.info('{} entries to update seqdb with'.format(len(data)))
         # pprint.pprint(data)
         db_updater.add(data)
+    module_logger.info('Sequences: {} Entries: {}'.format(db.number_of_seqs(), db.number_of_entries()))
     if args.match_hidb:
         db_updater.match_hidb(Path(args.hidb_dir).expanduser())
     if args.add_clades:

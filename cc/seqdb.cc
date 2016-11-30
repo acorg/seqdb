@@ -476,47 +476,60 @@ void Seqdb::match_hidb(std::string aHiDbDir)
 {
     HiDbPtrs hidb_ptrs;
 
-    for (auto& entry: mEntries) {
-        const HiDb& hidb = get_hidb(entry.virus_type(), hidb_ptrs, aHiDbDir);
-        std::cout << entry.virus_type() << " " << entry.name() << " " << entry.cdcids() << std::endl;
-        const std::vector<std::string> names = entry.make_all_names();
-          // std::cout << "  " << names << std::endl;
-        for (const auto& name: names) {
-            Timeit timeit{">> " + name + " time: ", std::cerr};
-            std::cout << "  " << name << std::endl;
-            const auto found = hidb.find_antigens(name);
+    std::vector<std::string> passages;
+    for (const auto& entry: mEntries) {
+        for (const auto& seq: entry.seqs()) {
+            std::copy(seq.passages().begin(), seq.passages().end(), std::back_inserter(passages));
+        }
+    }
+    std::sort(passages.begin(), passages.end());
+    passages.erase(std::unique(passages.begin(), passages.end()), passages.end());
+    std::copy(passages.begin(), passages.end(), std::ostream_iterator<std::string>(std::cout, "\n"));
+
+    if (false) {
+        for (auto& entry: mEntries) {
+            const HiDb& hidb = get_hidb(entry.virus_type(), hidb_ptrs, aHiDbDir);
+            const std::vector<std::string> names = entry.make_all_names();
+            const auto cdcids = entry.cdcids();
+            std::cout << entry.virus_type() << " " << names.size() << names << " " << cdcids.size() << cdcids << std::endl;
+
+            Timeit timeit{">> " + entry.name() + " time: ", std::cerr};
+            std::vector<std::vector<const AntigenData*>> found;
+            std::string found_by;
+            if (!cdcids.empty()) {
+                found_by = "#";
+                std::transform(cdcids.begin(), cdcids.end(), std::back_inserter(found), std::bind(&HiDb::find_antigens_by_cdcid, &hidb, std::placeholders::_1));
+                found.erase(std::remove_if(found.begin(), found.end(), std::mem_fn(&std::vector<const AntigenData*>::empty)), found.end());
+            }
+            if (found.empty()) {
+                found_by = "=";
+                std::transform(names.begin(), names.end(), std::back_inserter(found), std::bind(&HiDb::find_antigens, &hidb, std::placeholders::_1));
+                found.erase(std::remove_if(found.begin(), found.end(), std::mem_fn(&std::vector<const AntigenData*>::empty)), found.end());
+            }
+            if (found.empty()) {
+                found_by = "~";
+                std::transform(names.begin(), names.end(), std::back_inserter(found), std::bind(&HiDb::find_antigens_fuzzy, &hidb, std::placeholders::_1));
+                found.erase(std::remove_if(found.begin(), found.end(), std::mem_fn(&std::vector<const AntigenData*>::empty)), found.end());
+            }
             if (!found.empty()) {
                 for (const auto& f: found) {
-                    std::cout << "    " << f->data().full_name() << std::endl;
+                    std::cout << "  " << found_by << f.size() << " [";
+                    std::transform(f.begin(), f.end(), std::ostream_iterator<std::string>(std::cout, " "), [](const auto& e) { return e->data().full_name(); });
+                    std::cout << "]" << std::endl;
                 }
             }
             else {
-                const auto found_fuzzy = hidb.find_antigens_fuzzy(name);
-                if (!found_fuzzy.empty()) {
-                    for (const auto& f: found_fuzzy) {
-                        std::cout << "  ~  " << f->data().full_name() << std::endl;
-                    }
-                }
-                else {
-                    const auto found_extra_fuzzy = hidb.find_antigens_extra_fuzzy(name);
-                    for (const auto& f: found_extra_fuzzy) {
-                        std::cout << "  ~~ " << f->data().full_name() << std::endl;
-                    }
-                }
+                std::cout << "  ?" << std::endl;
             }
 
-              // const auto found = hidb.find_antigens_with_score(name);
-              // for (const auto& f: found) {
-              //     std::cout << "    " << f.second << " " << f.first->data().full_name() << std::endl;
+
+              // for (auto& seq: entry.mSeq) {
+              //     if (!seq.reassortant().empty())
+              //     // if (seq.reassortant().size() > 1)
+              //     //     std::cerr << "Warning: multiple reassortant data for a sequence, HiDb matching uses just the first one: " << seq.reassortant() << std::endl;
+              //     // std::cout << "  " << seq.reassortant() << " " << seq.passages() << " " << seq.lab_ids() << std::endl;
               // }
         }
-
-          // for (auto& seq: entry.mSeq) {
-          //     if (!seq.reassortant().empty())
-          //     // if (seq.reassortant().size() > 1)
-          //     //     std::cerr << "Warning: multiple reassortant data for a sequence, HiDb matching uses just the first one: " << seq.reassortant() << std::endl;
-          //     // std::cout << "  " << seq.reassortant() << " " << seq.passages() << " " << seq.lab_ids() << std::endl;
-          // }
     }
 
 } // Seqdb::match_hidb
