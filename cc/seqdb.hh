@@ -10,6 +10,7 @@
 #include <map>
 #include <numeric>
 
+#include "hidb/hidb.hh"
 #include "sequence-shift.hh"
 #include "amino-acids.hh"
 #include "messages.hh"
@@ -18,7 +19,6 @@
 
 class Seqdb;
 class SeqdbIterator;
-namespace hidb { class HiDb; }
 
 // ----------------------------------------------------------------------
 
@@ -465,7 +465,8 @@ class Seqdb
 
     class NoHiDb : public std::exception {};
     typedef std::map<std::string, std::unique_ptr<hidb::HiDb>> HiDbPtrs;
-    const hidb::HiDb& get_hidb(std::string aVirusType, HiDbPtrs& aPtrs, std::string aHiDbDir);
+    const hidb::HiDb& get_hidb(std::string aVirusType, HiDbPtrs& aPtrs, std::string aHiDbDir) const;
+    void find_in_hidb(std::vector<const hidb::AntigenData*>& found, const SeqdbEntry& entry, HiDbPtrs& hidb_ptrs, std::string aHiDbDir) const;
 
 }; // class Seqdb
 

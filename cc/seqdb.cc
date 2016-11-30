@@ -6,7 +6,7 @@
 #include "acmacs-base/read-file.hh"
 #include "acmacs-base/stream.hh"
 #include "acmacs-base/timeit.hh"
-#include "hidb/hidb.hh"
+#include "acmacs-base/string-matcher.hh"
 
 // ----------------------------------------------------------------------
 
@@ -488,6 +488,30 @@ std::vector<std::string> Seqdb::all_passages() const
 
 // ----------------------------------------------------------------------
 
+void Seqdb::find_in_hidb(std::vector<const hidb::AntigenData*>& found, const SeqdbEntry& entry, HiDbPtrs& hidb_ptrs, std::string aHiDbDir) const
+{
+    try {
+        const hidb::HiDb& hidb = get_hidb(entry.virus_type(), hidb_ptrs, aHiDbDir);
+        const auto cdcids = entry.cdcids();
+        if (!cdcids.empty()) {
+            for (const auto& cdcid: cdcids) {
+                const auto f_cdcid = hidb.find_antigens_by_cdcid(cdcid);
+                std::copy(f_cdcid.begin(), f_cdcid.end(), std::back_inserter(found));
+            }
+        }
+        const auto f_name = hidb.find_antigens_by_name(entry.name());
+        std::copy(f_name.begin(), f_name.end(), std::back_inserter(found));
+
+        std::sort(found.begin(), found.end());
+        found.erase(std::unique(found.begin(), found.end()), found.end());
+    }
+    catch (NoHiDb&) {
+    }
+
+} // Seqdb::find_in_hidb
+
+// ----------------------------------------------------------------------
+
 void Seqdb::match_hidb(std::string aHiDbDir)
 {
     HiDbPtrs hidb_ptrs;
@@ -509,47 +533,28 @@ void Seqdb::match_hidb(std::string aHiDbDir)
 
     size_t matched_entries = 0;
     for (auto& entry: mEntries) {
-        try {
-            const hidb::HiDb& hidb = get_hidb(entry.virus_type(), hidb_ptrs, aHiDbDir);
-              // Timeit timeit{"TT " + entry.name() + " time: ", std::cerr};
+        std::vector<const hidb::AntigenData*> found;
+        find_in_hidb(found, entry, hidb_ptrs, aHiDbDir);
 
-              // report_entry(std::cout, entry);
 
-            std::vector<const hidb::AntigenData*> found;
-            const auto cdcids = entry.cdcids();
-            if (!cdcids.empty()) {
-                for (const auto& cdcid: cdcids) {
-                    const auto f_cdcid = hidb.find_antigens_by_cdcid(cdcid);
-                    std::copy(f_cdcid.begin(), f_cdcid.end(), std::back_inserter(found));
-                }
-            }
-            const auto f_name = hidb.find_antigens_by_name(entry.name());
-            std::copy(f_name.begin(), f_name.end(), std::back_inserter(found));
-
-            std::sort(found.begin(), found.end());
-            found.erase(std::unique(found.begin(), found.end()), found.end());
-
-            if (!found.empty()) {
-                if (found.size() == 1 && entry.seqs().size() == 1) {
-                    const std::string found_reassortant = found[0]->data().reassortant();
-                    const std::string seq_reassortant = entry.seqs()[0].reassortant().empty() ? std::string() : entry.seqs()[0].reassortant()[0];
-                    if (found_reassortant != seq_reassortant) {
-                        report_entry(std::cout, entry);
-                        report_found(std::cout, found);
-                    }
-                }
-                else {
+        if (!found.empty()) {
+            if (found.size() == 1 && entry.seqs().size() == 1) {
+                const std::string found_reassortant = found[0]->data().reassortant();
+                const std::string seq_reassortant = entry.seqs()[0].reassortant().empty() ? std::string() : entry.seqs()[0].reassortant()[0];
+                if (found_reassortant != seq_reassortant) {
                     report_entry(std::cout, entry);
                     report_found(std::cout, found);
                 }
-                ++matched_entries;
             }
-            // else {
-            //     std::cout << "  ??" << std::endl;
-            // }
+            else {
+                report_entry(std::cout, entry);
+                report_found(std::cout, found);
+            }
+            ++matched_entries;
         }
-        catch (NoHiDb&) {
-        }
+          // else {
+          //     std::cout << "  ??" << std::endl;
+          // }
     }
 
     std::cout << "Matched " << matched_entries << " of " << mEntries.size() << std::endl;
@@ -604,7 +609,7 @@ void Seqdb::match_hidb(std::string aHiDbDir)
 
 // ----------------------------------------------------------------------
 
-const hidb::HiDb& Seqdb::get_hidb(std::string aVirusType, HiDbPtrs& aPtrs, std::string aHiDbDir)
+const hidb::HiDb& Seqdb::get_hidb(std::string aVirusType, HiDbPtrs& aPtrs, std::string aHiDbDir) const
 {
     auto h = aPtrs.find(aVirusType);
     if (h == aPtrs.end()) {
