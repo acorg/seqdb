@@ -517,6 +517,9 @@ void Seqdb::match_hidb(std::string aHiDbDir)
             const auto f_name = hidb.find_antigens_by_name(entry.name());
             std::copy(f_name.begin(), f_name.end(), std::back_inserter(found));
 
+            std::sort(found.begin(), found.end());
+            found.erase(std::unique(found.begin(), found.end()), found.end());
+
             if (!found.empty()) {
                 for (const auto& e: found)
                     std::cout << "  >> " << e->data().full_name() << std::endl;
