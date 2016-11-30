@@ -472,10 +472,8 @@ void Seqdb::remove_hi_names()
 
 // ----------------------------------------------------------------------
 
-void Seqdb::match_hidb(std::string aHiDbDir)
+std::vector<std::string> Seqdb::all_passages() const
 {
-    HiDbPtrs hidb_ptrs;
-
     std::vector<std::string> passages;
     for (const auto& entry: mEntries) {
         for (const auto& seq: entry.seqs()) {
@@ -484,7 +482,15 @@ void Seqdb::match_hidb(std::string aHiDbDir)
     }
     std::sort(passages.begin(), passages.end());
     passages.erase(std::unique(passages.begin(), passages.end()), passages.end());
-    std::copy(passages.begin(), passages.end(), std::ostream_iterator<std::string>(std::cout, "\n"));
+    return passages;
+
+} // Seqdb::all_passages
+
+// ----------------------------------------------------------------------
+
+void Seqdb::match_hidb(std::string aHiDbDir)
+{
+    HiDbPtrs hidb_ptrs;
 
     if (false) {
         for (auto& entry: mEntries) {

@@ -27,6 +27,9 @@ def main(args):
         # pprint.pprint(data)
         db_updater.add(data)
     module_logger.info('Sequences: {} Entries: {}'.format(db.number_of_seqs(), db.number_of_entries()))
+    if args.report_all_passages:
+        passages = db.all_passages()
+        module_logger.info('Passages: {}\n  {}'.format(len(passages), "\n  ".join(passages)))
     if args.match_hidb:
         db_updater.match_hidb(Path(args.hidb_dir).expanduser())
     if args.add_clades:
@@ -55,6 +58,7 @@ with timeit(sys.argv[0]):
         parser.add_argument('--clades', action='store_true', dest='add_clades', default=False, help='Add clade information to seqdb.')
         parser.add_argument('--report-identical', action='store_true', dest='report_identical', default=False, help='Report identical sequences.')
         parser.add_argument('--report-not-aligned-prefixes', type=int, action='store', dest='report_not_aligned_prefixes', default=None, help='Report prefixes of not aligned aa sequences up to the specified length (signal peptide is often 16).')
+        parser.add_argument('--report-all-passages', action='store_true', dest='report_all_passages', default=False, help='Report all passages in seqdb.')
         parser.add_argument('-d', '--debug', action='store_const', dest='loglevel', const=logging.DEBUG, default=logging.INFO, help='Enable debugging output.')
         args = parser.parse_args()
         logging.basicConfig(level=args.loglevel, format="%(levelname)s %(asctime)s: %(message)s")

@@ -429,6 +429,7 @@ class Seqdb
     std::string report_identical() const;
     std::string report_not_aligned(size_t prefix_size) const;
     std::vector<std::string> all_hi_names() const;
+    std::vector<std::string> all_passages() const;
     void remove_hi_names();
     void match_hidb(std::string aHiDbDir);
 
