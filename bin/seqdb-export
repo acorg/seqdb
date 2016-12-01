@@ -71,7 +71,7 @@ with timeit(sys.argv[0]):
 
         parser.add_argument('--sort', action='store', dest='sort_by', default="date", help='Sort list before exporting by "date", "name".')
         parser.add_argument('-f', '--format', action='store', dest='output_format', default='fasta', help='Output format: fasta, phylip')
-        parser.add_argument('--name-format', action='store', dest='name_format', default='{name} {passage}', help='Name format, possible fields: {name} {date} {lab_id} {passage} {lab} {gene} {seq_id}. seq_id is used for later matching with seqdb data, e.g. when phylogenetic tree is made.')
+        parser.add_argument('--name-format', action='store', dest='name_format', default='{hi_name_or_seq_name_with_passage}', help='Name format, possible fields: {hi_name_or_seq_name_with_passage} {name} {date} {lab_id} {passage} {lab} {gene} {seq_id}. seq_id is used for later matching with seqdb data, e.g. when phylogenetic tree is made.')
         parser.add_argument('--name-encode', action='store_true', dest='name_encode', default=False, help='Encode spaces and parentheses in names')
         parser.add_argument('--amino-acids', action='store_true', dest='amino_acids', default=False, help='Export amino-acids instead of nucleotites')
         parser.add_argument('--no-wrap', action='store_false', dest='sequence_wrap', default=True, help='Do not wrap sequence and generate long lines')
