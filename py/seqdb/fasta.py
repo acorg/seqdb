@@ -319,7 +319,7 @@ class NameParser:
                     module_logger.warning('Not a cdcid: {}'.format(lab_id))
                 lab_id = None
         return {
-            'name': groups.get('name'),
+            'name': self._fix_gisaid_name(groups.get('name')),
             'date': year and '-'.join((year, groups.get('month1') or groups.get('month2') or '01', groups.get('day1') or '01')),
             'passage': groups.get('passage'),
             'lab_id': lab_id,
@@ -351,6 +351,12 @@ class NameParser:
             else:
                 raise ValueError("Unrecognized gisaid flu virus_type: " + virus_type)
         return virus_type
+
+    def _fix_gisaid_name(self, name):
+        return (name
+                .upper()
+                .replace("ITALY-FVG/", "ITALY/FVG-")   # NIMR uses A/ITALY/FVG-1/2015 in HI
+                )
 
     def gisaid_without_date(self, raw_name, m, **kw):
         return self.gisaid(raw_name=raw_name, m=m, with_date=False, **kw)
