@@ -638,6 +638,7 @@ const hidb::HiDb& Seqdb::get_hidb(std::string aVirusType, HiDbPtrs& aPtrs, std::
         std::unique_ptr<hidb::HiDb> hidb{new hidb::HiDb{}};
           // std::cout << "opening " << filename << std::endl;
         hidb->importFrom(filename);
+        hidb->importLocDb(aHiDbDir + "/locationdb.json.xz");
         h = aPtrs.emplace(aVirusType, std::move(hidb)).first;
     }
     return *h->second;
