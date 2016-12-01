@@ -1,4 +1,6 @@
 #include <typeinfo>
+#include <tuple>
+#include <set>
 
 #include "seqdb.hh"
 #include "clades.hh"
@@ -534,22 +536,30 @@ void Seqdb::match_hidb(std::string aHiDbDir)
         }
     };
 
+    auto report_matching = [](std::ostream& out, const auto& matching) {
+        for (const auto& m: matching) {
+            out << "    ";
+            for (const auto& sf: m) {
+                out << " [" << std::get<0>(sf).first << " " << std::get<0>(sf).second << " S:" << std::get<1>(sf) << " F:" << std::get<2>(sf) << ']';
+            }
+            out << std::endl;
+        }
+    };
+
     size_t matched_entries = 0;
     for (auto& entry: mEntries) {
         std::vector<const hidb::AntigenData*> found;
         find_in_hidb(found, entry, hidb_ptrs, aHiDbDir);
 
+        report_entry(std::cout, entry);
         if (!found.empty()) {
             typedef std::pair<string_match::score_t, size_t> score_size_t;
-            typedef std::pair<score_size_t, size_t> score_found_no_t;
+            typedef std::tuple<score_size_t, size_t, size_t> score_seq_found_t; // [score, len], seq_no, found_no
 
-              //if (entry.seqs().size() > 1 || found.size() > 1) {
-            report_entry(std::cout, entry);
-            report_found(std::cout, found);
-
-            std::vector<std::vector<score_found_no_t>> matching;
+            std::vector<std::vector<score_seq_found_t>> matching; // for each seq list of matching [[score, min passage len], found_no] - sorted by score desc
+            size_t seq_no = 0;
             for (auto& seq: entry.seqs()) {
-                std::vector<score_found_no_t> matching_for_seq;
+                std::vector<score_seq_found_t> matching_for_seq;
                 size_t found_no = 0;
                 for (const auto& f: found) {
                     if (seq.reassortant_match(f->data().reassortant())) {
@@ -557,102 +567,50 @@ void Seqdb::match_hidb(std::string aHiDbDir)
                         const auto& f_passage = f->data().passage();
                         std::transform(seq.passages().begin(), seq.passages().end(), std::back_inserter(scores),
                                        [&f_passage](const auto& passage) { return std::make_pair(string_match::match(passage, f_passage), std::min(passage.size(), f_passage.size())); });
-                        matching_for_seq.emplace_back(*std::max_element(scores.begin(), scores.end(), [](const auto& a, const auto& b) { return a.first < b.first; }), found_no);
+                        matching_for_seq.emplace_back(*std::max_element(scores.begin(), scores.end(), [](const auto& a, const auto& b) { return a.first < b.first; }), seq_no, found_no);
                           // std::cout << "  @" << seq.passages() << " @ " << f_passage << " " << score_size->first << " " << score_size->second << std::endl;
                     }
                     ++found_no;
                 }
-                std::sort(matching_for_seq.begin(), matching_for_seq.end(), [](const auto& a, const auto& b) { return a.first.first > b.first.first; });
+                std::sort(matching_for_seq.begin(), matching_for_seq.end(), [](const auto& a, const auto& b) { return std::get<0>(a).first > std::get<0>(b).first; });
                 matching.push_back(std::move(matching_for_seq));
+                ++seq_no;
             }
+            std::sort(matching.begin(), matching.end(), [](const auto& a, const auto& b) { return std::get<0>(a[0]).first > std::get<0>(b[0]).first; });
 
-            for (const auto& m: matching) {
-                std::cout << "    ";
-                for (const auto& sf: m) {
-                    std::cout << " [" << sf.first.first << " " << sf.first.second << " " << sf.second << ']';
+            if (matching.size() == 1) {
+                for (const auto& ms: matching[0]) {
+                    if (std::get<0>(ms).first == std::get<0>(matching[0][0]).first) {
+                        const auto name = found[std::get<2>(ms)]->data().full_name();
+                        entry.seqs()[0].add_hi_name(name);
+                        std::cout << "    + " << name << std::endl;
+                    }
                 }
-                std::cout << std::endl;
             }
-
-            // if (found.size() == 1 && entry.seqs().size() == 1) {
-            //     const std::string found_reassortant = found[0]->data().reassortant();
-            //     const std::string seq_reassortant = entry.seqs()[0].reassortant().empty() ? std::string() : entry.seqs()[0].reassortant()[0];
-            //       // TODO
-            //     if (found_reassortant != seq_reassortant) {
-            //         report_entry(std::cout, entry);
-            //         report_found(std::cout, found);
-            //     }
-            // }
-            // else {
-            //     report_entry(std::cout, entry);
-            //     report_found(std::cout, found);
-            //     for (auto& seq: entry.seqs()) {
-            //         for (const auto& f: found) {
-            //             if (seq.reassortant_match(f->data().reassortant())) {
-            //                 std::vector<string_match::score_t> scores;
-            //                 const auto& f_passage = f->data().passage();
-            //                 std::transform(seq.passages().begin(), seq.passages().end(), std::back_inserter(scores), [&f_passage](const auto& passage) { return string_match::match(passage, f_passage); });
-            //                 const auto score = *std::max_element(scores.begin(), scores.end());
-            //                 std::cout << "  @" << seq.passages() << " @ " << f_passage << " " << score << std::endl;
-            //             }
-            //         }
-            //     }
-            // }
-            // ++matched_entries;
+            else {
+                report_found(std::cout, found);
+                report_matching(std::cout, matching);
+                std::set<size_t> found_assigned;
+                for (const auto& m: matching) {
+                    for (const auto& sf: m) {
+                        if (std::get<0>(sf).first == std::get<0>(m[0]).first && found_assigned.count(std::get<2>(sf)) == 0) {
+                            const auto name = found[std::get<2>(sf)]->data().full_name();
+                            entry.seqs()[std::get<1>(sf)].add_hi_name(name);
+                            std::cout << "    +" << std::get<1>(sf) << " " << name << std::endl;
+                            found_assigned.insert(std::get<2>(sf));
+                        }
+                    }
+                }
+            }
+            ++matched_entries;
         }
         else {
               // TODO
-              // std::cout << "  ??" << std::endl;
+            std::cout << "  ??" << std::endl;
         }
     }
 
     std::cout << "Matched " << matched_entries << " of " << mEntries.size() << std::endl;
-
-      // if (false) {
-      //     for (auto& entry: mEntries) {
-      //         const HiDb& hidb = get_hidb(entry.virus_type(), hidb_ptrs, aHiDbDir);
-      //         const std::vector<std::string> names = entry.make_all_names();
-      //         const auto cdcids = entry.cdcids();
-      //         std::cout << entry.virus_type() << " " << names.size() << names << " " << cdcids.size() << cdcids << std::endl;
-
-      //         Timeit timeit{">> " + entry.name() + " time: ", std::cerr};
-      //         std::vector<std::vector<const AntigenData*>> found;
-      //         std::string found_by;
-      //         if (!cdcids.empty()) {
-      //             found_by = "#";
-      //             std::transform(cdcids.begin(), cdcids.end(), std::back_inserter(found), std::bind(&HiDb::find_antigens_by_cdcid, &hidb, std::placeholders::_1));
-      //             found.erase(std::remove_if(found.begin(), found.end(), std::mem_fn(&std::vector<const AntigenData*>::empty)), found.end());
-      //         }
-      //         if (found.empty()) {
-      //             found_by = "=";
-      //             std::transform(names.begin(), names.end(), std::back_inserter(found), std::bind(&HiDb::find_antigens, &hidb, std::placeholders::_1));
-      //             found.erase(std::remove_if(found.begin(), found.end(), std::mem_fn(&std::vector<const AntigenData*>::empty)), found.end());
-      //         }
-      //         if (found.empty()) {
-      //             found_by = "~";
-      //             std::transform(names.begin(), names.end(), std::back_inserter(found), std::bind(&HiDb::find_antigens_fuzzy, &hidb, std::placeholders::_1));
-      //             found.erase(std::remove_if(found.begin(), found.end(), std::mem_fn(&std::vector<const AntigenData*>::empty)), found.end());
-      //         }
-      //         if (!found.empty()) {
-      //             for (const auto& f: found) {
-      //                 std::cout << "  " << found_by << f.size() << " [";
-      //                 std::transform(f.begin(), f.end(), std::ostream_iterator<std::string>(std::cout, " "), [](const auto& e) { return e->data().full_name(); });
-      //                 std::cout << "]" << std::endl;
-      //             }
-      //         }
-      //         else {
-      //             std::cout << "  ?" << std::endl;
-      //         }
-
-
-      //           // for (auto& seq: entry.mSeq) {
-      //           //     if (!seq.reassortant().empty())
-      //           //     // if (seq.reassortant().size() > 1)
-      //           //     //     std::cerr << "Warning: multiple reassortant data for a sequence, HiDb matching uses just the first one: " << seq.reassortant() << std::endl;
-      //           //     // std::cout << "  " << seq.reassortant() << " " << seq.passages() << " " << seq.lab_ids() << std::endl;
-      //           // }
-      //     }
-      // }
 
 } // Seqdb::match_hidb
 
