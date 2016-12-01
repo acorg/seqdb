@@ -35,10 +35,10 @@ def main(args):
     if args.add_clades:
         db_updater.add_clades()               # clades must be updated after matching with hidb, because matching provides info about B lineage
     # print(db.report())
-    # if args.report_identical:
-    #     print(db.report_identical())
-    # if args.report_not_aligned_prefixes:
-    #     print(db.report_not_aligned(args.report_not_aligned_prefixes))
+    if args.report_identical:
+        print(db.report_identical())
+    if args.report_not_aligned_prefixes:
+        print(db.report_not_aligned(args.report_not_aligned_prefixes))
     if args.save:
         db_updater.save(indent=1)
 
