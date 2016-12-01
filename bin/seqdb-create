@@ -31,7 +31,7 @@ def main(args):
         passages = db.all_passages()
         module_logger.info('Passages: {}\n  {}'.format(len(passages), "\n  ".join(passages)))
     if args.match_hidb:
-        db_updater.match_hidb(Path(args.hidb_dir).expanduser())
+        db_updater.match_hidb(Path(args.hidb_dir).expanduser(), verbose=False)
     if args.add_clades:
         db_updater.add_clades()               # clades must be updated after matching with hidb, because matching provides info about B lineage
     # print(db.report())

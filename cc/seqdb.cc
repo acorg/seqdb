@@ -516,7 +516,7 @@ void Seqdb::find_in_hidb(std::vector<const hidb::AntigenData*>& found, const Seq
 void Seqdb::match_hidb(std::string aHiDbDir, bool aVerbose)
 {
     HiDbPtrs hidb_ptrs;
-    std::ostream& report_stream = std::cout;
+    std::ostream& report_stream = std::cerr;
 
     auto report_found = [](std::ostream& out, const auto& found) {
         size_t found_no = 0;
@@ -542,7 +542,7 @@ void Seqdb::match_hidb(std::string aHiDbDir, bool aVerbose)
         find_in_hidb(found, entry, hidb_ptrs, aHiDbDir);
 
         if (aVerbose)
-            report_stream << std::endl << entry;
+            report_stream << std::endl << entry << std::endl;
         if (!found.empty()) {
             typedef std::pair<string_match::score_t, size_t> score_size_t;
             typedef std::tuple<score_size_t, size_t, size_t> score_seq_found_t; // [score, len], seq_no, found_no
@@ -556,8 +556,11 @@ void Seqdb::match_hidb(std::string aHiDbDir, bool aVerbose)
                     if (seq.reassortant_match(f->data().reassortant())) {
                         std::vector<score_size_t> scores; // score and min passage length (to avoid too incomplete matches)
                         const auto& f_passage = f->data().passage();
-                        std::transform(seq.passages().begin(), seq.passages().end(), std::back_inserter(scores),
-                                       [&f_passage](const auto& passage) { return std::make_pair(string_match::match(passage, f_passage), std::min(passage.size(), f_passage.size())); });
+                        if (!seq.passages().empty())
+                            std::transform(seq.passages().begin(), seq.passages().end(), std::back_inserter(scores),
+                                           [&f_passage](const auto& passage) { return std::make_pair(string_match::match(passage, f_passage), std::min(passage.size(), f_passage.size())); });
+                        else
+                            scores.emplace_back(string_match::match(std::string{}, f_passage), 0);
                         matching_for_seq.emplace_back(*std::max_element(scores.begin(), scores.end(), [](const auto& a, const auto& b) { return a.first < b.first; }), seq_no, found_no);
                           // report_stream << "  @" << seq.passages() << " @ " << f_passage << " " << score_size->first << " " << score_size->second << std::endl;
                     }
@@ -605,7 +608,7 @@ void Seqdb::match_hidb(std::string aHiDbDir, bool aVerbose)
         }
     }
 
-    std::cout << "Matched " << (mEntries.size() - not_matched.size()) << " of " << mEntries.size() << std::endl;
+    std::cout << "Matched " << (mEntries.size() - not_matched.size()) << " of " << mEntries.size() << "  " << ((mEntries.size() - not_matched.size()) * 100.0 / mEntries.size()) << '%' << std::endl;
 
     std::cerr << "Not matched " << not_matched.size() << std::endl;
     if (!not_matched.empty()) {
