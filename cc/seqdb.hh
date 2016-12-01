@@ -10,6 +10,7 @@
 #include <map>
 #include <numeric>
 
+#include "acmacs-base/stream.hh"
 #include "hidb/hidb.hh"
 #include "sequence-shift.hh"
 #include "amino-acids.hh"
@@ -236,6 +237,20 @@ class SeqdbEntry
 
 // ----------------------------------------------------------------------
 
+inline std::ostream& operator<<(std::ostream& out, const SeqdbEntry entry)
+{
+    out << entry.virus_type() << " " << entry.name();
+    for (auto& seq: entry.seqs()) {
+        out << " {";
+        if (!seq.reassortant().empty())
+            out << 'R' << seq.reassortant().size() << seq.reassortant() << " ";
+        out << seq.passages().size() << seq.passages() << " #" << seq.cdcids().size() << seq.cdcids() << '}';
+    }
+    return out;
+}
+
+// ----------------------------------------------------------------------
+
 class SeqdbEntrySeq
 {
  public:
@@ -432,7 +447,7 @@ class Seqdb
     std::vector<std::string> all_hi_names() const;
     std::vector<std::string> all_passages() const;
     void remove_hi_names();
-    void match_hidb(std::string aHiDbDir);
+    void match_hidb(std::string aHiDbDir, bool aVerbose);
 
       // iterating over sequences with filtering
     inline SeqdbIterator begin() { return SeqdbIterator(*this, 0, 0); }

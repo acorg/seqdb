@@ -2,13 +2,12 @@
 #include <tuple>
 #include <set>
 
+#include "acmacs-base/read-file.hh"
+#include "acmacs-base/timeit.hh"
+#include "acmacs-base/string-matcher.hh"
 #include "seqdb.hh"
 #include "clades.hh"
 #include "seqdb-export.hh"
-#include "acmacs-base/read-file.hh"
-#include "acmacs-base/stream.hh"
-#include "acmacs-base/timeit.hh"
-#include "acmacs-base/string-matcher.hh"
 
 // ----------------------------------------------------------------------
 
@@ -514,19 +513,10 @@ void Seqdb::find_in_hidb(std::vector<const hidb::AntigenData*>& found, const Seq
 
 // ----------------------------------------------------------------------
 
-void Seqdb::match_hidb(std::string aHiDbDir)
+void Seqdb::match_hidb(std::string aHiDbDir, bool aVerbose)
 {
     HiDbPtrs hidb_ptrs;
-
-    auto report_entry = [](std::ostream& out, const auto& entry) {
-        out << std::endl << entry.virus_type() << " " << entry.name() << std::endl;
-        for (auto& seq: entry.seqs()) {
-            out << "  ";
-            if (!seq.reassortant().empty())
-                out << 'R' << seq.reassortant().size() << seq.reassortant() << " ";
-            out << seq.passages().size() << seq.passages() << " #" << seq.cdcids().size() << seq.cdcids() << std::endl;
-        }
-    };
+    std::ostream& report_stream = std::cout;
 
     auto report_found = [](std::ostream& out, const auto& found) {
         size_t found_no = 0;
@@ -546,12 +536,13 @@ void Seqdb::match_hidb(std::string aHiDbDir)
         }
     };
 
-    size_t matched_entries = 0;
+    std::vector<const SeqdbEntry*> not_matched;
     for (auto& entry: mEntries) {
         std::vector<const hidb::AntigenData*> found;
         find_in_hidb(found, entry, hidb_ptrs, aHiDbDir);
 
-        report_entry(std::cout, entry);
+        if (aVerbose)
+            report_stream << std::endl << entry;
         if (!found.empty()) {
             typedef std::pair<string_match::score_t, size_t> score_size_t;
             typedef std::tuple<score_size_t, size_t, size_t> score_seq_found_t; // [score, len], seq_no, found_no
@@ -568,7 +559,7 @@ void Seqdb::match_hidb(std::string aHiDbDir)
                         std::transform(seq.passages().begin(), seq.passages().end(), std::back_inserter(scores),
                                        [&f_passage](const auto& passage) { return std::make_pair(string_match::match(passage, f_passage), std::min(passage.size(), f_passage.size())); });
                         matching_for_seq.emplace_back(*std::max_element(scores.begin(), scores.end(), [](const auto& a, const auto& b) { return a.first < b.first; }), seq_no, found_no);
-                          // std::cout << "  @" << seq.passages() << " @ " << f_passage << " " << score_size->first << " " << score_size->second << std::endl;
+                          // report_stream << "  @" << seq.passages() << " @ " << f_passage << " " << score_size->first << " " << score_size->second << std::endl;
                     }
                     ++found_no;
                 }
@@ -583,34 +574,44 @@ void Seqdb::match_hidb(std::string aHiDbDir)
                     if (std::get<0>(ms).first == std::get<0>(matching[0][0]).first) {
                         const auto name = found[std::get<2>(ms)]->data().full_name();
                         entry.seqs()[0].add_hi_name(name);
-                        std::cout << "    + " << name << std::endl;
+                        if (aVerbose)
+                            report_stream << "    + " << name << std::endl;
                     }
                 }
             }
             else {
-                report_found(std::cout, found);
-                report_matching(std::cout, matching);
+                if (aVerbose) {
+                    report_found(report_stream, found);
+                    report_matching(report_stream, matching);
+                }
                 std::set<size_t> found_assigned;
                 for (const auto& m: matching) {
                     for (const auto& sf: m) {
                         if (std::get<0>(sf).first == std::get<0>(m[0]).first && found_assigned.count(std::get<2>(sf)) == 0) {
                             const auto name = found[std::get<2>(sf)]->data().full_name();
                             entry.seqs()[std::get<1>(sf)].add_hi_name(name);
-                            std::cout << "    +" << std::get<1>(sf) << " " << name << std::endl;
+                            if (aVerbose)
+                                report_stream << "    +" << std::get<1>(sf) << " " << name << std::endl;
                             found_assigned.insert(std::get<2>(sf));
                         }
                     }
                 }
             }
-            ++matched_entries;
         }
         else {
-              // TODO
-            std::cout << "  ??" << std::endl;
+            if (aVerbose)
+                report_stream << "  ??" << std::endl;
+            not_matched.push_back(&entry);
         }
     }
 
-    std::cout << "Matched " << matched_entries << " of " << mEntries.size() << std::endl;
+    std::cout << "Matched " << (mEntries.size() - not_matched.size()) << " of " << mEntries.size() << std::endl;
+
+    std::cerr << "Not matched " << not_matched.size() << std::endl;
+    if (!not_matched.empty()) {
+        std::cerr << "  ";
+        std::transform(not_matched.begin(), not_matched.end(), std::ostream_iterator<SeqdbEntry>(std::cerr, "\n  "), [](const auto* p) -> const SeqdbEntry& { return *p; });
+    }
 
 } // Seqdb::match_hidb
 
