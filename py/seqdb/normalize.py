@@ -94,7 +94,7 @@ def passage(passage):
 # ----------------------------------------------------------------------
 
 sReReassortants = [
-    [re.compile(r"^\s*X\s*-?\s*(\d+[A-C])$"), r"NYMC-\1"],
+    [re.compile(r"^\s*X\s*-?\s*(\d+[A-C]?)$"), r"NYMC-\1"],
     ]
 def reassortant(reassortant):
     for re_sub in sReReassortants:

@@ -517,7 +517,7 @@ void Seqdb::match_hidb(std::string aHiDbDir)
     HiDbPtrs hidb_ptrs;
 
     auto report_entry = [](std::ostream& out, const auto& entry) {
-        out << entry.virus_type() << " " << entry.name() << std::endl;
+        out << std::endl << entry.virus_type() << " " << entry.name() << std::endl;
         for (auto& seq: entry.seqs()) {
             out << "  ";
             if (!seq.reassortant().empty())
@@ -527,8 +527,11 @@ void Seqdb::match_hidb(std::string aHiDbDir)
     };
 
     auto report_found = [](std::ostream& out, const auto& found) {
-        for (const auto& e: found)
-            out << "  >> " << e->data().full_name() << std::endl;
+        size_t found_no = 0;
+        for (const auto& e: found) {
+            out << "  >> " << found_no << ' ' << e->data().full_name() << std::endl;
+            ++found_no;
+        }
     };
 
     size_t matched_entries = 0;
@@ -537,31 +540,65 @@ void Seqdb::match_hidb(std::string aHiDbDir)
         find_in_hidb(found, entry, hidb_ptrs, aHiDbDir);
 
         if (!found.empty()) {
-            if (found.size() == 1 && entry.seqs().size() == 1) {
-                const std::string found_reassortant = found[0]->data().reassortant();
-                const std::string seq_reassortant = entry.seqs()[0].reassortant().empty() ? std::string() : entry.seqs()[0].reassortant()[0];
-                  // TODO
-                if (found_reassortant != seq_reassortant) {
-                    report_entry(std::cout, entry);
-                    report_found(std::cout, found);
-                }
-            }
-            else {
-                report_entry(std::cout, entry);
-                report_found(std::cout, found);
-                for (auto& seq: entry.seqs()) {
-                    for (const auto& f: found) {
-                        if (seq.reassortant_match(f->data().reassortant())) {
-                            std::vector<string_match::score_t> scores;
-                            const auto& f_passage = f->data().passage();
-                            std::transform(seq.passages().begin(), seq.passages().end(), std::back_inserter(scores), [&f_passage](const auto& passage) { return string_match::match(passage, f_passage); });
-                            const auto score = *std::max_element(scores.begin(), scores.end());
-                            std::cout << "  @" << seq.passages() << " @ " << f_passage << " " << score << std::endl;
-                        }
+            typedef std::pair<string_match::score_t, size_t> score_size_t;
+            typedef std::pair<score_size_t, size_t> score_found_no_t;
+
+              //if (entry.seqs().size() > 1 || found.size() > 1) {
+            report_entry(std::cout, entry);
+            report_found(std::cout, found);
+
+            std::vector<std::vector<score_found_no_t>> matching;
+            for (auto& seq: entry.seqs()) {
+                std::vector<score_found_no_t> matching_for_seq;
+                size_t found_no = 0;
+                for (const auto& f: found) {
+                    if (seq.reassortant_match(f->data().reassortant())) {
+                        std::vector<score_size_t> scores; // score and min passage length (to avoid too incomplete matches)
+                        const auto& f_passage = f->data().passage();
+                        std::transform(seq.passages().begin(), seq.passages().end(), std::back_inserter(scores),
+                                       [&f_passage](const auto& passage) { return std::make_pair(string_match::match(passage, f_passage), std::min(passage.size(), f_passage.size())); });
+                        matching_for_seq.emplace_back(*std::max_element(scores.begin(), scores.end(), [](const auto& a, const auto& b) { return a.first < b.first; }), found_no);
+                          // std::cout << "  @" << seq.passages() << " @ " << f_passage << " " << score_size->first << " " << score_size->second << std::endl;
                     }
+                    ++found_no;
                 }
+                std::sort(matching_for_seq.begin(), matching_for_seq.end(), [](const auto& a, const auto& b) { return a.first.first > b.first.first; });
+                matching.push_back(std::move(matching_for_seq));
             }
-            ++matched_entries;
+
+            for (const auto& m: matching) {
+                std::cout << "    ";
+                for (const auto& sf: m) {
+                    std::cout << " [" << sf.first.first << " " << sf.first.second << " " << sf.second << ']';
+                }
+                std::cout << std::endl;
+            }
+
+            // if (found.size() == 1 && entry.seqs().size() == 1) {
+            //     const std::string found_reassortant = found[0]->data().reassortant();
+            //     const std::string seq_reassortant = entry.seqs()[0].reassortant().empty() ? std::string() : entry.seqs()[0].reassortant()[0];
+            //       // TODO
+            //     if (found_reassortant != seq_reassortant) {
+            //         report_entry(std::cout, entry);
+            //         report_found(std::cout, found);
+            //     }
+            // }
+            // else {
+            //     report_entry(std::cout, entry);
+            //     report_found(std::cout, found);
+            //     for (auto& seq: entry.seqs()) {
+            //         for (const auto& f: found) {
+            //             if (seq.reassortant_match(f->data().reassortant())) {
+            //                 std::vector<string_match::score_t> scores;
+            //                 const auto& f_passage = f->data().passage();
+            //                 std::transform(seq.passages().begin(), seq.passages().end(), std::back_inserter(scores), [&f_passage](const auto& passage) { return string_match::match(passage, f_passage); });
+            //                 const auto score = *std::max_element(scores.begin(), scores.end());
+            //                 std::cout << "  @" << seq.passages() << " @ " << f_passage << " " << score << std::endl;
+            //             }
+            //         }
+            //     }
+            // }
+            // ++matched_entries;
         }
         else {
               // TODO
