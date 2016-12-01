@@ -125,7 +125,7 @@ def export_from_seqdb(seqdb, filename, output_format, amino_acids, lab, virus_ty
     else:
         hamming_distances = None
 
-    exp = exporter(output=str(filename), output_format=output_format, encode_name=encode_name, wrap=wrap)
+    exp = exporter(output=filename, output_format=output_format, encode_name=encode_name, wrap=wrap)
     module_logger.info('Writing {} sequences'.format(len(sequences)))
     for ss in sequences:
         exp.write(name=ss["n"], sequence=ss["s"])
