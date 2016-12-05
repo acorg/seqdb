@@ -9,6 +9,7 @@ Functions for reading and generating fasta files.
 import os, re, collections, operator
 import logging; module_logger = logging.getLogger(__name__)
 from acmacs_base.files import read_text, write_binary
+from acmacs_base.encode_name import encode
 from . import normalize
 
 # ======================================================================
@@ -129,7 +130,7 @@ def export_from_seqdb(seqdb, filename, output_format, amino_acids, lab, virus_ty
     module_logger.info('Writing {} sequences'.format(len(sequences)))
     for ss in sequences:
         exp.write(name=ss["n"], sequence=ss["s"])
-    return {"base_seq": fasta_encode_name(sequences[0]["n"]) if base_seq else None, "filename": filename, "hamming_distances": hamming_distances, "number_of_sequences": len(sequences)}
+    return {"base_seq": encode(sequences[0]["n"]) if base_seq else None, "filename": filename, "hamming_distances": hamming_distances, "number_of_sequences": len(sequences)}
 
 # ----------------------------------------------------------------------
 
@@ -381,15 +382,8 @@ class NameParser:
 
 # ----------------------------------------------------------------------
 
-# def generate_one(name, sequence, encode, split=True):
-#     return ">{}\n{}\n".format((fasta_encode_name(name) if encode else name).strip(), (sequence_split(sequence) if split else sequence).strip())
-
-# ----------------------------------------------------------------------
-
-def fasta_encode_name(name):
-    for char in "% :()!*';@&=+$,?#[]":
-        name = name.replace(char, '%{:02X}'.format(ord(char)))
-    return name
+# def generate_one(name, sequence, encode_name, split=True):
+#     return ">{}\n{}\n".format((encode(name) if encode_name else name).strip(), (sequence_split(sequence) if split else sequence).strip())
 
 # ----------------------------------------------------------------------
 
@@ -437,7 +431,7 @@ class ExporterBase:
 
     def make_name(self, name):
         if self.encode_name:
-            name = fasta_encode_name(name)
+            name = encode(name)
         return name.strip()
 
 class FastaExporter (ExporterBase):
