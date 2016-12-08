@@ -11,6 +11,7 @@
 #include <numeric>
 
 #include "acmacs-base/stream.hh"
+#include "acmacs-base/name-encode.hh"
 #include "hidb/hidb.hh"
 #include "sequence-shift.hh"
 #include "amino-acids.hh"
@@ -276,7 +277,7 @@ class SeqdbEntrySeq
       // seq_id is concatenation of sequence name and passage separeted by __
     inline std::string seq_id() const
         {
-            return string::strip(mEntry->name() + "__" + mSeq->passage());
+            return name_encode(string::strip(mEntry->name() + "__" + mSeq->passage()));
         }
 
  private:

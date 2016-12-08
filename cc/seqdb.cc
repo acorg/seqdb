@@ -650,11 +650,13 @@ const hidb::HiDb& Seqdb::get_hidb(std::string aVirusType, HiDbPtrs& aPtrs, std::
 SeqdbEntrySeq Seqdb::find_by_seq_id(std::string aSeqId) const
 {
     SeqdbEntrySeq result;
-    const auto passage_separator = aSeqId.find("__");
+    auto passage_separator = aSeqId.find("__");
     if (passage_separator != std::string::npos) { // seq_id
-        const auto entry = find_by_name(std::string(aSeqId, 0, passage_separator));
+        const std::string decoded = name_decode(aSeqId);
+        passage_separator = decoded.find("__");
+        const auto entry = find_by_name(std::string(decoded, 0, passage_separator));
         if (entry != nullptr) {
-            const auto passage_distinct = string::split(std::string(aSeqId, passage_separator + 2), "__", string::Split::KeepEmpty);
+            const auto passage_distinct = string::split(std::string(decoded, passage_separator + 2), "__", string::Split::KeepEmpty);
             auto index = passage_distinct.size() == 1 ? 0 : std::stoi(passage_distinct[1]);
             for (const auto& seq: entry->seqs()) {
                 if (seq.passage() == passage_distinct[0]) {
