@@ -21,7 +21,7 @@ def main(args):
     if args.tree_maker:
         args.aligned = True
         args.most_common_length = True
-        args.name_encode = True
+        args.name_fromat = "{seq_id}"
         if args.hamming_distance_threshold is None:
             args.hamming_distance_threshold = 140
     seq_db = seqdb.Seqdb()
@@ -85,7 +85,7 @@ with timeit(sys.argv[0]):
         parser.add_argument('--hamming-distance-threshold', action='store', type=int, dest='hamming_distance_threshold', default=None, help='Select only sequences having hamming distance to the base sequence less than threshold. Use 140 for nucs (H1).')
         parser.add_argument('--hamming-distance-report', action='store_true', dest='hamming_distance_report', default=False)
 
-        parser.add_argument('--tree-maker', action='store_true', dest='tree_maker', default=False, help='Shorthand for --aligned --most-common-length --name-encode --hamming-distance-threshold 140')
+        parser.add_argument('--tree-maker', action='store_true', dest='tree_maker', default=False, help='Shorthand for --aligned --most-common-length --name-format "{seq_id}" --hamming-distance-threshold 140')
 
         parser.add_argument('--db', action='store', dest='path_to_seqdb', required=True, help='Path to sequence database.')
         parser.add_argument('output', nargs="?", help='Fasta file to write.')
