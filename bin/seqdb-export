@@ -21,7 +21,7 @@ def main(args):
     if args.tree_maker:
         args.aligned = True
         args.most_common_length = True
-        args.name_fromat = "{seq_id}"
+        args.name_format = "{seq_id}"
         if args.hamming_distance_threshold is None:
             args.hamming_distance_threshold = 140
     seq_db = seqdb.Seqdb()

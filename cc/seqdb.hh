@@ -273,10 +273,10 @@ class SeqdbEntrySeq
             return mSeq->hi_names().empty() ? string::strip(mEntry->name() + aPassageSeparator + mSeq->passage()) : mSeq->hi_names()[0];
         }
 
-      // seq_id is either hi-name unmodified or concatenation of sequence name and passage separeted by __
+      // seq_id is concatenation of sequence name and passage separeted by __
     inline std::string seq_id() const
         {
-            return make_name("__");
+            return string::strip(mEntry->name() + "__" + mSeq->passage());
         }
 
  private:
