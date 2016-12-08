@@ -1,13 +1,13 @@
 # -*- Makefile -*-
 # Eugene Skepner 2016
-
 # ----------------------------------------------------------------------
 
 MAKEFLAGS = -w
 
 # ----------------------------------------------------------------------
 
-SEQDB_SOURCES = seqdb.cc seqdb-py.cc seqdb-export.cc amino-acids.cc clades.cc
+SEQDB_SOURCES = seqdb.cc seqdb-export.cc amino-acids.cc clades.cc
+SEQDB_PY_SOURCES = $(SEQDB_SOURCES) seqdb-py.cc
 
 # ----------------------------------------------------------------------
 
@@ -27,8 +27,7 @@ PYTHON_CONFIG = python$(PYTHON_VERSION)-config
 PYTHON_MODULE_SUFFIX = $(shell $(PYTHON_CONFIG) --extension-suffix)
 
 LIB_DIR = $(ACMACSD_ROOT)/lib
-HIDB_LIB=$(LIB_DIR)/libhidb.so
-LOCATION_DB_LIB = $(LIB_DIR)/liblocationdb.so
+SEQDB_LIB = $(DIST)/libseqdb.so
 
 # -fvisibility=hidden and -flto make resulting lib smaller (pybind11) but linking is much slower
 OPTIMIZATION = -O3 #-fvisibility=hidden -flto
@@ -44,9 +43,11 @@ PKG_INCLUDES = $$(pkg-config --cflags liblzma) $$($(PYTHON_CONFIG) --includes)
 BUILD = build
 DIST = $(abspath dist)
 
-all: check-acmacsd-root $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX)
+all: check-acmacsd-root $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) $(SEQDB_LIB)
 
-install: check-acmacsd-root $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX)
+install: check-acmacsd-root $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) $(SEQDB_LIB)
+	ln -sf $(SEQDB_LIB) $(ACMACSD_ROOT)/lib
+	if [ $$(uname) = "Darwin" ]; then /usr/bin/install_name_tool -id $(ACMACSD_ROOT)/lib/$(notdir $(SEQDB_LIB)) $(ACMACSD_ROOT)/lib/$(notdir $(SEQDB_LIB)); fi
 	ln -sf $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) $(ACMACSD_ROOT)/py
 	ln -sf $(abspath py)/* $(ACMACSD_ROOT)/py
 	ln -sf $(abspath bin)/seqdb-* $(ACMACSD_ROOT)/bin
@@ -55,9 +56,12 @@ install: check-acmacsd-root $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX)
 
 # ----------------------------------------------------------------------
 
-$(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX): $(patsubst %.cc,$(BUILD)/%.o,$(SEQDB_SOURCES)) | $(DIST) $(LOCATION_DB_LIB)
+$(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX): $(patsubst %.cc,$(BUILD)/%.o,$(SEQDB_PY_SOURCES)) | $(DIST)
 	g++ -shared $(LDFLAGS) -o $@ $^ $(SEQDB_LDLIBS)
 	@#strip $@
+
+$(SEQDB_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(SEQDB_SOURCES)) | $(DIST) $(LOCATION_DB_LIB)
+	g++ -shared $(LDFLAGS) -o $@ $^ $(SEQDB_LDLIBS)
 
 clean:
 	rm -rf $(DIST) $(BUILD)/*.o $(BUILD)/*.d
