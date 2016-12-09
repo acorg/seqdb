@@ -9,15 +9,6 @@ static constexpr const char* SEQDB_JSON_DUMP_VERSION = "sequence-database-v2";
 
 // ----------------------------------------------------------------------
 
-template <typename RW> inline JsonWriterT<RW>& operator <<(JsonWriterT<RW>& writer, SeqdbJsonKey key)
-{
-    const char k = static_cast<char>(key);
-    writer.Key(&k, 1, false);
-    return writer;
-}
-
-// ----------------------------------------------------------------------
-
 class if_aligned
 {
  public:
