@@ -1,10 +1,20 @@
 #include "seqdb-export.hh"
-#include "json-writer.hh"
+#include "json-keys.hh"
+#include "acmacs-base/json-writer.hh"
 #include "acmacs-base/json-reader.hh"
 
 // ----------------------------------------------------------------------
 
 static constexpr const char* SEQDB_JSON_DUMP_VERSION = "sequence-database-v2";
+
+// ----------------------------------------------------------------------
+
+template <typename RW> inline JsonWriterT<RW>& operator <<(JsonWriterT<RW>& writer, SeqdbJsonKey key)
+{
+    const char k = static_cast<char>(key);
+    writer.Key(&k, 1, false);
+    return writer;
+}
 
 // ----------------------------------------------------------------------
 
