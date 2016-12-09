@@ -82,7 +82,7 @@ template <typename RW> inline JsonWriterT<RW>& operator <<(JsonWriterT<RW>& writ
 
 void seqdb_export(std::string aFilename, const Seqdb& aSeqdb, size_t aIndent)
 {
-    export_to_json(aSeqdb, "seqdb", aFilename, aIndent);
+    export_to_json(aSeqdb, SEQDB_JSON_DUMP_VERSION, aFilename, aIndent);
 }
 
 // ----------------------------------------------------------------------
