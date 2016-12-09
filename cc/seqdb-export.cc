@@ -77,9 +77,9 @@ void seqdb_export(std::string aFilename, const Seqdb& aSeqdb, size_t aIndent)
 
 // ----------------------------------------------------------------------
 
-typedef json_reader::HandlerBase<Seqdb> HandlerBase;
-typedef json_reader::StringListHandler<Seqdb> StringListHandler;
-typedef json_reader::MapListHandler<Seqdb> MapListHandler;
+using HandlerBase = json_reader::HandlerBase<Seqdb>;
+using StringListHandler = json_reader::StringListHandler<Seqdb>;
+using MapListHandler = json_reader::MapListHandler<Seqdb>;
 
 // ----------------------------------------------------------------------
 
