@@ -1,9 +1,8 @@
 #include <stack>
 
-#include "rapidjson/reader.h"
-
 #include "seqdb-export.hh"
 #include "json-writer.hh"
+#include "acmacs-base/json-reader.hh"
 
 // ----------------------------------------------------------------------
 
@@ -80,117 +79,124 @@ void seqdb_export(std::string aFilename, const Seqdb& aSeqdb, size_t aIndent)
 
 // ----------------------------------------------------------------------
 
-class Error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
-class Failure : public std::exception { public: using std::exception::exception; };
-class Pop : public std::exception { public: using std::exception::exception; };
-
-class HandlerBase
-{
- public:
-    inline HandlerBase(Seqdb& aSeqdb) : mSeqdb(aSeqdb), mIgnore(false) {}
-    virtual ~HandlerBase();
-
-    inline virtual HandlerBase* StartObject() { std::cerr << "HandlerBase StartObject " << typeid(*this).name() << std::endl; throw Failure(); }
-    inline virtual HandlerBase* EndObject() { throw Pop(); }
-    inline virtual HandlerBase* StartArray() { throw Failure(); }
-    inline virtual HandlerBase* EndArray() { throw Pop(); }
-    inline virtual HandlerBase* Double(double d) { std::cerr << "Double: " << d << std::endl; throw Failure(); }
-    inline virtual HandlerBase* Int(int i) { std::cerr << "Int: " << i << std::endl; throw Failure(); }
-    inline virtual HandlerBase* Uint(unsigned u) { std::cerr << "Uint: " << u << std::endl; throw Failure(); }
-
-    inline virtual HandlerBase* Key(const char* str, rapidjson::SizeType length)
-        {
-            if ((length == 1 && *str == '_') || (length > 0 && *str == '?')) {
-                mIgnore = true;
-            }
-            else {
-                std::cerr << "Key: \"" << std::string(str, length) << '"' << std::endl;
-                throw Failure();
-            }
-            return nullptr;
-        }
-
-    inline virtual HandlerBase* String(const char* str, rapidjson::SizeType length)
-        {
-            if (mIgnore) {
-                mIgnore = false;
-            }
-            else {
-                std::cerr << "String: \"" << std::string(str, length) << '"' << std::endl;
-                throw Failure();
-            }
-            return nullptr;
-        }
-
- protected:
-    Seqdb& mSeqdb;
-    bool mIgnore;
-};
-
-HandlerBase::~HandlerBase()
-{
-}
+typedef json_reader::HandlerBase<Seqdb> HandlerBase;
+typedef json_reader::StringListHandler<Seqdb> StringListHandler;
+typedef json_reader::MapListHandler<Seqdb> MapListHandler;
 
 // ----------------------------------------------------------------------
 
-class StringListHandler : public HandlerBase
-{
- public:
-    inline StringListHandler(Seqdb& aSeqdb, std::vector<std::string>& aList)
-        : HandlerBase(aSeqdb), mList(aList), mStarted(false) {}
+// class Error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
+// class Failure : public std::exception { public: using std::exception::exception; };
+// class Pop : public std::exception { public: using std::exception::exception; };
 
-    inline virtual HandlerBase* StartArray()
-        {
-            if (mStarted)
-                throw Failure();
-            mStarted = true;
-            return nullptr;
-        }
+// class HandlerBase
+// {
+//  public:
+//     inline HandlerBase(Seqdb& aSeqdb) : mSeqdb(aSeqdb), mIgnore(false) {}
+//     virtual ~HandlerBase();
 
-    inline virtual HandlerBase* EndObject() { throw Failure(); }
+//     inline virtual HandlerBase* StartObject() { std::cerr << "HandlerBase StartObject " << typeid(*this).name() << std::endl; throw Failure(); }
+//     inline virtual HandlerBase* EndObject() { throw Pop(); }
+//     inline virtual HandlerBase* StartArray() { throw Failure(); }
+//     inline virtual HandlerBase* EndArray() { throw Pop(); }
+//     inline virtual HandlerBase* Double(double d) { std::cerr << "Double: " << d << std::endl; throw Failure(); }
+//     inline virtual HandlerBase* Int(int i) { std::cerr << "Int: " << i << std::endl; throw Failure(); }
+//     inline virtual HandlerBase* Uint(unsigned u) { std::cerr << "Uint: " << u << std::endl; throw Failure(); }
 
-    inline virtual HandlerBase* String(const char* str, rapidjson::SizeType length)
-        {
-            mList.emplace_back(str, length);
-            return nullptr;
-        }
+//     inline virtual HandlerBase* Key(const char* str, rapidjson::SizeType length)
+//         {
+//             if ((length == 1 && *str == '_') || (length > 0 && *str == '?')) {
+//                 mIgnore = true;
+//             }
+//             else {
+//                 std::cerr << "Key: \"" << std::string(str, length) << '"' << std::endl;
+//                 throw Failure();
+//             }
+//             return nullptr;
+//         }
 
- private:
-    std::vector<std::string>& mList;
-    bool mStarted;
+//     inline virtual HandlerBase* String(const char* str, rapidjson::SizeType length)
+//         {
+//             if (mIgnore) {
+//                 mIgnore = false;
+//             }
+//             else {
+//                 std::cerr << "String: \"" << std::string(str, length) << '"' << std::endl;
+//                 throw Failure();
+//             }
+//             return nullptr;
+//         }
 
-}; // class StringListHandler
+//  protected:
+//     Seqdb& mSeqdb;
+//     bool mIgnore;
+// };
 
-// ----------------------------------------------------------------------
+// HandlerBase::~HandlerBase()
+// {
+// }
 
-class MapListHandler : public HandlerBase
-{
- public:
-    inline MapListHandler(Seqdb& aSeqdb, std::map<std::string, std::vector<std::string>>& aMap)
-        : HandlerBase(aSeqdb), mMap(aMap), mStarted(false) {}
-
-    inline virtual HandlerBase* StartObject()
-        {
-            if (mStarted)
-                throw Failure();
-            mStarted = true;
-            return nullptr;
-        }
-
-    inline virtual HandlerBase* EndArray() { throw Failure(); }
-
-    inline virtual HandlerBase* Key(const char* str, rapidjson::SizeType length)
-        {
-            return new StringListHandler(mSeqdb, mMap[{str, length}]);
-        }
-
- private:
-    std::map<std::string, std::vector<std::string>>& mMap;
-    bool mStarted;
-
-}; // class MapListHandler
 
 // ----------------------------------------------------------------------
+
+// class StringListHandler : public HandlerBase
+// {
+//  public:
+//     inline StringListHandler(Seqdb& aSeqdb, std::vector<std::string>& aList)
+//         : HandlerBase(aSeqdb), mList(aList), mStarted(false) {}
+
+//     inline virtual HandlerBase* StartArray()
+//         {
+//             if (mStarted)
+//                 throw Failure();
+//             mStarted = true;
+//             return nullptr;
+//         }
+
+//     inline virtual HandlerBase* EndObject() { throw Failure(); }
+
+//     inline virtual HandlerBase* String(const char* str, rapidjson::SizeType length)
+//         {
+//             mList.emplace_back(str, length);
+//             return nullptr;
+//         }
+
+//  private:
+//     std::vector<std::string>& mList;
+//     bool mStarted;
+
+// }; // class StringListHandler
+
+// // ----------------------------------------------------------------------
+
+// class MapListHandler : public HandlerBase
+// {
+//  public:
+//     inline MapListHandler(Seqdb& aSeqdb, std::map<std::string, std::vector<std::string>>& aMap)
+//         : HandlerBase(aSeqdb), mMap(aMap), mStarted(false) {}
+
+//     inline virtual HandlerBase* StartObject()
+//         {
+//             if (mStarted)
+//                 throw Failure();
+//             mStarted = true;
+//             return nullptr;
+//         }
+
+//     inline virtual HandlerBase* EndArray() { throw Failure(); }
+
+//     inline virtual HandlerBase* Key(const char* str, rapidjson::SizeType length)
+//         {
+//             return new StringListHandler(mSeqdb, mMap[{str, length}]);
+//         }
+
+//  private:
+//     std::map<std::string, std::vector<std::string>>& mMap;
+//     bool mStarted;
+
+// }; // class MapListHandler
+
+// // ----------------------------------------------------------------------
 
 class SeqHandler : public HandlerBase
 {
@@ -201,7 +207,7 @@ class SeqHandler : public HandlerBase
     inline virtual HandlerBase* StartArray()
         {
             if (mStarted)
-                throw Failure();
+                throw json_reader::Failure();
             mStarted = true;
             return nullptr;
         }
@@ -209,7 +215,7 @@ class SeqHandler : public HandlerBase
     inline virtual HandlerBase* StartObject()
         {
             if (!mStarted)
-                throw Failure();
+                throw json_reader::Failure();
             mSeqs.emplace_back();
             return nullptr;
         }
@@ -222,9 +228,9 @@ class SeqHandler : public HandlerBase
     inline virtual HandlerBase* Key(const char* str, rapidjson::SizeType length)
         {
             if (!mStarted)
-                throw Failure();
+                throw json_reader::Failure();
             if (length != 1)
-                throw Failure();
+                throw json_reader::Failure();
             mKey = static_cast<SeqdbJsonKey>(*str);
             HandlerBase* result = nullptr;
 #pragma GCC diagnostic push
@@ -239,19 +245,19 @@ class SeqHandler : public HandlerBase
               case SeqdbJsonKey::NucleotideShift:
                   break;
               case SeqdbJsonKey::Clades:
-                  result = new StringListHandler(mSeqdb, mSeqs.back().clades());
+                  result = new StringListHandler(mTarget, mSeqs.back().clades());
                   break;
               case SeqdbJsonKey::HiNames:
-                  result = new StringListHandler(mSeqdb, mSeqs.back().hi_names());
+                  result = new StringListHandler(mTarget, mSeqs.back().hi_names());
                   break;
               case SeqdbJsonKey::LabIds:
-                  result = new MapListHandler(mSeqdb, mSeqs.back().lab_ids_raw());
+                  result = new MapListHandler(mTarget, mSeqs.back().lab_ids_raw());
                   break;
               case SeqdbJsonKey::Passages:
-                  result = new StringListHandler(mSeqdb, mSeqs.back().passages());
+                  result = new StringListHandler(mTarget, mSeqs.back().passages());
                   break;
               case SeqdbJsonKey::Reassortant:
-                  result = new StringListHandler(mSeqdb, mSeqs.back().reassortant());
+                  result = new StringListHandler(mTarget, mSeqs.back().reassortant());
                   break;
               default:
                   break;
@@ -274,7 +280,7 @@ class SeqHandler : public HandlerBase
                   mSeqs.back().nucleotides_shift_raw() = i;
                   break;
               default:
-                  throw Failure();
+                  throw json_reader::Failure();
             }
 #pragma GCC diagnostic pop
             return nullptr;
@@ -302,7 +308,7 @@ class SeqHandler : public HandlerBase
                   mSeqs.back().gene().assign(str, length);
                   break;
               default:
-                  throw Failure();
+                  throw json_reader::Failure();
             }
 #pragma GCC diagnostic pop
             return nullptr;
@@ -326,7 +332,7 @@ class DataHandler : public HandlerBase
     inline virtual HandlerBase* StartArray()
         {
             if (mStarted) {
-                throw Failure();
+                throw json_reader::Failure();
             }
             else {
                 mStarted = true;
@@ -337,7 +343,7 @@ class DataHandler : public HandlerBase
     inline virtual HandlerBase* StartObject()
         {
             if (!mStarted)
-                throw Failure();
+                throw json_reader::Failure();
             mData.emplace_back();
             return nullptr;
         }
@@ -350,9 +356,9 @@ class DataHandler : public HandlerBase
     inline virtual HandlerBase* Key(const char* str, rapidjson::SizeType length)
         {
             if (!mStarted)
-                throw Failure();
+                throw json_reader::Failure();
             if (length != 1)
-                throw Failure();
+                throw json_reader::Failure();
             mKey = static_cast<SeqdbJsonKey>(*str);
             HandlerBase* result = nullptr;
 #pragma GCC diagnostic push
@@ -361,10 +367,10 @@ class DataHandler : public HandlerBase
 #endif
             switch (mKey) {
               case SeqdbJsonKey::Dates:
-                  result = new StringListHandler(mSeqdb, mData.back().dates());
+                  result = new StringListHandler(mTarget, mData.back().dates());
                   break;
               case SeqdbJsonKey::SequenceSet:
-                  result = new SeqHandler(mSeqdb, mData.back().seqs());
+                  result = new SeqHandler(mTarget, mData.back().seqs());
                   break;
               default:
                   break;
@@ -396,7 +402,7 @@ class DataHandler : public HandlerBase
                   mData.back().virus_type().assign(str, length);
                   break;
               default:
-                  throw Failure();
+                  throw json_reader::Failure();
             }
 #pragma GCC diagnostic pop
             return nullptr;
@@ -426,7 +432,7 @@ class SeqdbRootHandler : public HandlerBase
             if (found_key == "  version")
                 mKey = Keys::Version;
             else if (found_key == "data")
-                result = new DataHandler(mSeqdb, mSeqdb.entries());
+                result = new DataHandler(mTarget, mTarget.entries());
             else
                 result = HandlerBase::Key(str, length);
             return result;
@@ -439,7 +445,7 @@ class SeqdbRootHandler : public HandlerBase
               case Keys::Version:
                   if (strncmp(str, SEQDB_JSON_DUMP_VERSION, std::min(length, static_cast<rapidjson::SizeType>(strlen(SEQDB_JSON_DUMP_VERSION))))) {
                       std::cerr << "Unsupported version: \"" << std::string(str, length) << '"' << std::endl;
-                      throw Failure();
+                      throw json_reader::Failure();
                   }
                   break;
               case Keys::Data:
@@ -457,67 +463,70 @@ class SeqdbRootHandler : public HandlerBase
 
 // ----------------------------------------------------------------------
 
-class DocRootHandler : public HandlerBase
-{
- public:
-    inline DocRootHandler(Seqdb& aSeqdb) : HandlerBase(aSeqdb) {}
+// class DocRootHandler : public HandlerBase
+// {
+//  public:
+//     inline DocRootHandler(Seqdb& aSeqdb) : HandlerBase(aSeqdb) {}
 
-    inline virtual HandlerBase* StartObject() { return new SeqdbRootHandler(mSeqdb); }
-};
+//     inline virtual HandlerBase* StartObject() { return new SeqdbRootHandler(mSeqdb); }
+// };
 
-// ----------------------------------------------------------------------
+// // ----------------------------------------------------------------------
 
-class SeqdbReaderEventHandler : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, SeqdbReaderEventHandler>
-{
- private:
-    template <typename... Args> inline bool handler(HandlerBase* (HandlerBase::*aHandler)(Args... args), Args... args)
-        {
-            try {
-                auto new_handler = ((*mHandler.top()).*aHandler)(args...);
-                if (new_handler)
-                    mHandler.emplace(new_handler);
-            }
-            catch (Pop&) {
-                if (mHandler.empty())
-                    return false;
-                mHandler.pop();
-            }
-            catch (Failure&) {
-                return false;
-            }
-            return true;
-        }
+// class SeqdbReaderEventHandler : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, SeqdbReaderEventHandler>
+// {
+//  private:
+//     template <typename... Args> inline bool handler(HandlerBase* (HandlerBase::*aHandler)(Args... args), Args... args)
+//         {
+//             try {
+//                 auto new_handler = ((*mHandler.top()).*aHandler)(args...);
+//                 if (new_handler)
+//                     mHandler.emplace(new_handler);
+//             }
+//             catch (Pop&) {
+//                 if (mHandler.empty())
+//                     return false;
+//                 mHandler.pop();
+//             }
+//             catch (Failure&) {
+//                 return false;
+//             }
+//             return true;
+//         }
 
- public:
-    inline SeqdbReaderEventHandler(Seqdb& aSeqdb)
-        : mSeqdb(aSeqdb)
-        {
-            mHandler.emplace(new DocRootHandler(mSeqdb));
-        }
+//  public:
+//     inline SeqdbReaderEventHandler(Seqdb& aSeqdb)
+//         : mSeqdb(aSeqdb)
+//         {
+//             mHandler.emplace(new DocRootHandler(mSeqdb));
+//         }
 
-    inline bool StartObject() { return handler(&HandlerBase::StartObject); }
-    inline bool EndObject(rapidjson::SizeType /*memberCount*/) { return handler(&HandlerBase::EndObject); }
-    inline bool StartArray() { return handler(&HandlerBase::StartArray); }
-    inline bool EndArray(rapidjson::SizeType /*elementCount*/) { return handler(&HandlerBase::EndArray); }
-    inline bool Key(const char* str, rapidjson::SizeType length, bool /*copy*/) { return handler(&HandlerBase::Key, str, length); }
-    inline bool String(const Ch* str, rapidjson::SizeType length, bool /*copy*/) { return handler(&HandlerBase::String, str, length); }
-    inline bool Int(int i) { return handler(&HandlerBase::Int, i); }
-    inline bool Uint(unsigned u) { return handler(&HandlerBase::Uint, u); }
-    inline bool Double(double d) { return handler(&HandlerBase::Double, d); }
+//     inline bool StartObject() { return handler(&HandlerBase::StartObject); }
+//     inline bool EndObject(rapidjson::SizeType /*memberCount*/) { return handler(&HandlerBase::EndObject); }
+//     inline bool StartArray() { return handler(&HandlerBase::StartArray); }
+//     inline bool EndArray(rapidjson::SizeType /*elementCount*/) { return handler(&HandlerBase::EndArray); }
+//     inline bool Key(const char* str, rapidjson::SizeType length, bool /*copy*/) { return handler(&HandlerBase::Key, str, length); }
+//     inline bool String(const Ch* str, rapidjson::SizeType length, bool /*copy*/) { return handler(&HandlerBase::String, str, length); }
+//     inline bool Int(int i) { return handler(&HandlerBase::Int, i); }
+//     inline bool Uint(unsigned u) { return handler(&HandlerBase::Uint, u); }
+//     inline bool Double(double d) { return handler(&HandlerBase::Double, d); }
 
-      // inline bool Bool(bool /*b*/) { return false; }
-      // inline bool Null() { std::cout << "Null()" << std::endl; return false; }
-      // inline bool Int64(int64_t i) { std::cout << "Int64(" << i << ")" << std::endl; return false; }
-      // inline bool Uint64(uint64_t u) { std::cout << "Uint64(" << u << ")" << std::endl; return false; }
+//       // inline bool Bool(bool /*b*/) { return false; }
+//       // inline bool Null() { std::cout << "Null()" << std::endl; return false; }
+//       // inline bool Int64(int64_t i) { std::cout << "Int64(" << i << ")" << std::endl; return false; }
+//       // inline bool Uint64(uint64_t u) { std::cout << "Uint64(" << u << ")" << std::endl; return false; }
 
- private:
-    Seqdb& mSeqdb;
-    std::stack<std::unique_ptr<HandlerBase>> mHandler;
+//  private:
+//     Seqdb& mSeqdb;
+//     std::stack<std::unique_ptr<HandlerBase>> mHandler;
 
-      // ----------------------------------------------------------------------
+//       // ----------------------------------------------------------------------
 
-    // friend void seqdb_import(std::string, Seqdb&);
-};
+//     // friend void seqdb_import(std::string, Seqdb&);
+// };
+
+typedef json_reader::ReaderEventHandler<Seqdb, SeqdbRootHandler> SeqdbReaderEventHandler;
+
 
 // ----------------------------------------------------------------------
 
@@ -533,10 +542,10 @@ void seqdb_import(std::string buffer, Seqdb& aSeqdb)
         rapidjson::StringStream ss(buffer.c_str());
         reader.Parse(ss, handler);
         if (reader.HasParseError())
-            throw Error("cannot import seqdb: data parsing failed at pos " + std::to_string(reader.GetErrorOffset()) + ": " +  GetParseError_En(reader.GetParseErrorCode()) + "\n" + buffer.substr(reader.GetErrorOffset(), 50));
+            throw json_reader::Error("cannot import seqdb: data parsing failed at pos " + std::to_string(reader.GetErrorOffset()) + ": " +  GetParseError_En(reader.GetParseErrorCode()) + "\n" + buffer.substr(reader.GetErrorOffset(), 50));
     }
     else
-        throw std::runtime_error("cannot import seqdb: unrecognized source format");
+        throw json_reader::Error("cannot import seqdb: unrecognized source format");
 
 } // seqdb_import
 
