@@ -52,6 +52,10 @@ install: check-acmacsd-root $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) $(SEQDB
 	ln -sf $(abspath py)/* $(ACMACSD_ROOT)/py
 	ln -sf $(abspath bin)/seqdb-* $(ACMACSD_ROOT)/bin
 
+install-headers:
+	if [ ! -d $(ACMACSD_ROOT)/include/seqdb ]; then mkdir $(ACMACSD_ROOT)/include/seqdb; fi
+	for header in seqdb.hh sequence-shift.hh amino-acids.hh messages.hh; do if [ ! -f $(ACMACSD_ROOT)/include/seqdb/$$header ]; then ln -s $(abspath cc)/$$header $(ACMACSD_ROOT)/include/seqdb; fi; done
+
 test: install
 	test/test
 
@@ -76,7 +80,7 @@ distclean: clean
 
 # ----------------------------------------------------------------------
 
-$(BUILD)/%.o: cc/%.cc | $(BUILD)
+$(BUILD)/%.o: cc/%.cc | $(BUILD) install-headers
 	@echo $<
 	@g++ $(CXXFLAGS) -c -o $@ $<
 
