@@ -52,6 +52,11 @@ install: check-acmacsd-root $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) $(SEQDB
 	ln -sf $(abspath py)/* $(ACMACSD_ROOT)/py
 	ln -sf $(abspath bin)/seqdb-* $(ACMACSD_ROOT)/bin
 
+test: install
+	test/test
+
+# ----------------------------------------------------------------------
+
 -include $(BUILD)/*.d
 
 # ----------------------------------------------------------------------

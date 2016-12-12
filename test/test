@@ -1,0 +1,28 @@
+#! /bin/bash
+
+TDIR=$(mktemp -d)
+TESTDIR=$(dirname $0)
+
+# ======================================================================
+
+function on_exit
+{
+    rm -rf "$TDIR"
+}
+
+trap on_exit EXIT
+
+function failed
+{
+    echo FAILED >&2
+    exit 1
+}
+
+trap failed ERR
+
+# ======================================================================
+
+cd "$TESTDIR"
+../bin/seqdb-create --db "$TDIR"/seqdb.json.xz ./test.fas.xz
+../bin/test-copy --db "$TDIR"/seqdb.json.xz "$TDIR"/seqdb2.json.xz
+xzdiff "$TDIR"/seqdb.json.xz "$TDIR"/seqdb2.json.xz
