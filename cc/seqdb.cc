@@ -5,9 +5,11 @@
 #include "acmacs-base/read-file.hh"
 #include "acmacs-base/timeit.hh"
 #include "acmacs-base/string-matcher.hh"
-#include "seqdb.hh"
+#include "seqdb/seqdb.hh"
 #include "clades.hh"
 #include "seqdb-export.hh"
+
+using namespace seqdb;
 
 // ----------------------------------------------------------------------
 
@@ -513,7 +515,7 @@ void Seqdb::find_in_hidb(std::vector<const hidb::AntigenData*>& found, const Seq
 
 // ----------------------------------------------------------------------
 
-void Seqdb::match_hidb(std::string aHiDbDir, bool aVerbose)
+void seqdb::Seqdb::match_hidb(std::string aHiDbDir, bool aVerbose)
 {
     HiDbPtrs hidb_ptrs;
     std::ostream& report_stream = std::cerr;
@@ -541,8 +543,8 @@ void Seqdb::match_hidb(std::string aHiDbDir, bool aVerbose)
         std::vector<const hidb::AntigenData*> found;
         find_in_hidb(found, entry, hidb_ptrs, aHiDbDir);
 
-        if (aVerbose)
-            report_stream << std::endl << entry << std::endl;
+        // if (aVerbose)
+        //     report_stream << std::endl << entry << std::endl;
         if (!found.empty()) {
             typedef std::pair<string_match::score_t, size_t> score_size_t;
             typedef std::tuple<score_size_t, size_t, size_t> score_seq_found_t; // [score, len], seq_no, found_no
@@ -611,9 +613,8 @@ void Seqdb::match_hidb(std::string aHiDbDir, bool aVerbose)
     std::cout << "Matched " << (mEntries.size() - not_matched.size()) << " of " << mEntries.size() << "  " << ((mEntries.size() - not_matched.size()) * 100.0 / mEntries.size()) << '%' << std::endl;
 
     std::cerr << "Not matched " << not_matched.size() << std::endl;
-    if (!not_matched.empty()) {
-        std::cerr << "  ";
-        std::transform(not_matched.begin(), not_matched.end(), std::ostream_iterator<SeqdbEntry>(std::cerr, "\n  "), [](const auto* p) -> const SeqdbEntry& { return *p; });
+    for (const auto& nm: not_matched) {
+        std::cerr << "  " << *nm << std::endl;
     }
 
 } // Seqdb::match_hidb

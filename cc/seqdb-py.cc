@@ -1,5 +1,7 @@
 #include "acmacs-base/pybind11.hh"
-#include "seqdb.hh"
+#include "seqdb/seqdb.hh"
+
+using namespace seqdb;
 
 // ----------------------------------------------------------------------
 

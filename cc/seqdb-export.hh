@@ -2,13 +2,15 @@
 
 #include <string>
 
-#include "seqdb.hh"
+#include "seqdb/seqdb.hh"
 
 // ----------------------------------------------------------------------
 
-void seqdb_export(std::string aFilename, const Seqdb& aSeqdb, size_t aIndent);
-// void seqdb_export_pretty(std::string aFilename, const Seqdb& aSeqdb);
-void seqdb_import(std::string aFilename, Seqdb& aSeqdb);
+namespace seqdb
+{
+    void seqdb_export(std::string aFilename, const Seqdb& aSeqdb, size_t aIndent);
+    void seqdb_import(std::string aFilename, Seqdb& aSeqdb);
+}
 
 // ----------------------------------------------------------------------
 /// Local Variables:

@@ -2,9 +2,11 @@
 
 #include "clades.hh"
 
+using namespace seqdb;
+
 // ----------------------------------------------------------------------
 
-std::vector<std::string> clades_b_yamagata(std::string aSequence, Shift aShift)
+std::vector<std::string> seqdb::clades_b_yamagata(std::string aSequence, Shift aShift)
 {
       // 165N -> Y2, 165Y -> Y3
     auto r = std::vector<std::string>();
@@ -27,7 +29,7 @@ std::vector<std::string> clades_b_yamagata(std::string aSequence, Shift aShift)
 
 // ----------------------------------------------------------------------
 
-std::vector<std::string> clades_h1pdm(std::string aSequence, Shift aShift)
+std::vector<std::string> seqdb::clades_h1pdm(std::string aSequence, Shift aShift)
 {
       // 84N+162N+216T - 6B.1, 152T+173I+501E - 6B.2
     auto r = std::vector<std::string>();
@@ -53,7 +55,7 @@ std::vector<std::string> clades_h1pdm(std::string aSequence, Shift aShift)
 
 // ----------------------------------------------------------------------
 
-std::vector<std::string> clades_h3n2(std::string aSequence, Shift aShift)
+std::vector<std::string> seqdb::clades_h3n2(std::string aSequence, Shift aShift)
 {
       // 158N, 159F -> 3C3, 159Y -> 3c2a, 159S -> 3c3a, 62K+83R+261Q -> 3C3b.
     auto r = std::vector<std::string>();

@@ -3,6 +3,8 @@
 #include "acmacs-base/json-writer.hh"
 #include "acmacs-base/json-reader.hh"
 
+using namespace seqdb;
+
 // ----------------------------------------------------------------------
 
 static constexpr const char* SEQDB_JSON_DUMP_VERSION = "sequence-database-v2";
@@ -71,7 +73,7 @@ template <typename RW> inline JsonWriterT<RW>& operator <<(JsonWriterT<RW>& writ
 
 // ----------------------------------------------------------------------
 
-void seqdb_export(std::string aFilename, const Seqdb& aSeqdb, size_t aIndent)
+void seqdb::seqdb_export(std::string aFilename, const Seqdb& aSeqdb, size_t aIndent)
 {
     export_to_json(aSeqdb, SEQDB_JSON_DUMP_VERSION, aFilename, aIndent);
 }
@@ -349,7 +351,7 @@ class SeqdbRootHandler : public HandlerBase
 
 // ----------------------------------------------------------------------
 
-void seqdb_import(std::string aFilename, Seqdb& aSeqdb)
+void seqdb::seqdb_import(std::string aFilename, Seqdb& aSeqdb)
 {
     json_reader::read_from_file<Seqdb, SeqdbRootHandler>(aFilename, aSeqdb);
 

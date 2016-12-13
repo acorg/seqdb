@@ -5,7 +5,9 @@
 
 #include "acmacs-base/string.hh"
 #include "acmacs-base/stream.hh"
-#include "amino-acids.hh"
+#include "seqdb/amino-acids.hh"
+
+using namespace seqdb;
 
 // ----------------------------------------------------------------------
 
@@ -15,7 +17,7 @@
 // (0, 1, 2) and not stoppoing at stop codons, then try to align all
 // of them. Most probably just one offset leads to finding correct
 // align shift.
-AlignAminoAcidsData translate_and_align(std::string aNucleotides, Messages& aMessages)
+AlignAminoAcidsData seqdb::translate_and_align(std::string aNucleotides, Messages& aMessages)
 {
     std::vector<AlignAminoAcidsData> r;
     AlignAminoAcidsData not_aligned;
@@ -79,7 +81,7 @@ static const std::map<std::string, char> CODON_TO_PROTEIN = {
     {"TAA", '*'}, {"UAA", '*'}, {"TAG", '*'}, {"UAG", '*'}, {"TGA", '*'}, {"UGA", '*'}, {"TAR", '*'}, {"TRA", '*'}, {"UAR", '*'}, {"URA", '*'},
 };
 
-std::string translate_nucleotides_to_amino_acids(std::string aNucleotides, size_t aOffset, Messages& /*aMessages*/)
+std::string seqdb::translate_nucleotides_to_amino_acids(std::string aNucleotides, size_t aOffset, Messages& /*aMessages*/)
 {
     typedef decltype(CODON_TO_PROTEIN)::difference_type Diff;
     std::string result;
@@ -163,7 +165,7 @@ static AlignEntry ALIGN_RAW_DATA[] = {
     {"B", "", "",    Shift(), std::regex("GNFLWLLHV"),                                                           45, false, "B-CNIC"}, // Only CNIC sequences 2008-2009 have it, perhaps not HA
 };
 
-AlignData align(std::string aAminoAcids, Messages& aMessages)
+AlignData seqdb::align(std::string aAminoAcids, Messages& aMessages)
 {
     std::vector<AlignEntry> results;
     for (auto raw_data = std::begin(ALIGN_RAW_DATA); raw_data != std::end(ALIGN_RAW_DATA); ++raw_data) {
