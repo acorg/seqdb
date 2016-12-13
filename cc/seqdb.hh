@@ -239,6 +239,7 @@ namespace seqdb
         inline SeqdbEntrySeq(SeqdbEntry& aEntry, SeqdbSeq& aSeq) : mEntry(&aEntry), mSeq(&aSeq) {}
         inline SeqdbEntrySeq(const SeqdbEntry& aEntry, const SeqdbSeq& aSeq) : mEntry(const_cast<SeqdbEntry*>(&aEntry)), mSeq(const_cast<SeqdbSeq*>(&aSeq)) {}
 
+        inline void assign(SeqdbEntrySeq&& aEntrySeq) { mEntry = aEntrySeq.mEntry, mSeq = aEntrySeq.mSeq; }
         inline void assign(SeqdbEntry& aEntry, SeqdbSeq& aSeq) { mEntry = &aEntry, mSeq = &aSeq; }
         inline void assign(const SeqdbEntry& aEntry, const SeqdbSeq& aSeq) { mEntry = const_cast<SeqdbEntry*>(&aEntry), mSeq = const_cast<SeqdbSeq*>(&aSeq); }
 

@@ -651,13 +651,12 @@ const hidb::HiDb& Seqdb::get_hidb(std::string aVirusType, HiDbPtrs& aPtrs, std::
 SeqdbEntrySeq Seqdb::find_by_seq_id(std::string aSeqId) const
 {
     SeqdbEntrySeq result;
-    auto passage_separator = aSeqId.find("__");
+    const std::string seq_id = name_decode(aSeqId);
+    auto passage_separator = seq_id.find("__");
     if (passage_separator != std::string::npos) { // seq_id
-        const std::string decoded = name_decode(aSeqId);
-        passage_separator = decoded.find("__");
-        const auto entry = find_by_name(std::string(decoded, 0, passage_separator));
+        const auto entry = find_by_name(std::string(seq_id, 0, passage_separator));
         if (entry != nullptr) {
-            const auto passage_distinct = string::split(std::string(decoded, passage_separator + 2), "__", string::Split::KeepEmpty);
+            const auto passage_distinct = string::split(std::string(seq_id, passage_separator + 2), "__", string::Split::KeepEmpty);
             auto index = passage_distinct.size() == 1 ? 0 : std::stoi(passage_distinct[1]);
             for (const auto& seq: entry->seqs()) {
                 if (seq.passage() == passage_distinct[0]) {
@@ -673,13 +672,13 @@ SeqdbEntrySeq Seqdb::find_by_seq_id(std::string aSeqId) const
     }
     else {
         std::smatch year_space;
-        const auto year_space_present = std::regex_search(aSeqId, year_space, sReYearSpace);
-        const std::string look_for = year_space_present ? std::string(aSeqId, 0, static_cast<std::string::size_type>(year_space.position(0) + year_space.length(0)) - 1) : aSeqId;
+        const auto year_space_present = std::regex_search(seq_id, year_space, sReYearSpace);
+        const std::string look_for = year_space_present ? std::string(seq_id, 0, static_cast<std::string::size_type>(year_space.position(0) + year_space.length(0)) - 1) : seq_id;
         const auto entry = find_by_name(look_for);
         if (entry != nullptr) {
-            auto found = std::find_if(entry->begin_seq(), entry->end_seq(), [&aSeqId](const auto& seq) -> bool { return seq.hi_name_present(aSeqId); });
+            auto found = std::find_if(entry->begin_seq(), entry->end_seq(), [&seq_id](const auto& seq) -> bool { return seq.hi_name_present(seq_id); });
             if (found == entry->end_seq()) { // not found by hi_name, look by passage (or empty passage)
-                const std::string passage = year_space_present ? std::string(aSeqId, static_cast<std::string::size_type>(year_space.position(0) + year_space.length(0))) : std::string();
+                const std::string passage = year_space_present ? std::string(seq_id, static_cast<std::string::size_type>(year_space.position(0) + year_space.length(0))) : std::string();
                 found = std::find_if(entry->begin_seq(), entry->end_seq(), [&passage](const auto& seq) -> bool { return seq.passage_present(passage); });
             }
             if (found != entry->end_seq()) {
