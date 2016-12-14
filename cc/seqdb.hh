@@ -599,12 +599,12 @@ namespace seqdb
 
 // ----------------------------------------------------------------------
 
-template<> inline void std::swap(seqdb::SeqdbEntrySeq& a, seqdb::SeqdbEntrySeq& b) noexcept(::std::is_nothrow_move_constructible<seqdb::SeqdbEntrySeq>::value && ::std::is_nothrow_move_assignable<seqdb::SeqdbEntrySeq>::value)
-{
-    auto z = ::std::move(a);
-    a = ::std::move(b);
-    b = ::std::move(z);
-}
+// template<> inline void swap(seqdb::SeqdbEntrySeq& a, seqdb::SeqdbEntrySeq& b) noexcept(::std::is_nothrow_move_constructible<seqdb::SeqdbEntrySeq>::value && ::std::is_nothrow_move_assignable<seqdb::SeqdbEntrySeq>::value)
+// {
+//     auto z = ::std::move(a);
+//     a = ::std::move(b);
+//     b = ::std::move(z);
+// }
 
 // ----------------------------------------------------------------------
 
