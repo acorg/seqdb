@@ -59,42 +59,37 @@ std::vector<std::string> seqdb::clades_h3n2(std::string aSequence, Shift aShift)
 {
       // 158N, 159F -> 3C3, 159Y -> 3c2a, 159S -> 3c3a, 62K+83R+261Q -> 3C3b.
     auto r = std::vector<std::string>();
-    auto const pos158i = 157 - aShift;
-    if (pos158i > 0) {
-        const size_t pos158 = static_cast<size_t>(pos158i);
-        const size_t pos159 = static_cast<size_t>(158 - aShift);
-        if (aSequence.size() > pos159 && aSequence[pos158] == 'N') {
-            switch (aSequence[pos159]) {
-              case 'F':
-                  r.push_back("3C3");
-                  break;
-              case 'Y':
-                  r.push_back("3C2a");
-                  break;
-              case 'S':
-                  r.push_back("3C3a");
-                  break;
-              default:
-                    // std::cerr << "@159: " << aSequence[pos159] << std::endl;
-                  break;
-            }
+    if (aa_at(158, aSequence, aShift) == 'N') {
+        switch (aa_at(159, aSequence, aShift)) {
+          case 'F':
+              r.push_back("3C3");
+              break;
+          case 'Y':
+              r.push_back("3C2a");
+              if (aa_at(171, aSequence, aShift) == 'K' && aa_at(406, aSequence, aShift) == 'V' && aa_at(484, aSequence, aShift) == 'E') {
+                  r.push_back("3C2a1");
+              }
+              break;
+          case 'S':
+              r.push_back("3C3a");
+              break;
+          default:
+                // std::cerr << "@159: " << aSequence[pos159] << std::endl;
+              break;
         }
-
-          // auto const pos62 = 61 - aShift;
-        const size_t pos83 =  static_cast<size_t>(82 - aShift);
-        const size_t pos261 = static_cast<size_t>(260 - aShift);
-        if (aSequence.size() > pos261 && aSequence[pos159] == 'F' && aSequence[pos83] == 'R' && aSequence[pos261] == 'Q') // && aSequence[pos62] == 'K')
-            r.push_back("3C3b");
-          // if (aSequence.size()  > pos261 && aSequence[pos62] == 'K' && aSequence[pos83] == 'R' && aSequence[pos261] == 'Q')
-          //     r.push_back("3C3b?");
-
-          // 160S -> gly, 160T -> gly, 160x -> no gly
-        const size_t pos160 = static_cast<size_t>(159 - aShift);
-        if (aSequence.size() > pos160 && pos160 > 0 && (aSequence[pos160] == 'S' || aSequence[pos160] == 'T'))
-            r.push_back("gly");
-        else
-            r.push_back("no-gly");
     }
+
+    if (aa_at(159, aSequence, aShift) == 'F' && aa_at(83, aSequence, aShift) == 'R' && aa_at(261, aSequence, aShift) == 'Q') // && aa_at(62, aSequence, aShift) == 'K')
+        r.push_back("3C3b");
+      // if (aSequence.size()  > pos261 && aSequence[pos62] == 'K' && aSequence[pos83] == 'R' && aSequence[pos261] == 'Q')
+      //     r.push_back("3C3b?");
+
+      // 160S -> gly, 160T -> gly, 160x -> no gly
+    if (aa_at(160, aSequence, aShift) == 'S' || aa_at(160, aSequence, aShift) == 'T')
+        r.push_back("gly");
+    else
+        r.push_back("no-gly");
+
     return r;
 
 } // clades_h3n2
