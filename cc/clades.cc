@@ -67,6 +67,7 @@ std::vector<std::string> seqdb::clades_h3n2(std::string aSequence, Shift aShift)
           case 'Y':
               r.push_back("3C2a");
               if (aa_at(171, aSequence, aShift) == 'K' && aa_at(406, aSequence, aShift) == 'V' && aa_at(484, aSequence, aShift) == 'E') {
+                    // Derek's message of 2016-12-23 10:32 "clade 3c.2a1"
                   r.push_back("3C2a1");
               }
               break;
