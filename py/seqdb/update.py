@@ -64,6 +64,7 @@ class SeqdbUpdater:
 
     def _add_sequence(self, data):
         self._normalize(data)
+        # module_logger.debug('{}'.format({k:v for k,v in data.items() if k not in ["sequence"]}))
         name = data.get("name")
         if name:
             if name[1] in ["/", "("] and data.get("virus_type") and name[0] != data["virus_type"][0]:
@@ -81,7 +82,7 @@ class SeqdbUpdater:
 
     def _update_db_entry(self, entry, data):
         if data.get("virus_type") and entry.virus_type != data["virus_type"]:
-            raise RuntimeError("Cannot add {!r} to {!r}".format(data["virus_type"], entry.virus_type))
+            raise RuntimeError("Cannot add {!r} to {!r} for {!r}".format(data["virus_type"], entry.virus_type, data.get("name")))
         if data.get("location", {}).get("country"):
             entry.country = data["location"]["country"]
         if data.get("location", {}).get("continent"):
@@ -104,6 +105,15 @@ class SeqdbUpdater:
             data["passage"] = passage(data["passage"])
         if data.get("reassortant"):
             data["reassortant"] = reassortant(data["reassortant"])
+        if data.get("name") and data.get("virus_type"):
+            self._add_virus_type_to_name(data)
+
+    # ----------------------------------------------------------------------
+
+    def _add_virus_type_to_name(self, data):
+        # name can be in different subtypes, e.g. there is A/DAKAR/03/2014 in H1pdm and H3 (both NIMR)
+        if data["name"][:2] == "A/":
+            data["name"] = data["virus_type"] + data["name"][1:]
 
     # ----------------------------------------------------------------------
 
