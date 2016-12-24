@@ -107,6 +107,7 @@ class SeqdbUpdater:
             data["reassortant"] = reassortant(data["reassortant"])
         if data.get("name") and data.get("virus_type"):
             self._add_virus_type_to_name(data)
+            data["name"] = data["name"].replace("/LYON/CHU/", "/LYON CHU/").replace(" /", "/").replace("/ ", "/")
 
     # ----------------------------------------------------------------------
 
