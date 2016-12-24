@@ -262,10 +262,21 @@ void SeqdbEntry::update_lineage(std::string aLineage, Messages& aMessages)
 void SeqdbEntry::update_subtype(std::string aSubtype, Messages& aMessages)
 {
     if (!aSubtype.empty()) {
-        if (mVirusType.empty())
+        if (mVirusType.empty()) {
             mVirusType = aSubtype;
-        else if (aSubtype != mVirusType)
-            aMessages.warning() << "Different subtypes " << mVirusType << " (stored) vs. " << aSubtype << " (ignored)" << std::endl;
+        }
+        else if (aSubtype != mVirusType) {
+            if (mVirusType == "A(H3N0)" && aSubtype == "A(H3N2)") {
+                  // NIMR sent few sequences to gisaid having H3N0 while they are really H3N2 (detected by our aligner)
+                mVirusType = aSubtype;
+                  // replace virus type in the name too
+                if (mName.find("A(H3N0)") == 0)
+                    mName[5] = '2';
+            }
+            else {
+                aMessages.warning() << "Different subtypes " << mVirusType << " (stored) vs. " << aSubtype << " (ignored)" << std::endl;
+            }
+        }
     }
 
 } // SeqdbEntry::update_subtype
