@@ -21,8 +21,8 @@ def main(args):
     with timeit("loading seqdb"):
         seq_db.load(filename=args.path_to_seqdb)
     r = seq_db.find_by_seq_id(args.seq_id[0])
-    print(r)
-    
+    print(r.seq_id())
+
 # ----------------------------------------------------------------------
 
 with timeit(sys.argv[0]):
