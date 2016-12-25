@@ -410,7 +410,8 @@ namespace seqdb
 
         SeqdbEntrySeq find_by_seq_id(std::string aSeqId) const;
 
-        SeqdbEntry* new_entry(std::string aName);
+        // SeqdbEntry* new_entry(std::string aName);
+        void add_sequence(std::string aName, std::string aVirusType, std::string aLab, std::string aDate, std::string aLabId, std::string aPassage, std::string aReassortant, std::string aSequence);
 
           // removes short sequences, removes entries having no sequences. returns messages
         std::string cleanup(bool remove_short_sequences);

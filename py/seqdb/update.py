@@ -33,10 +33,22 @@ class SeqdbUpdater:
     #     self.hidb = hidb
 
     def add(self, data):
-        """data is list of dicts {"date":, "lab":, "name":, "passage":, "sequence":, "virus_type":, "gene":}"""
+        """data is list of dicts {"date":, "lab":, "name":, "passage":, "reassortant":, "sequence":, "virus_type":, "gene":}"""
         num_added = 0
         for entry in data:
-            self._add_sequence(entry)
+            if entry.get("name"):
+                from .normalize import passage, reassortant
+                if entry.get("passage"):
+                    entry["passage"] = passage(entry["passage"])
+                if entry.get("reassortant"):
+                    entry["reassortant"] = reassortant(entry["reassortant"])
+                # annotatitions?
+                # module_logger.debug('before add_sequence {}'.format({k:v for k,v in entry.items() if k != "sequence"}))
+                self.seqdb.add_sequence(name=entry["name"], virus_type=entry.get("virus_type", ""), lab=entry.get("lab", ""),
+                                            date=entry.get("date", ""), lab_id=entry.get("lab_id", ""), passage=entry.get("passage", ""),
+                                            reassortant=entry.get("reassortant", ""), sequence=entry.get("sequence", ""))
+            else:
+                module_logger.warning('Cannot add entry without name: {}'.format(entry["lab_id"]))
         messages = self.seqdb.cleanup(remove_short_sequences=True)
         if messages:
             module_logger.warning(messages)
@@ -49,73 +61,75 @@ class SeqdbUpdater:
         self.seqdb.remove_hi_names()
         self.seqdb.match_hidb(str(hidb_dir), verbose=verbose)
 
-    # def match_hidb(self):
-    #     if self.hidb:
-    #         module_logger.debug('Removing old hi names')
-    #         self.seqdb.remove_hi_names()
-    #         self.hidb_already_matched = set()
-    #         module_logger.debug('Matching hi names')
-    #         for seqdb_entry in self.seqdb.iter_entry():
-    #             self._match_hidb(seqdb_entry)
-
+    # ----------------------------------------------------------------------
     # ----------------------------------------------------------------------
 
-    sReName = re.compile(r"^(A\(H\d+N\d+\)|B)/")
+    # # sReName = re.compile(r"^(A\(H\d+N\d+\)|B)/")
 
-    def _add_sequence(self, data):
-        self._normalize(data)
-        # module_logger.debug('{}'.format({k:v for k,v in data.items() if k not in ["sequence"]}))
-        name = data.get("name")
-        if name:
-            if name[1] in ["/", "("] and data.get("virus_type") and name[0] != data["virus_type"][0]:
-                module_logger.warning('Virus type ({}) and name ({}) mismatch'.format(data["virus_type"], name))
-            entry = self.seqdb.find_by_name(name)
-            if entry is None:
-                # if self.normalize_names and not self.sReName.match(name):
-                #     module_logger.warning('Suspicious name {!r}'.format(name))
-                entry = self.seqdb.new_entry(name)
-                if data.get("virus_type"):
-                    entry.virus_type = data["virus_type"] # entry = {"N": name, "s": [], "v": data["virus_type"]}
-            self._update_db_entry(entry, data)
-        else:
-            module_logger.warning('Cannot add entry without name: {}'.format(data["lab_id"]))
+    # def add(self, data):
+    #     """data is list of dicts {"date":, "lab":, "name":, "passage":, "sequence":, "virus_type":, "gene":}"""
+    #     num_added = 0
+    #     for entry in data:
+    #         self._add_sequence(entry)
+    #     messages = self.seqdb.cleanup(remove_short_sequences=True)
+    #     if messages:
+    #         module_logger.warning(messages)
 
-    def _update_db_entry(self, entry, data):
-        if data.get("virus_type") and entry.virus_type != data["virus_type"]:
-            raise RuntimeError("Cannot add {!r} to {!r} for {!r}".format(data["virus_type"], entry.virus_type, data.get("name")))
-        if data.get("location", {}).get("country"):
-            entry.country = data["location"]["country"]
-        if data.get("location", {}).get("continent"):
-            entry.continent = data["location"]["continent"]
-        if data.get("date"):
-            entry.add_date(data["date"])
-        if data.get("annotatitions"):
-            module_logger.warning('Sequence {} has annotatitions {}'.format(data["name"], data["annotatitions"]))
-        message = entry.add_or_update_sequence(sequence=data["sequence"], passage=data.get("passage", ""), reassortant=data.get("reassortant", ""), lab=data.get("lab", ""), lab_id=data.get("lab_id", ""), gene=data.get("gene", ""))
-        if message:
-            module_logger.warning("{}: {}".format(data["name"], message.replace("\n", " ")))
-        # if self.hidb:
-        #     self._match_hidb(entry, data)
+    # def _add_sequence(self, data):
+    #     self._normalize(data)
+    #     # module_logger.debug('{}'.format({k:v for k,v in data.items() if k not in ["sequence"]}))
+    #     name = data.get("name")
+    #     if name:
+    #         if name[1] in ["/", "("] and data.get("virus_type") and name[0] != data["virus_type"][0]:
+    #             module_logger.warning('Virus type ({}) and name ({}) mismatch'.format(data["virus_type"], name))
+    #         entry = self.seqdb.find_by_name(name)
+    #         if entry is None:
+    #             # if self.normalize_names and not self.sReName.match(name):
+    #             #     module_logger.warning('Suspicious name {!r}'.format(name))
+    #             entry = self.seqdb.new_entry(name)
+    #             if data.get("virus_type"):
+    #                 entry.virus_type = data["virus_type"] # entry = {"N": name, "s": [], "v": data["virus_type"]}
+    #         self._update_db_entry(entry, data)
+    #     else:
+    #         module_logger.warning('Cannot add entry without name: {}'.format(data["lab_id"]))
+
+    # def _update_db_entry(self, entry, data):
+    #     if data.get("virus_type") and entry.virus_type != data["virus_type"]:
+    #         raise RuntimeError("Cannot add {!r} to {!r} for {!r}".format(data["virus_type"], entry.virus_type, data.get("name")))
+    #     if data.get("location", {}).get("country"):
+    #         entry.country = data["location"]["country"]
+    #     if data.get("location", {}).get("continent"):
+    #         entry.continent = data["location"]["continent"]
+    #     if data.get("date"):
+    #         entry.add_date(data["date"])
+    #     if data.get("annotatitions"):
+    #         module_logger.warning('Sequence {} has annotatitions {}'.format(data["name"], data["annotatitions"]))
+    #     message = entry.add_or_update_sequence(sequence=data["sequence"], passage=data.get("passage", ""), reassortant=data.get("reassortant", ""), lab=data.get("lab", ""), lab_id=data.get("lab_id", ""), gene=data.get("gene", ""))
+    #     if message:
+    #         module_logger.warning("{}: {}".format(data["name"], message.replace("\n", " ")))
+    #     # if self.hidb:
+    #     #     self._match_hidb(entry, data)
+
+    # # ----------------------------------------------------------------------
+
+    # def _normalize(self, data):
+    #     from .normalize import passage, reassortant
+    #     if data.get("passage"):
+    #         data["passage"] = passage(data["passage"])
+    #     if data.get("reassortant"):
+    #         data["reassortant"] = reassortant(data["reassortant"])
+    #     if data.get("name") and data.get("virus_type"):
+    #         self._add_virus_type_to_name(data)
+    #         data["name"] = data["name"].replace("/LYON/CHU/", "/LYON CHU/").replace(" /", "/").replace("/ ", "/")
+
+    # # ----------------------------------------------------------------------
+
+    # def _add_virus_type_to_name(self, data):
+    #     # name can be in different subtypes, e.g. there is A/DAKAR/03/2014 in H1pdm and H3 (both NIMR)
+    #     if data["name"][:2] == "A/":
+    #         data["name"] = data["virus_type"] + data["name"][1:]
 
     # ----------------------------------------------------------------------
-
-    def _normalize(self, data):
-        from .normalize import passage, reassortant
-        if data.get("passage"):
-            data["passage"] = passage(data["passage"])
-        if data.get("reassortant"):
-            data["reassortant"] = reassortant(data["reassortant"])
-        if data.get("name") and data.get("virus_type"):
-            self._add_virus_type_to_name(data)
-            data["name"] = data["name"].replace("/LYON/CHU/", "/LYON CHU/").replace(" /", "/").replace("/ ", "/")
-
-    # ----------------------------------------------------------------------
-
-    def _add_virus_type_to_name(self, data):
-        # name can be in different subtypes, e.g. there is A/DAKAR/03/2014 in H1pdm and H3 (both NIMR)
-        if data["name"][:2] == "A/":
-            data["name"] = data["virus_type"] + data["name"][1:]
-
     # ----------------------------------------------------------------------
 
     # def _match_hidb(self, seqdb_entry):

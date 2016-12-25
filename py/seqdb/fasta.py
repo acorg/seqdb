@@ -202,14 +202,16 @@ def _check_sequence(sequence, name, filename, line_no):
 
 # ----------------------------------------------------------------------
 
-sReReassortant = re.compile(r"^(.+)((?:X|BX|NYMC|VI|NIB(?:SC)?|RESVIR|IVR)-?\d+[A-C]?)$")
+sReReassortant = re.compile(r"^(.+\d)\s*((?:X|BX|NYMC(?:[\s\-]X)|VI|NIB(?:SC)?|RESVIR|IVR|RG(?:\s*ID)?|(?:IBCDC|UW)RG|PR8-IDCDC-RG)[-\s]?[0-9A-Z]+)\s*$")
 
 def detect_reassortant(entry):
+    # module_logger.debug('detect_reassortant {!r} -- {!r}'.format(entry.get("name"), entry.get("reassortant")))
     if entry.get("name") and not entry.get("reassortant"):
         m = sReReassortant.match(entry["name"])
         if m and m.group(2):
             entry["reassortant"] = m.group(2).strip()
             entry["name"] = m.group(1).strip()
+    # module_logger.debug('detect_reassortant2 {!r} -- {!r}'.format(entry.get("name"), entry.get("reassortant")))
 
 # ----------------------------------------------------------------------
 
@@ -355,11 +357,22 @@ class NameParser:
                 raise ValueError("Unrecognized gisaid flu virus_type: " + virus_type)
         return virus_type
 
+    sReReassortantName = re.compile(r"^((?:NYMC|[IB]VR|B?X-|NIB|RG)[^\(]*)\s*\((?:HY\s+)?([^\)]+)\)?$")
+
     def _fix_gisaid_name(self, name):
-        return (name
-                .upper()
-                .replace("ITALY-FVG/", "ITALY/FVG-")   # NIMR uses A/ITALY/FVG-1/2015 in HI
-                )
+        # module_logger.debug('gisaid name: {!r}'.format(name))
+        fixed_name = (name
+                 .upper()
+                 .replace("ITALY-FVG/", "ITALY/FVG-")   # NIMR uses A/ITALY/FVG-1/2015 in HI
+                 .replace("/LYON/CHU/", "/LYON CHU/")
+                 .replace("/CAMEROON1", "/CAMEROON/1")
+                 .replace("//", "/")
+                 )
+        m = self.sReReassortantName.match(fixed_name)
+        if m:
+            fixed_name = m.group(2) + " " + m.group(1)
+            # module_logger.debug('fixed reassortant {!r} -> {!r}'.format(name, fixed_name))
+        return fixed_name
 
     def gisaid_without_date(self, raw_name, m, **kw):
         return self.gisaid(raw_name=raw_name, m=m, with_date=False, **kw)

@@ -5,6 +5,7 @@
 #include "acmacs-base/read-file.hh"
 #include "acmacs-base/timeit.hh"
 #include "acmacs-base/string-matcher.hh"
+#include "acmacs-base/virus-name.hh"
 #include "seqdb/seqdb.hh"
 #include "clades.hh"
 #include "seqdb-export.hh"
@@ -332,15 +333,28 @@ std::vector<std::string> SeqdbEntry::make_all_names() const
 
 // ----------------------------------------------------------------------
 
-SeqdbEntry* Seqdb::new_entry(std::string aName)
+void Seqdb::add_sequence(std::string aName, std::string aVirusType, std::string aLab, std::string aDate, std::string aLabId, std::string aPassage, std::string aReassortant, std::string aSequence)
 {
-    auto const first = find_insertion_place(aName);
-    if (first != mEntries.end() && aName == first->name())
-        throw std::runtime_error(std::string("Entry for \"") + aName + "\" already exists");
-    auto inserted = mEntries.insert(first, SeqdbEntry(aName));
-    return &*inserted;
+    std::string name = virus_name::normalize(aName);
+      // aVirusType and beginning of the name
+      // gene
+      // location
+      // entry.add_date(data["date"]) - after inserting
 
-} // Seqdb::new_entry
+
+} // Seqdb::add_sequence
+
+// ----------------------------------------------------------------------
+
+// SeqdbEntry* Seqdb::new_entry(std::string aName)
+// {
+//     auto const first = find_insertion_place(aName);
+//     if (first != mEntries.end() && aName == first->name())
+//         throw std::runtime_error(std::string("Entry for \"") + aName + "\" already exists");
+//     auto inserted = mEntries.insert(first, SeqdbEntry(aName));
+//     return &*inserted;
+
+// } // Seqdb::new_entry
 
 // ----------------------------------------------------------------------
 
