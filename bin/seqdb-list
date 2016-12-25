@@ -10,8 +10,6 @@ if sys.version_info.major != 3: raise RuntimeError("Run script with python3")
 from pathlib import Path
 acmacsd_root = Path(os.environ["ACMACSD_ROOT"]).resolve()
 sys.path[:0] = [str(acmacsd_root.joinpath("py"))]
-if sys.platform == "linux" and not os.environ.get("LD_LIBRARY_PATH"):
-    os.environ["LD_LIBRARY_PATH"] = str(acmacsd_root.joinpath("lib"))
 import logging; module_logger = logging.getLogger(__name__)
 
 import seqdb as seqdb_m
