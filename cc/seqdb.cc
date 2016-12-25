@@ -264,6 +264,9 @@ void SeqdbEntry::update_subtype(std::string aSubtype, Messages& aMessages)
     if (!aSubtype.empty()) {
         if (mVirusType.empty()) {
             mVirusType = aSubtype;
+              // fix subtype in the name too
+            if (mName.find("A/") == 0)
+                mName.replace(0, 1, mVirusType);
         }
         else if (aSubtype != mVirusType) {
             if (mVirusType == "A(H3N0)" && aSubtype == "A(H3N2)") {
