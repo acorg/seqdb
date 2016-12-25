@@ -2,7 +2,7 @@
 # -*- Python -*-
 
 """
-
+Query seqdb
 """
 
 import sys, os, traceback
@@ -11,17 +11,31 @@ from pathlib import Path
 sys.path[:0] = [str(Path(os.environ["ACMACSD_ROOT"]).resolve().joinpath("py"))]
 import logging; module_logger = logging.getLogger(__name__)
 
-import seqdb
+import seqdb as seqdb_m
 from acmacs_base import timeit
 
 # ----------------------------------------------------------------------
 
 def main(args):
-    seq_db = seqdb.Seqdb()
+    seqdb = seqdb_m.Seqdb()
     with timeit("loading seqdb"):
-        seq_db.load(filename=args.path_to_seqdb)
-    r = seq_db.find_by_seq_id(args.seq_id[0])
-    print(r.seq_id(encoded=False))
+        seqdb.load(filename=args.path_to_seqdb)
+    if args.list_all:
+        print("Entries:", seqdb.number_of_entries(), " Seqs:", seqdb.number_of_seqs())
+        for e in seqdb.iter_seq():
+            print(e.seq_id(encoded=False))
+    elif args.filter_re:
+        for e in seqdb.iter_seq().filter_name_regex(args.filter_re):
+            print(e.make_name())
+    elif args.name:
+        r = seqdb.find_by_name(args.name)
+        if r:
+            print(r.seq_id(encoded=False))
+        else:
+            print("NOT FOUND:", args.name)
+    elif args.seq_id:
+        r = seqdb.find_by_seq_id(args.seq_id)
+        print(r.seq_id(encoded=False))
 
 # ----------------------------------------------------------------------
 
@@ -32,7 +46,10 @@ with timeit(sys.argv[0]):
         parser.add_argument('-d', '--debug', action='store_const', dest='loglevel', const=logging.DEBUG, default=logging.INFO, help='Enable debugging output.')
 
         parser.add_argument('--db', action='store', dest='path_to_seqdb', required=True, help='Path to sequence database.')
-        parser.add_argument('seq_id', nargs=1, help='Seq_id to look for.')
+        parser.add_argument('--id', action="store", dest="seq_id", default=None, help='Seq_id to look for.')
+        parser.add_argument('--name', action="store", dest="name", default=None, help='Name to look for.')
+        parser.add_argument('--re', action="store", dest="filter_re", default=None, help='List filtered by regex (like finding base-seq for exporting).')
+        parser.add_argument('--all', action="store_true", dest="list_all", default=False, help='List all seq ids.')
 
         args = parser.parse_args()
         logging.basicConfig(level=args.loglevel, format="%(levelname)s %(asctime)s: %(message)s")

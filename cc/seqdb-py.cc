@@ -132,7 +132,7 @@ PYBIND11_PLUGIN(seqdb_backend)
             .def_property_readonly("entry", static_cast<const SeqdbEntry& (SeqdbEntrySeq::*)() const>(&SeqdbEntrySeq::entry), py::return_value_policy::reference)
             .def_property_readonly("seq", static_cast<const SeqdbSeq& (SeqdbEntrySeq::*)() const>(&SeqdbEntrySeq::seq), py::return_value_policy::reference)
             .def("make_name", &SeqdbEntrySeq::make_name, py::arg("passage_separator") = std::string(" "))
-            .def("seq_id", &SeqdbEntrySeq::seq_id)
+            .def("seq_id", &SeqdbEntrySeq::seq_id, py::arg("encoded") = false)
             ;
 
     py::class_<PySeqdbEntrySeqIterator>(m, "PySeqdbEntrySeqIterator")

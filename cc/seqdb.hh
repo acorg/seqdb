@@ -256,9 +256,12 @@ namespace seqdb
             }
 
           // seq_id is concatenation of sequence name and passage separeted by __
-        inline std::string seq_id() const
+        inline std::string seq_id(bool encoded) const
             {
-                return name_encode(string::strip(mEntry->name() + "__" + mSeq->passage()));
+                std::string r = string::strip(mEntry->name() + "__" + mSeq->passage());
+                if (encoded)
+                    r = name_encode(r);
+                return r;
             }
 
      private:

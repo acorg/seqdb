@@ -24,7 +24,9 @@ def export_from_seqdb(seqdb, filename, output_format, amino_acids, lab, virus_ty
     def make_entry(e):
         r = {
             "e": e,
-            "n": name_format.format(hi_name_or_seq_name_with_passage=e.make_name(), name=e.entry.name, date=e.entry.date(), lab_id=e.seq.lab_id(), passage=e.seq.passage(), lab=e.seq.lab(), gene=e.seq.gene(), seq_id=e.seq_id()),
+            "n": name_format.format(hi_name_or_seq_name_with_passage=e.make_name(), name=e.entry.name,
+                                        date=e.entry.date(), lab_id=e.seq.lab_id(), passage=e.seq.passage(),
+                                        lab=e.seq.lab(), gene=e.seq.gene(), seq_id=e.seq_id(encode_name)),
             "d": e.entry.date(),
             }
         return r
