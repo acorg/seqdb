@@ -44,9 +44,12 @@ class SeqdbUpdater:
                     entry["reassortant"] = reassortant(entry["reassortant"])
                 # annotatitions?
                 # module_logger.debug('before add_sequence {}'.format({k:v for k,v in entry.items() if k != "sequence"}))
-                self.seqdb.add_sequence(name=entry["name"], virus_type=entry.get("virus_type", ""), lab=entry.get("lab", ""),
-                                            date=entry.get("date", ""), lab_id=entry.get("lab_id", ""), passage=entry.get("passage", ""),
-                                            reassortant=entry.get("reassortant", ""), sequence=entry.get("sequence", ""))
+                message = self.seqdb.add_sequence(name=entry["name"], virus_type=entry.get("virus_type", ""), lineage=entry.get("lineage", ""),
+                                            lab=entry.get("lab", ""), date=entry.get("date", ""), lab_id=entry.get("lab_id", ""),
+                                            passage=entry.get("passage", ""), reassortant=entry.get("reassortant", ""),
+                                            sequence=entry.get("sequence", ""), gene=entry.get("gene", ""))
+                if message:
+                    module_logger.warning("{}: {}".format(entry["name"], message.replace("\n", " ")))
             else:
                 module_logger.warning('Cannot add entry without name: {}'.format(entry["lab_id"]))
         messages = self.seqdb.cleanup(remove_short_sequences=True)

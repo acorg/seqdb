@@ -14,6 +14,19 @@ using namespace seqdb;
 
 // ----------------------------------------------------------------------
 
+bool SeqdbSeq::match_update(const SeqdbSeq& aNewSeq)
+{
+    bool result = false;
+    if (!aNewSeq.mNucleotides.empty())
+        result = match_update_nucleotides(aNewSeq.mNucleotides);
+    else
+        result = match_update_amino_acids(aNewSeq.mAminoAcids);
+    return result;
+
+} // SeqdbSeq::match_update
+
+// ----------------------------------------------------------------------
+
 bool SeqdbSeq::match_update_nucleotides(std::string aNucleotides)
 {
     bool matches = false;
@@ -260,14 +273,11 @@ void SeqdbEntry::update_lineage(std::string aLineage, Messages& aMessages)
 
 // ----------------------------------------------------------------------
 
-void SeqdbEntry::update_subtype(std::string aSubtype, Messages& aMessages)
+void SeqdbEntry::update_subtype_name(std::string aSubtype, Messages& aMessages)
 {
     if (!aSubtype.empty()) {
         if (mVirusType.empty()) {
             mVirusType = aSubtype;
-              // fix subtype in the name too
-            if (mName.find("A/") == 0)
-                mName.replace(0, 1, mVirusType);
         }
         else if (aSubtype != mVirusType) {
             if (mVirusType == "A(H3N0)" && aSubtype == "A(H3N2)") {
@@ -281,42 +291,45 @@ void SeqdbEntry::update_subtype(std::string aSubtype, Messages& aMessages)
                 aMessages.warning() << "Different subtypes " << mVirusType << " (stored) vs. " << aSubtype << " (ignored)" << std::endl;
             }
         }
+          // fix subtype in the name too
+        if (mName.find("A/") == 0)
+            mName.replace(0, 1, mVirusType);
     }
 
-} // SeqdbEntry::update_subtype
+} // SeqdbEntry::update_subtype_name
 
 // ----------------------------------------------------------------------
 
-std::string SeqdbEntry::add_or_update_sequence(std::string aSequence, std::string aPassage, std::string aReassortant, std::string aLab, std::string aLabId, std::string aGene)
-{
-    Messages messages;
-    const bool nucs = is_nucleotides(aSequence);
-    decltype(mSeq.begin()) found;
-    if (nucs)
-        found = std::find_if(mSeq.begin(), mSeq.end(), [&aSequence](SeqdbSeq& seq) { return seq.match_update_nucleotides(aSequence); });
-    else
-        found = std::find_if(mSeq.begin(), mSeq.end(), [&aSequence](SeqdbSeq& seq) { return seq.match_update_amino_acids(aSequence); });
-    if (found != mSeq.end()) {  // update
-        found->update_gene(aGene, messages);
-    }
-    else { // add
-        if (nucs)
-            mSeq.push_back(SeqdbSeq(aSequence, aGene));
-        else
-            mSeq.push_back(SeqdbSeq(std::string(), aSequence, aGene));
-        found = mSeq.end() - 1;
-    }
-    if (found != mSeq.end()) {
-        found->add_passage(aPassage);
-        found->add_reassortant(aReassortant);
-        found->add_lab_id(aLab, aLabId);
-        auto align_data = found->align(false, messages);
-        update_subtype(align_data.subtype, messages);
-        update_lineage(align_data.lineage, messages);
-    }
-    return messages;
+// std::string SeqdbEntry::add_or_update_sequence(std::string aSequence, std::string aPassage, std::string aReassortant, std::string aLab, std::string aLabId, std::string aGene)
+// {
+//     Messages messages;
+//     const bool nucs = is_nucleotides(aSequence);
+//     decltype(mSeq.begin()) found;
+//     if (nucs)
+//         found = std::find_if(mSeq.begin(), mSeq.end(), [&aSequence](SeqdbSeq& seq) { return seq.match_update_nucleotides(aSequence); });
+//     else
+//         found = std::find_if(mSeq.begin(), mSeq.end(), [&aSequence](SeqdbSeq& seq) { return seq.match_update_amino_acids(aSequence); });
+//     if (found != mSeq.end()) {  // update
+//         found->update_gene(aGene, messages);
+//     }
+//     else { // add
+//         if (nucs)
+//             mSeq.push_back(SeqdbSeq(aSequence, aGene));
+//         else
+//             mSeq.push_back(SeqdbSeq(std::string(), aSequence, aGene));
+//         found = mSeq.end() - 1;
+//     }
+//     if (found != mSeq.end()) {
+//         found->add_passage(aPassage);
+//         found->add_reassortant(aReassortant);
+//         found->add_lab_id(aLab, aLabId);
+//         auto align_data = found->align(false, messages);
+//         update_subtype_name(align_data.subtype, messages);
+//         update_lineage(align_data.lineage, messages);
+//     }
+//     return messages;
 
-} // SeqdbEntry::add_or_update_sequence
+// } // SeqdbEntry::add_or_update_sequence
 
 // ----------------------------------------------------------------------
 
@@ -333,14 +346,47 @@ std::vector<std::string> SeqdbEntry::make_all_names() const
 
 // ----------------------------------------------------------------------
 
-void Seqdb::add_sequence(std::string aName, std::string aVirusType, std::string aLab, std::string aDate, std::string aLabId, std::string aPassage, std::string aReassortant, std::string aSequence)
+std::string Seqdb::add_sequence(std::string aName, std::string aVirusType, std::string aLineage, std::string aLab, std::string aDate, std::string aLabId, std::string aPassage, std::string aReassortant, std::string aSequence, std::string aGene)
 {
+    Messages messages;
     std::string name = virus_name::normalize(aName);
-      // aVirusType and beginning of the name
-      // gene
-      // location
-      // entry.add_date(data["date"]) - after inserting
+    SeqdbEntry entry(name, aVirusType, aLineage);
 
+    SeqdbSeq new_seq(aSequence, aGene);
+    auto align_data = new_seq.align(false, messages);
+    entry.update_subtype_name(align_data.subtype, messages); // updates entry.mName!
+    std::cerr << "add " << align_data.subtype << ' ' << entry.name() << std::endl;
+
+    auto inserted_entry = find_insertion_place(entry.name());
+    SeqdbSeq* inserted_seq = nullptr;
+    if (inserted_entry == mEntries.end() || entry.name() != inserted_entry->name()) {
+        inserted_entry = mEntries.insert(inserted_entry, std::move(entry));
+        inserted_entry->seqs().push_back(std::move(new_seq));
+        inserted_seq = &inserted_entry->seqs().back();
+    }
+    else {
+        inserted_entry->update_subtype_name(align_data.subtype, messages);
+        auto& seqs = inserted_entry->seqs();
+        auto found_seq = std::find_if(seqs.begin(), seqs.end(), [&new_seq](SeqdbSeq& seq) { return seq.match_update(new_seq); });
+        if (found_seq == seqs.end()) {
+            seqs.push_back(std::move(new_seq));
+            inserted_seq = &seqs.back();
+        }
+        else {
+            inserted_seq = &*found_seq;
+        }
+    }
+    inserted_entry->update_lineage(align_data.lineage, messages);
+    if (!aDate.empty())
+        inserted_entry->add_date(aDate);
+
+    inserted_seq->add_reassortant(aReassortant);
+    inserted_seq->add_passage(aPassage);
+    inserted_seq->add_lab_id(aLab, aLabId);
+
+      // location
+
+    return messages;
 
 } // Seqdb::add_sequence
 
@@ -548,6 +594,26 @@ void seqdb::Seqdb::match_hidb(std::string aHiDbDir, bool aVerbose)
     HiDbPtrs hidb_ptrs;
     std::ostream& report_stream = std::cerr;
 
+    struct score_size_t
+    {
+        string_match::score_t score;
+        size_t len;
+
+          //inline score_size_t() = default;
+        inline score_size_t(string_match::score_t s, size_t l) : score(s), len(l) {}
+        inline bool operator<(const score_size_t& a) const { return score < a.score; }
+    };
+
+    struct score_seq_found_t : public score_size_t
+    {
+        size_t seq_no;
+        size_t found_no;
+
+          //inline score_seq_found_t() = default;
+        inline score_seq_found_t(const score_size_t& ss, size_t sn, size_t fn) : score_size_t(ss.score, ss.len), seq_no(sn), found_no(fn) {}
+        inline bool operator<(const score_seq_found_t& a) const { return score > a.score; }
+    };
+
     auto report_found = [](std::ostream& out, const auto& found) {
         size_t found_no = 0;
         for (const auto& e: found) {
@@ -560,7 +626,7 @@ void seqdb::Seqdb::match_hidb(std::string aHiDbDir, bool aVerbose)
         for (const auto& m: matching) {
             out << "    ";
             for (const auto& sf: m) {
-                out << " [" << std::get<0>(sf).first << " " << std::get<0>(sf).second << " S:" << std::get<1>(sf) << " F:" << std::get<2>(sf) << ']';
+                out << " [" << sf.score << " " << sf.len << " S:" << sf.seq_no << " F:" << sf.found_no << ']';
             }
             out << std::endl;
         }
@@ -571,11 +637,9 @@ void seqdb::Seqdb::match_hidb(std::string aHiDbDir, bool aVerbose)
         std::vector<const hidb::AntigenData*> found;
         find_in_hidb(found, entry, hidb_ptrs, aHiDbDir);
 
-        // if (aVerbose)
-        //     report_stream << std::endl << entry << std::endl;
+          // if (aVerbose)
+          //     report_stream << std::endl << entry << std::endl;
         if (!found.empty()) {
-            typedef std::pair<string_match::score_t, size_t> score_size_t;
-            typedef std::tuple<score_size_t, size_t, size_t> score_seq_found_t; // [score, len], seq_no, found_no
 
             std::vector<std::vector<score_seq_found_t>> matching; // for each seq list of matching [[score, min passage len], found_no] - sorted by score desc
             size_t seq_no = 0;
@@ -588,24 +652,24 @@ void seqdb::Seqdb::match_hidb(std::string aHiDbDir, bool aVerbose)
                         const auto& f_passage = f->data().passage();
                         if (!seq.passages().empty())
                             std::transform(seq.passages().begin(), seq.passages().end(), std::back_inserter(scores),
-                                           [&f_passage](const auto& passage) { return std::make_pair(string_match::match(passage, f_passage), std::min(passage.size(), f_passage.size())); });
+                                           [&f_passage](const auto& passage) -> score_size_t { return {string_match::match(passage, f_passage), std::min(passage.size(), f_passage.size())}; });
                         else
                             scores.emplace_back(string_match::match(std::string{}, f_passage), 0);
-                        matching_for_seq.emplace_back(*std::max_element(scores.begin(), scores.end(), [](const auto& a, const auto& b) { return a.first < b.first; }), seq_no, found_no);
+                        matching_for_seq.emplace_back(*std::max_element(scores.begin(), scores.end() /*$, [](const auto& a, const auto& b) { return a.first < b.first; }*/), seq_no, found_no);
                           // report_stream << "  @" << seq.passages() << " @ " << f_passage << " " << score_size->first << " " << score_size->second << std::endl;
                     }
                     ++found_no;
                 }
-                std::sort(matching_for_seq.begin(), matching_for_seq.end(), [](const auto& a, const auto& b) { return std::get<0>(a).first > std::get<0>(b).first; });
+                std::sort(matching_for_seq.begin(), matching_for_seq.end());
                 matching.push_back(std::move(matching_for_seq));
                 ++seq_no;
             }
-            std::sort(matching.begin(), matching.end(), [](const auto& a, const auto& b) { return std::get<0>(a[0]).first > std::get<0>(b[0]).first; });
+            std::sort(matching.begin(), matching.end(), [](const auto& a, const auto& b) -> bool { return a.empty() ? false : (b.empty() || a[0] < b[0]); });
 
             if (matching.size() == 1) {
                 for (const auto& ms: matching[0]) {
-                    if (std::get<0>(ms).first == std::get<0>(matching[0][0]).first) {
-                        const auto name = found[std::get<2>(ms)]->data().full_name();
+                    if (ms.score == matching[0][0].score) {
+                        const auto name = found[ms.found_no]->data().full_name();
                         entry.seqs()[0].add_hi_name(name);
                         if (aVerbose)
                             report_stream << "    + " << name << std::endl;
@@ -620,12 +684,12 @@ void seqdb::Seqdb::match_hidb(std::string aHiDbDir, bool aVerbose)
                 std::set<size_t> found_assigned;
                 for (const auto& m: matching) {
                     for (const auto& sf: m) {
-                        if (std::get<0>(sf).first == std::get<0>(m[0]).first && found_assigned.count(std::get<2>(sf)) == 0) {
-                            const auto name = found[std::get<2>(sf)]->data().full_name();
-                            entry.seqs()[std::get<1>(sf)].add_hi_name(name);
+                        if (sf.score == m[0].score && found_assigned.count(sf.found_no) == 0) {
+                            const auto name = found[sf.found_no]->data().full_name();
+                            entry.seqs()[sf.seq_no].add_hi_name(name);
                             if (aVerbose)
-                                report_stream << "    +" << std::get<1>(sf) << " " << name << std::endl;
-                            found_assigned.insert(std::get<2>(sf));
+                                report_stream << "    +" << sf.seq_no << " " << name << std::endl;
+                            found_assigned.insert(sf.found_no);
                         }
                     }
                 }
@@ -633,7 +697,7 @@ void seqdb::Seqdb::match_hidb(std::string aHiDbDir, bool aVerbose)
         }
         else {
             if (aVerbose)
-                report_stream << "  ??" << std::endl;
+                report_stream << "  ?? " << entry.name() << std::endl;
             not_matched.push_back(&entry);
         }
     }

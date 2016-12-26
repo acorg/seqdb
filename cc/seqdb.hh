@@ -39,23 +39,46 @@ namespace seqdb
      public:
         inline SeqdbSeq() : mGene("HA") {}
 
-        inline SeqdbSeq(std::string aNucleotides, std::string aAminoAcids, std::string aGene)
+        inline SeqdbSeq(std::string aSequence, std::string aGene)
             : SeqdbSeq()
             {
-                mNucleotides = aNucleotides;
-                mAminoAcids = aAminoAcids;
+                if (is_nucleotides(aSequence))
+                    mNucleotides = aSequence;
+                else
+                    mAminoAcids = aSequence;
                 if (!aGene.empty())
                     mGene = aGene;
             }
 
-        inline SeqdbSeq(std::string aNucleotides, std::string aGene)
-            : SeqdbSeq(aNucleotides, std::string(), aGene)
-            {
-            }
+        // inline SeqdbSeq(bool aNucs, std::string aSequence, std::string aGene)
+        //     : SeqdbSeq()
+        //     {
+        //         if (aNucs)
+        //             mNucleotides = aSequence;
+        //         else
+        //             mAminoAcids = aSequence;
+        //         if (!aGene.empty())
+        //             mGene = aGene;
+        //     }
+
+        // inline SeqdbSeq(std::string aNucleotides, std::string aAminoAcids, std::string aGene)
+        //     : SeqdbSeq()
+        //     {
+        //         mNucleotides = aNucleotides;
+        //         mAminoAcids = aAminoAcids;
+        //         if (!aGene.empty())
+        //             mGene = aGene;
+        //     }
+
+        // inline SeqdbSeq(std::string aNucleotides, std::string aGene)
+        //     : SeqdbSeq(aNucleotides, std::string(), aGene)
+        //     {
+        //     }
 
         AlignAminoAcidsData align(bool aForce, Messages& aMessages);
 
-          // returns if aNucleotides matches mNucleotides
+          // returns if aNucleotides matches mNucleotides or aAminoAcids matches mAminoAcids
+        bool match_update(const SeqdbSeq& aNewSeq);
         bool match_update_nucleotides(std::string aNucleotides);
         bool match_update_amino_acids(std::string aAminoAcids);
         void add_passage(std::string aPassage);
@@ -149,6 +172,7 @@ namespace seqdb
      public:
         inline SeqdbEntry() {}
         inline SeqdbEntry(std::string aName) : mName(aName) {}
+        inline SeqdbEntry(std::string aName, std::string aVirusType, std::string aLineage) : mName(aName), mVirusType(aVirusType), mLineage(aLineage) {}
 
         inline std::string name() const { return mName; }
         inline std::string& name() { return mName; }
@@ -170,9 +194,9 @@ namespace seqdb
         inline std::string lineage() const { return mLineage; }
         inline std::string& lineage() { return mLineage; }
         void update_lineage(std::string aLineage, Messages& aMessages);
-        void update_subtype(std::string aSubtype, Messages& aMessages);
+        void update_subtype_name(std::string aSubtype, Messages& aMessages);
           // returns warning message or an empty string
-        std::string add_or_update_sequence(std::string aSequence, std::string aPassage, std::string aReassortant, std::string aLab, std::string aLabId, std::string aGene);
+          // std::string add_or_update_sequence(std::string aSequence, std::string aPassage, std::string aReassortant, std::string aLab, std::string aLabId, std::string aGene);
 
         inline bool date_within_range(std::string aBegin, std::string aEnd) const
             {
@@ -216,11 +240,11 @@ namespace seqdb
 
      private:
         std::string mName;
+        std::string mVirusType;
+        std::string mLineage;
         std::string mCountry;
         std::string mContinent;
         std::vector<std::string> mDates;
-        std::string mLineage;
-        std::string mVirusType;
         std::vector<SeqdbSeq> mSeq;
 
         friend class Seqdb;
@@ -411,7 +435,7 @@ namespace seqdb
         SeqdbEntrySeq find_by_seq_id(std::string aSeqId) const;
 
         // SeqdbEntry* new_entry(std::string aName);
-        void add_sequence(std::string aName, std::string aVirusType, std::string aLab, std::string aDate, std::string aLabId, std::string aPassage, std::string aReassortant, std::string aSequence);
+        std::string add_sequence(std::string aName, std::string aVirusType, std::string aLineage, std::string aLab, std::string aDate, std::string aLabId, std::string aPassage, std::string aReassortant, std::string aSequence, std::string aGene);
 
           // removes short sequences, removes entries having no sequences. returns messages
         std::string cleanup(bool remove_short_sequences);
