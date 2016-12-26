@@ -202,7 +202,7 @@ def _check_sequence(sequence, name, filename, line_no):
 
 # ----------------------------------------------------------------------
 
-sReReassortant = re.compile(r"^(.+\d)\s*((?:X|BX|NYMC(?:[\s\-]X)|VI|NIB(?:SC)?|RESVIR|IVR|RG(?:\s*ID)?|(?:IBCDC|UW)RG|PR8-IDCDC-RG)[-\s]?[0-9A-Z]+)\s*$")
+sReReassortant = re.compile(r"^(.+/\d+)\s*((?:X|BX|NYMC(?:[\s\-]X)|VI|NIB(?:SC)?|RESVIR|IVR|RG(?:\s*ID)?|(?:IBCDC|UW)RG|PR8-IDCDC-RG)[-\s]?[0-9A-Z]+)\s*$")
 
 def detect_reassortant(entry):
     # module_logger.debug('detect_reassortant {!r} -- {!r}'.format(entry.get("name"), entry.get("reassortant")))
