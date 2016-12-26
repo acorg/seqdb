@@ -19,7 +19,7 @@ class FastaReaderError (Exception):
 
 # ======================================================================
 
-def export_from_seqdb(seqdb, filename, output_format, amino_acids, lab, virus_type, lineage, gene, start_date, end_date, base_seq, name_format, aligned, truncate_left, encode_name, wrap, truncate_to_most_common_length, hamming_distance_threshold, hamming_distance_report, sort_by, with_hi_name, name_match):
+def export_from_seqdb(seqdb, filename, output_format, amino_acids, lab, virus_type, lineage, gene, start_date, end_date, recent, base_seq, name_format, aligned, truncate_left, encode_name, wrap, truncate_to_most_common_length, hamming_distance_threshold, hamming_distance_report, sort_by, with_hi_name, name_match):
 
     def make_entry(e):
         r = {
@@ -48,6 +48,11 @@ def export_from_seqdb(seqdb, filename, output_format, amino_acids, lab, virus_ty
         return r
 
     # ----------------------------------------------------------------------
+
+    if start_date is not None:
+        module_logger.info('Requested start date: ' + start_date)
+    if end_date is not None:
+        module_logger.info('Requested end date:   ' + end_date)
 
     iter = (seqdb.iter_seq()
             .filter_lab(normalize.lab(lab) or "")
@@ -88,19 +93,22 @@ def export_from_seqdb(seqdb, filename, output_format, amino_acids, lab, virus_ty
             prev_name = seq["n"]
             repeat_no = 0
 
-    if sort_by:
+    sorted_by = "name"
+    if recent is not None and len(sequences) > recent:
+        sequences.sort(key=operator.itemgetter("d"))
+        sorted_by = "date"
+        sequences = sequences[len(sequences) - recent:]
+
+    if sort_by and sort_by != sorted_by:
         if sort_by == "date":
             sequences.sort(key=operator.itemgetter("d"))
         elif args.sort_by == "name":
-            pass # already sorted by name -- sequences.sort(key=operator.itemgetter("n"))
+            sequences.sort(key=operator.itemgetter("n"))
         else:
             raise ValueError("Unrecognized sort_by argument")
 
-    if start_date is not None:
-        module_logger.info('Start date: ' + start_date)
-    if end_date is not None:
-        module_logger.info('End date:   ' + end_date)
     module_logger.info('{} sequences to export'.format(len(sequences)))
+    module_logger.info('Oldest: {}  Newest: {}'.format(sequences[0]["d"], sequences[-1]["d"]))
 
     # base seq is always the first one in the file, regardless of sorting, to ease specifying the outgroup for GARLI
     if base_seq:
@@ -330,7 +338,7 @@ class NameParser:
             'lab_id': lab_id,
             'lab': lab,
             'virus_type': self._fix_gisaid_virus_type(groups.get("virus_type")),
-            'lineage': groups.get("lineage"),
+            'lineage': self._fix_lineage(groups.get("lineage")),
             }
 
     def _fix_gisaid_lab(self, lab):
@@ -373,6 +381,13 @@ class NameParser:
             fixed_name = m.group(2) + " " + m.group(1)
             # module_logger.debug('fixed reassortant {!r} -> {!r}'.format(name, fixed_name))
         return fixed_name
+
+    def _fix_lineage(self, lineage):
+        if lineage:
+            lineage = lineage.upper()
+            if lineage == "PDM09":
+                lineage = "2009PDM"
+        return lineage
 
     def gisaid_without_date(self, raw_name, m, **kw):
         return self.gisaid(raw_name=raw_name, m=m, with_date=False, **kw)
