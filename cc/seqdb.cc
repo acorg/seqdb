@@ -6,6 +6,7 @@
 #include "acmacs-base/timeit.hh"
 #include "acmacs-base/string-matcher.hh"
 #include "acmacs-base/virus-name.hh"
+#include "locationdb/locdb.hh"
 #include "seqdb/seqdb.hh"
 #include "clades.hh"
 #include "seqdb-export.hh"
@@ -355,7 +356,7 @@ std::string Seqdb::add_sequence(std::string aName, std::string aVirusType, std::
     SeqdbSeq new_seq(aSequence, aGene);
     auto align_data = new_seq.align(false, messages);
     entry.update_subtype_name(align_data.subtype, messages); // updates entry.mName!
-    std::cerr << "add " << align_data.subtype << ' ' << entry.name() << std::endl;
+    // std::cerr << "add " << align_data.subtype << ' ' << entry.name() << std::endl;
 
     auto inserted_entry = find_insertion_place(entry.name());
     SeqdbSeq* inserted_seq = nullptr;
@@ -565,7 +566,7 @@ std::vector<std::string> Seqdb::all_passages() const
 
 // ----------------------------------------------------------------------
 
-void Seqdb::find_in_hidb(std::vector<const hidb::AntigenData*>& found, const SeqdbEntry& entry, HiDbPtrs& hidb_ptrs, std::string aHiDbDir) const
+void Seqdb::find_in_hidb_update_country(std::vector<const hidb::AntigenData*>& found, SeqdbEntry& entry, HiDbPtrs& hidb_ptrs, std::string aHiDbDir) const
 {
     try {
         const hidb::HiDb& hidb = get_hidb(entry.virus_type(), hidb_ptrs, aHiDbDir);
@@ -581,11 +582,24 @@ void Seqdb::find_in_hidb(std::vector<const hidb::AntigenData*>& found, const Seq
 
         std::sort(found.begin(), found.end());
         found.erase(std::unique(found.begin(), found.end()), found.end());
+
+          // update country and continent
+        if (entry.country().empty()) {
+            try {
+                const std::string country = hidb.locdb().find(virus_name::location(entry.name())).country();
+                entry.country(country);
+                entry.continent(hidb.locdb().continent_of_country(country));
+            }
+            catch (LocationNotFound&) {
+            }
+            catch (virus_name::Unrecognized&) {
+            }
+        }
     }
     catch (NoHiDb&) {
     }
 
-} // Seqdb::find_in_hidb
+} // Seqdb::find_in_hidb_update_country
 
 // ----------------------------------------------------------------------
 
@@ -635,7 +649,7 @@ void seqdb::Seqdb::match_hidb(std::string aHiDbDir, bool aVerbose)
     std::vector<const SeqdbEntry*> not_matched;
     for (auto& entry: mEntries) {
         std::vector<const hidb::AntigenData*> found;
-        find_in_hidb(found, entry, hidb_ptrs, aHiDbDir);
+        find_in_hidb_update_country(found, entry, hidb_ptrs, aHiDbDir);
 
           // if (aVerbose)
           //     report_stream << std::endl << entry << std::endl;
@@ -704,9 +718,11 @@ void seqdb::Seqdb::match_hidb(std::string aHiDbDir, bool aVerbose)
 
     std::cout << "Matched " << (mEntries.size() - not_matched.size()) << " of " << mEntries.size() << "  " << ((mEntries.size() - not_matched.size()) * 100.0 / mEntries.size()) << '%' << std::endl;
 
-    std::cerr << "Not matched " << not_matched.size() << std::endl;
-    for (const auto& nm: not_matched) {
-        std::cerr << "  " << *nm << std::endl;
+    if (aVerbose && !not_matched.empty()) {
+        report_stream << "Not matched " << not_matched.size() << std::endl;
+        for (const auto& nm: not_matched) {
+            report_stream << "  " << *nm << std::endl;
+        }
     }
 
 } // Seqdb::match_hidb

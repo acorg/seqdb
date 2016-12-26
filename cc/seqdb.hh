@@ -482,7 +482,7 @@ namespace seqdb
         class NoHiDb : public std::exception {};
         typedef std::map<std::string, std::unique_ptr<hidb::HiDb>> HiDbPtrs;
         const hidb::HiDb& get_hidb(std::string aVirusType, HiDbPtrs& aPtrs, std::string aHiDbDir) const;
-        void find_in_hidb(std::vector<const hidb::AntigenData*>& found, const SeqdbEntry& entry, HiDbPtrs& hidb_ptrs, std::string aHiDbDir) const;
+        void find_in_hidb_update_country(std::vector<const hidb::AntigenData*>& found, SeqdbEntry& entry, HiDbPtrs& hidb_ptrs, std::string aHiDbDir) const;
 
     }; // class Seqdb
 
