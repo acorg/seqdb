@@ -777,6 +777,9 @@ SeqdbEntrySeq Seqdb::find_by_seq_id(std::string aSeqId) const
                 }
             }
         }
+        else {
+            std::cerr << "Error: no entry for \"" << std::string(seq_id, 0, passage_separator) << "\" in seqdb" << std::endl;
+        }
     }
     else {
         std::smatch year_space;
@@ -796,7 +799,7 @@ SeqdbEntrySeq Seqdb::find_by_seq_id(std::string aSeqId) const
     }
 
     if (!result) {
-        std::cerr << "Error: \"" << aSeqId << "\" not in seqdb" << std::endl;
+        std::cerr << "Error: \"" << seq_id << "\" not in seqdb" << std::endl;
     }
     return result;
 

@@ -423,6 +423,8 @@ namespace seqdb
         inline SeqdbEntry* find_by_name(std::string aName)
             {
                 auto const first = find_insertion_place(aName);
+                // if (first != mEntries.end() && aName != first->name())
+                //     std::cerr << "Warining: looking for: \"" << aName << "\" found: \"" << first->name() << "\"" << std::endl;
                 return (first != mEntries.end() && aName == first->name()) ? &(*first) : nullptr;
             }
 

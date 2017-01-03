@@ -33,7 +33,9 @@ def main(args):
     elif args.name:
         r = seqdb.find_by_name(args.name)
         if r:
-            print(r.seq_id(encoded=False))
+            print(r.name)
+            for e in r:
+                print(" ", e.passage())
         else:
             print("NOT FOUND:", args.name)
     elif args.seq_id:
