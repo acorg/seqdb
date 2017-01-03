@@ -79,8 +79,8 @@ namespace seqdb
 
           // returns if aNucleotides matches mNucleotides or aAminoAcids matches mAminoAcids
         bool match_update(const SeqdbSeq& aNewSeq);
-        bool match_update_nucleotides(std::string aNucleotides);
-        bool match_update_amino_acids(std::string aAminoAcids);
+        bool match_update_nucleotides(const SeqdbSeq& aNewSeq);
+        bool match_update_amino_acids(const SeqdbSeq& aNewSeq);
         void add_passage(std::string aPassage);
         void update_gene(std::string aGene, Messages& aMessages, bool replace_ha = false);
         void add_reassortant(std::string aReassortant);

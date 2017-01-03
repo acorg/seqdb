@@ -23,6 +23,7 @@ AlignAminoAcidsData seqdb::translate_and_align(std::string aNucleotides, Message
     AlignAminoAcidsData not_aligned;
     for (int offset = 0; offset < 3; ++offset) {
         auto amino_acids = translate_nucleotides_to_amino_acids(aNucleotides, static_cast<size_t>(offset), aMessages);
+        // std::cerr << offset << " " << amino_acids << std::endl;
         auto aa_parts = string::split(amino_acids, "*");
         size_t prefix_len = 0;
         for (const auto& part: aa_parts) {
@@ -33,6 +34,7 @@ AlignAminoAcidsData seqdb::translate_and_align(std::string aNucleotides, Message
                     if (align_data.shift.aligned() && prefix_len > 0) {
                         align_data.shift -= prefix_len;
                     }
+                    // std::cerr << "good " << align_data << std::endl;
                     r.push_back(AlignAminoAcidsData(align_data, amino_acids, offset));
                     aMessages.add(messages);
                     break;
@@ -47,6 +49,7 @@ AlignAminoAcidsData seqdb::translate_and_align(std::string aNucleotides, Message
             prefix_len += 1 + part.size();
         }
     }
+    // std::cerr << "translate_and_align " << r.size() << std::endl;
     if (r.empty()) {
         return not_aligned;
     }

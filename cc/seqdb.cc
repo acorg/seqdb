@@ -19,30 +19,30 @@ bool SeqdbSeq::match_update(const SeqdbSeq& aNewSeq)
 {
     bool result = false;
     if (!aNewSeq.mNucleotides.empty())
-        result = match_update_nucleotides(aNewSeq.mNucleotides);
+        result = match_update_nucleotides(aNewSeq);
     else
-        result = match_update_amino_acids(aNewSeq.mAminoAcids);
+        result = match_update_amino_acids(aNewSeq);
     return result;
 
 } // SeqdbSeq::match_update
 
 // ----------------------------------------------------------------------
 
-bool SeqdbSeq::match_update_nucleotides(std::string aNucleotides)
+bool SeqdbSeq::match_update_nucleotides(const SeqdbSeq& aNewSeq)
 {
     bool matches = false;
-    if (mNucleotides == aNucleotides) {
+    if (mNucleotides == aNewSeq.mNucleotides) {
         matches = true;
     }
-    else if (mNucleotides.find(aNucleotides) != std::string::npos) { // sub
+    else if (mNucleotides.find(aNewSeq.mNucleotides) != std::string::npos) { // sub
         matches = true;
     }
-    else if (aNucleotides.find(mNucleotides) != std::string::npos) { // super
+    else if (aNewSeq.mNucleotides.find(mNucleotides) != std::string::npos) { // super
         matches = true;
-        mNucleotides = aNucleotides;
-        mNucleotidesShift.reset();
-        mAminoAcidsShift.reset();
-        mAminoAcids.clear();
+        mNucleotides = aNewSeq.mNucleotides;
+        mNucleotidesShift = aNewSeq.mNucleotidesShift;
+        mAminoAcids = aNewSeq.mAminoAcids;
+        mAminoAcidsShift = aNewSeq.mAminoAcidsShift;
     }
     return matches;
 
@@ -50,21 +50,21 @@ bool SeqdbSeq::match_update_nucleotides(std::string aNucleotides)
 
 // ----------------------------------------------------------------------
 
-bool SeqdbSeq::match_update_amino_acids(std::string aAminoAcids)
+bool SeqdbSeq::match_update_amino_acids(const SeqdbSeq& aNewSeq)
 {
     bool matches = false;
-    if (mAminoAcids == aAminoAcids) {
+    if (mAminoAcids == aNewSeq.mAminoAcids) {
         matches = true;
     }
-    else if (mAminoAcids.find(aAminoAcids) != std::string::npos) { // sub
+    else if (mAminoAcids.find(aNewSeq.mAminoAcids) != std::string::npos) { // sub
         matches = true;
     }
-    else if (aAminoAcids.find(mAminoAcids) != std::string::npos) { // super
+    else if (aNewSeq.mAminoAcids.find(mAminoAcids) != std::string::npos) { // super
         matches = true;
-        mNucleotides.clear();
-        mNucleotidesShift.reset();
-        mAminoAcidsShift.reset();
-        mAminoAcids = aAminoAcids;
+        mNucleotides = aNewSeq.mNucleotides;
+        mNucleotidesShift = aNewSeq.mNucleotidesShift;
+        mAminoAcids = aNewSeq.mAminoAcids;
+        mAminoAcidsShift = aNewSeq.mAminoAcidsShift;
     }
     return matches;
 
@@ -361,13 +361,11 @@ std::string Seqdb::add_sequence(std::string aName, std::string aVirusType, std::
     auto inserted_entry = find_insertion_place(entry.name());
     SeqdbSeq* inserted_seq = nullptr;
     if (inserted_entry == mEntries.end() || entry.name() != inserted_entry->name()) {
-        // std::cerr << "insert new" << std::endl;
         inserted_entry = mEntries.insert(inserted_entry, std::move(entry));
         inserted_entry->seqs().push_back(std::move(new_seq));
         inserted_seq = &inserted_entry->seqs().back();
     }
     else {
-        // std::cerr << "update " << inserted_entry->name() << std::endl;
         inserted_entry->update_subtype_name(align_data.subtype, messages);
         auto& seqs = inserted_entry->seqs();
         auto found_seq = std::find_if(seqs.begin(), seqs.end(), [&new_seq](SeqdbSeq& seq) { return seq.match_update(new_seq); });
@@ -419,7 +417,6 @@ std::string Seqdb::cleanup(bool remove_short_sequences)
 
       // remove empty entries
     auto const num_entries_before = mEntries.size();
-      //std::remove_if(mEntries.begin(), mEntries.end(), [](auto entry) { return entry.empty(); });
     mEntries.erase(std::remove_if(mEntries.begin(), mEntries.end(), std::mem_fn(&SeqdbEntry::empty)), mEntries.end());
     if (mEntries.size() != num_entries_before)
         messages.warning() << (num_entries_before - mEntries.size()) << " entries removed during cleanup" << std::endl;

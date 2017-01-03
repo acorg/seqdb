@@ -75,6 +75,11 @@ namespace seqdb
 
 } // namespace seqdb
 
+inline std::ostream& operator << (std::ostream& out, const seqdb::AlignData& a)
+{
+    return out << "[AlignData " << a.subtype << " " << a.lineage << " " << a.gene << " shift:" << a.shift << "]";
+}
+
 // ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))

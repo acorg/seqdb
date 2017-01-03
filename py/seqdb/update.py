@@ -57,8 +57,9 @@ class SeqdbUpdater:
             module_logger.warning(messages)
 
     def add_clades(self):
-        for entry_seq in self.seqdb.iter_seq():
-            entry_seq.seq.update_clades(virus_type=entry_seq.entry.virus_type, lineage=entry_seq.entry.lineage)
+        if self.seqdb.number_of_seqs():
+            for entry_seq in self.seqdb.iter_seq():
+                entry_seq.seq.update_clades(virus_type=entry_seq.entry.virus_type, lineage=entry_seq.entry.lineage)
 
     def match_hidb(self, hidb_dir, verbose=False):
         self.seqdb.remove_hi_names()
