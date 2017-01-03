@@ -361,11 +361,13 @@ std::string Seqdb::add_sequence(std::string aName, std::string aVirusType, std::
     auto inserted_entry = find_insertion_place(entry.name());
     SeqdbSeq* inserted_seq = nullptr;
     if (inserted_entry == mEntries.end() || entry.name() != inserted_entry->name()) {
+        // std::cerr << "insert new" << std::endl;
         inserted_entry = mEntries.insert(inserted_entry, std::move(entry));
         inserted_entry->seqs().push_back(std::move(new_seq));
         inserted_seq = &inserted_entry->seqs().back();
     }
     else {
+        // std::cerr << "update " << inserted_entry->name() << std::endl;
         inserted_entry->update_subtype_name(align_data.subtype, messages);
         auto& seqs = inserted_entry->seqs();
         auto found_seq = std::find_if(seqs.begin(), seqs.end(), [&new_seq](SeqdbSeq& seq) { return seq.match_update(new_seq); });
@@ -384,8 +386,6 @@ std::string Seqdb::add_sequence(std::string aName, std::string aVirusType, std::
     inserted_seq->add_reassortant(aReassortant);
     inserted_seq->add_passage(aPassage);
     inserted_seq->add_lab_id(aLab, aLabId);
-
-      // location
 
     return messages;
 

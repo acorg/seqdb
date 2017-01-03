@@ -206,12 +206,22 @@ namespace seqdb
 
         inline void remove_short_sequences()
             {
-                mSeq.erase(std::remove_if(mSeq.begin(), mSeq.end(), std::mem_fn(&SeqdbSeq::is_short)), mSeq.end());
+                auto short_seq = [this](auto& seq) {
+                    if (seq.is_short())
+                        std::cerr << "Warning: removing too short sequence in " << mName << std::endl;
+                    return seq.is_short();
+                };
+                mSeq.erase(std::remove_if(mSeq.begin(), mSeq.end(), short_seq), mSeq.end());
             }
 
         inline void remove_not_translated_sequences()
             {
-                mSeq.erase(std::remove_if(mSeq.begin(), mSeq.end(), [](auto& seq) { return !seq.translated(); }), mSeq.end());
+                auto not_translated = [this](auto& seq) {
+                    if (!seq.translated())
+                        std::cerr << "Warning: removing not translated sequence in " << mName << std::endl;
+                    return !seq.translated();
+                };
+                mSeq.erase(std::remove_if(mSeq.begin(), mSeq.end(), not_translated), mSeq.end());
             }
 
         inline std::vector<std::string> cdcids() const
