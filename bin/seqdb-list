@@ -41,6 +41,8 @@ def main(args):
     elif args.seq_id:
         r = seqdb.find_by_seq_id(args.seq_id)
         print(r.seq_id(encoded=False))
+    elif args.report:
+        print(seqdb.report())
 
 # ----------------------------------------------------------------------
 
@@ -55,6 +57,7 @@ with timeit(sys.argv[0]):
         parser.add_argument('--id', action="store", dest="seq_id", default=None, help='Seq_id to look for.')
         parser.add_argument('--name', action="store", dest="name", default=None, help='Name to look for.')
         parser.add_argument('--all', action="store_true", dest="list_all", default=False, help='List all seq ids.')
+        parser.add_argument('--report', action="store_true", dest="report", default=False, help='report.')
 
         args = parser.parse_args()
         logging.basicConfig(level=args.loglevel, format="%(levelname)s %(asctime)s: %(message)s")
