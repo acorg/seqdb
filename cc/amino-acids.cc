@@ -28,6 +28,7 @@ AlignAminoAcidsData seqdb::translate_and_align(std::string aNucleotides, Message
         size_t prefix_len = 0;
         for (const auto& part: aa_parts) {
             if (part.size() >= MINIMUM_SEQUENCE_AA_LENGTH) {
+                // std::cerr << "part is big enough " << part.size() << std::endl;
                 Messages messages;
                 auto align_data = align(part, messages);
                 if (!align_data.shift.alignment_failed()) {
@@ -135,7 +136,7 @@ static AlignEntry ALIGN_RAW_DATA[] = {
     {"A(H1N1)", "",         "HA", Shift(), std::regex("MKVK[LY]LVLLCTFTATYA"),                           20,  true, "h1-MKV-1"},
     {"A(H1N1)", "SEASONAL", "HA", Shift(), std::regex("MKVKLLVLLCTFSATYA"),                              20,  true, "h1-MKV-2"},
     {"A(H1N1)", "2009PDM",  "HA", Shift(), std::regex("M[EK]AIL[VX][VX][LM]L[CHY]T[FL][AT]T[AT][NS]A"),  20,  true, "h1-MKA-2"},
-    {"A(H1N1)", "",         "HA",       0, std::regex("DT[IL]CIG[HY]H[AT][DNTX][DN]"),                  100, false, "h1-DTL-1"},
+    {"A(H1N1)", "",         "HA",       0, std::regex("DT[IL]CI[GX][HY]H[AT][DNTX][DN]"),               100, false, "h1-DTL-1"},
     {"A(H1N1)", "",         "HA",       5, std::regex("GYHANNS[AT]DTV"),                                100, false, "h1-GYH"},
     {"A(H1N1)", "",         "HA",      96, std::regex("[DN]YEELREQL"),                                  120, false, "h1-DYE"},
       // leads to wrong alignment due to insertion before the regex {"A(H1N1)", "",         "HA",     162, std::regex("[KQ]SY[AI]N[ND]K[EG]KEVLVLWG[IV]HHP"),           220, false, "h1-KSY"},
