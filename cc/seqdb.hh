@@ -174,25 +174,26 @@ namespace seqdb
         inline SeqdbEntry(std::string aName) : mName(aName) {}
         inline SeqdbEntry(std::string aName, std::string aVirusType, std::string aLineage) : mName(aName), mVirusType(aVirusType), mLineage(aLineage) {}
 
-        inline std::string name() const { return mName; }
-        inline std::string& name() { return mName; }
-        inline std::string country() const { return mCountry; }
-        inline std::string& country() { return mCountry; }
+        inline const std::string name() const { return mName; }
+        inline void name(const char* str, size_t length) { mName.assign(str, length); }
+        inline const std::string country() const { return mCountry; }
         inline void country(std::string aCountry) { mCountry = aCountry; }
-        inline std::string continent() const { return mContinent; }
-        inline std::string& continent() { return mContinent; }
+        inline void country(const char* str, size_t length) { mCountry.assign(str, length); }
+        inline const std::string continent() const { return mContinent; }
         inline void continent(std::string aContinent) { mContinent = aContinent; }
+        inline void continent(const char* str, size_t length) { mContinent.assign(str, length); }
         inline bool empty() const { return mSeq.empty(); }
 
-        inline std::string virus_type() const { return mVirusType; }
-        inline std::string& virus_type() { return mVirusType; }
+        inline const std::string virus_type() const { return mVirusType; }
         inline void virus_type(std::string aVirusType) { mVirusType = aVirusType; }
+        inline void virus_type(const char* str, size_t length) { mVirusType.assign(str, length); }
         void add_date(std::string aDate);
         inline const auto& dates() const { return mDates; }
         inline auto& dates() { return mDates; }
-        inline std::string date() const { return mDates.empty() ? std::string() : mDates.back(); }
-        inline std::string lineage() const { return mLineage; }
-        inline std::string& lineage() { return mLineage; }
+        inline const std::string date() const { return mDates.empty() ? std::string() : mDates.back(); }
+        inline const std::string lineage() const { return mLineage; }
+        inline void lineage(std::string aLineage) { mLineage = aLineage; }
+        inline void lineage(const char* str, size_t length) { mLineage.assign(str, length); }
         void update_lineage(std::string aLineage, Messages& aMessages);
         void update_subtype_name(std::string aSubtype, Messages& aMessages);
           // returns warning message or an empty string

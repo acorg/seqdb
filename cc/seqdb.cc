@@ -263,6 +263,7 @@ void SeqdbEntry::add_date(std::string aDate)
 
 void SeqdbEntry::update_lineage(std::string aLineage, Messages& aMessages)
 {
+    std::cerr << "Lineage " << mName << " " << (aLineage.empty() ? std::string("?") : aLineage) << std::endl;
     if (!aLineage.empty()) {
         if (mLineage.empty())
             mLineage = aLineage;
@@ -433,27 +434,27 @@ std::string Seqdb::report() const
 
     std::map<std::string, size_t> virus_types;
     for_each(mEntries.begin(), mEntries.end(), [&virus_types](auto& e) { ++virus_types[e.virus_type()]; });
-    // os << "Virus types: " << json::dump(virus_types) << std::endl;
+    os << "Virus types: " << virus_types << std::endl;
 
     std::map<std::string, size_t> lineages;
     for_each(mEntries.begin(), mEntries.end(), [&lineages](auto& e) { ++lineages[e.lineage()]; });
-    // os << "Lineages: " << json::dump(lineages) << std::endl;
+    os << "Lineages: " << lineages << std::endl;
 
     std::map<std::string, size_t> aligned;
     for_each(mEntries.begin(), mEntries.end(), [&aligned](auto& e) { if (any_of(e.mSeq.begin(), e.mSeq.end(), std::mem_fn(&SeqdbSeq::aligned))) ++aligned[e.virus_type()]; });
-    // os << "Aligned: " << json::dump(aligned) << std::endl;
+    os << "Aligned: " << aligned << std::endl;
 
     std::map<std::string, size_t> matched;
     for_each(mEntries.begin(), mEntries.end(), [&matched](auto& e) { if (any_of(e.mSeq.begin(), e.mSeq.end(), std::mem_fn(&SeqdbSeq::matched))) ++matched[e.virus_type()]; });
-    // os << "Matched: " << json::dump(matched) << std::endl;
+    os << "Matched: " << matched << std::endl;
 
     std::map<std::string, size_t> have_dates;
     for_each(mEntries.begin(), mEntries.end(), [&have_dates](auto& e) { if (!e.mDates.empty()) ++have_dates[e.virus_type()]; });
-    // os << "Have dates: " << json::dump(have_dates) << std::endl;
+    os << "Have dates: " << have_dates << std::endl;
 
     std::map<std::string, size_t> have_clades;
     for_each(mEntries.begin(), mEntries.end(), [&have_clades](auto& e) { if (any_of(e.mSeq.begin(), e.mSeq.end(), [](auto& seq) { return !seq.mClades.empty(); })) ++have_clades[e.virus_type()]; });
-    // os << "Have clades: " << json::dump(have_clades) << std::endl;
+    os << "Have clades: " << have_clades << std::endl;
 
     return os.str();
 

@@ -275,19 +275,19 @@ class DataHandler : public HandlerBase
 #endif
             switch (mKey) {
               case SeqdbJsonKey::Name:
-                  mData.back().name().assign(str, length);
+                  mData.back().name(str, length);
                   break;
               case SeqdbJsonKey::Continent:
-                  mData.back().continent().assign(str, length);
+                  mData.back().continent(str, length);
                   break;
               case SeqdbJsonKey::Country:
-                  mData.back().country().assign(str, length);
+                  mData.back().country(str, length);
                   break;
               case SeqdbJsonKey::Lineage:
-                  mData.back().lineage().assign(str, length);
+                  mData.back().lineage(str, length);
                   break;
               case SeqdbJsonKey::VirusType:
-                  mData.back().virus_type().assign(str, length);
+                  mData.back().virus_type(str, length);
                   break;
               default:
                   throw json_reader::Failure();
