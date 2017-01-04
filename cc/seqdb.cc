@@ -263,7 +263,7 @@ void SeqdbEntry::add_date(std::string aDate)
 
 void SeqdbEntry::update_lineage(std::string aLineage, Messages& aMessages)
 {
-    std::cerr << "Lineage " << mName << " " << (aLineage.empty() ? std::string("?") : aLineage) << std::endl;
+      // std::cerr << "Lineage " << mName << " " << (aLineage.empty() ? std::string("?") : aLineage) << std::endl;
     if (!aLineage.empty()) {
         if (mLineage.empty())
             mLineage = aLineage;
@@ -564,7 +564,7 @@ std::vector<std::string> Seqdb::all_passages() const
 
 // ----------------------------------------------------------------------
 
-void Seqdb::find_in_hidb_update_country(std::vector<const hidb::AntigenData*>& found, SeqdbEntry& entry, HiDbPtrs& hidb_ptrs, std::string aHiDbDir) const
+void Seqdb::find_in_hidb_update_country_lineage(std::vector<const hidb::AntigenData*>& found, SeqdbEntry& entry, HiDbPtrs& hidb_ptrs, std::string aHiDbDir) const
 {
     try {
         const hidb::HiDb& hidb = get_hidb(entry.virus_type(), hidb_ptrs, aHiDbDir);
@@ -593,11 +593,19 @@ void Seqdb::find_in_hidb_update_country(std::vector<const hidb::AntigenData*>& f
             catch (virus_name::Unrecognized&) {
             }
         }
+
+          // update lineage
+        if (entry.virus_type() == "B" && !found.empty()) {
+            Messages messages;
+            entry.update_lineage(found.front()->data().lineage(), messages);
+            if (messages)
+                std::cerr << messages << std::endl;
+        }
     }
     catch (NoHiDb&) {
     }
 
-} // Seqdb::find_in_hidb_update_country
+} // Seqdb::find_in_hidb_update_country_lineage
 
 // ----------------------------------------------------------------------
 
@@ -647,7 +655,7 @@ void seqdb::Seqdb::match_hidb(std::string aHiDbDir, bool aVerbose)
     std::vector<const SeqdbEntry*> not_matched;
     for (auto& entry: mEntries) {
         std::vector<const hidb::AntigenData*> found;
-        find_in_hidb_update_country(found, entry, hidb_ptrs, aHiDbDir);
+        find_in_hidb_update_country_lineage(found, entry, hidb_ptrs, aHiDbDir);
 
           // if (aVerbose)
           //     report_stream << std::endl << entry << std::endl;
