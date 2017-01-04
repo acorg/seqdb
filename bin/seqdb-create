@@ -39,6 +39,7 @@ def main(args):
         print(db.report_identical())
     if args.report_not_aligned_prefixes:
         print(db.report_not_aligned(args.report_not_aligned_prefixes))
+    print(db.report())
     if args.save:
         db_updater.save(indent=1)
 
