@@ -9,6 +9,19 @@ import logging; module_logger = logging.getLogger(__name__)
 
 # ----------------------------------------------------------------------
 
+def virus_type_lineage(vt, lin):
+    vtn = virus_type(vt)
+    if vtn == "B" and lin is None:
+        lin = vt[1:]
+        if lin and lin[0] == "/":
+            lin = vt[2:]
+    linn = lineage(lin)
+    if vtn == "B" and linn is None:
+        raise ValueError("No lineage for " + vt)
+    return vtn, linn
+
+# ----------------------------------------------------------------------
+
 sVirusTypes = {
     "B": "B", "BV": "B", "BY": "B", "BVIC": "B", "BYAM": "B", "B/VIC": "B", "B/YAM": "B",
     "H1PDM": "A(H1N1)", "H1SEAS": "A(H1N1)", "H1": "A(H1N1)", "A(H1N1)": "A(H1N1)",

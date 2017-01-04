@@ -54,10 +54,11 @@ def export_from_seqdb(seqdb, filename, output_format, amino_acids, lab, virus_ty
     if end_date is not None:
         module_logger.info('Requested end date:   ' + end_date)
 
+    virus_type, lineage = normalize.virus_type_lineage(virus_type, lineage)
     iter = (seqdb.iter_seq()
             .filter_lab(normalize.lab(lab) or "")
-            .filter_subtype(normalize.virus_type(virus_type) or "")
-            .filter_lineage(normalize.lineage(lineage) or "")
+            .filter_subtype(virus_type or "")
+            .filter_lineage(lineage or "")
             .filter_aligned(aligned)
             .filter_gene(gene)
             .filter_date_range(normalize.date(start_date), normalize.date(end_date))
