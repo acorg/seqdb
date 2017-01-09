@@ -10,6 +10,7 @@
 #include "seqdb/seqdb.hh"
 #include "clades.hh"
 #include "seqdb-export.hh"
+#include "seqdb-import.hh"
 
 using namespace seqdb;
 
