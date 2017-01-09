@@ -111,7 +111,7 @@ namespace seqdb
         inline auto& reassortant() { return mReassortant; }
         inline bool reassortant_match(std::string aReassortant) const { return mReassortant.empty() ? aReassortant.empty() : std::find(mReassortant.begin(), mReassortant.end(), aReassortant) != mReassortant.end(); }
         inline std::string gene() const { return mGene; }
-        inline std::string& gene() { return mGene; }
+        inline void gene(const char* str, size_t length) { mGene.assign(str, length); }
 
         inline const std::vector<std::string>& hi_names() const { return mHiNames; }
         inline std::vector<std::string>& hi_names() { return mHiNames; }
@@ -123,11 +123,13 @@ namespace seqdb
         std::string nucleotides(bool aAligned, size_t aLeftPartSize = 0) const;
         inline Shift amino_acids_shift() const { return mAminoAcidsShift; } // throws if sequence was not aligned
         inline Shift nucleotides_shift() const { return mNucleotidesShift; }  // throws if sequence was not aligned
-        inline int& amino_acids_shift_raw() { return mAminoAcidsShift.raw(); }
-        inline int& nucleotides_shift_raw() { return mNucleotidesShift.raw(); }
+        // inline int& amino_acids_shift_raw() { return mAminoAcidsShift.raw(); }
+        // inline int& nucleotides_shift_raw() { return mNucleotidesShift.raw(); }
+        inline void amino_acids_shift_raw(int shift) { mAminoAcidsShift.raw() = shift; }
+        inline void nucleotides_shift_raw(int shift) { mNucleotidesShift.raw() = shift; }
 
-        std::string& amino_acids() { return mAminoAcids; }
-        std::string& nucleotides() { return mNucleotides; }
+        void amino_acids(const char* str, size_t length) { mAminoAcids.assign(str, length); }
+        void nucleotides(const char* str, size_t length) { mNucleotides.assign(str, length); }
 
         std::vector<std::string> make_all_reassortant_passage_variants() const;
 

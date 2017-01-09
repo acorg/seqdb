@@ -1,292 +1,137 @@
 #include "seqdb-import.hh"
 #include "seqdb/seqdb.hh"
 #include "json-keys.hh"
-#include "acmacs-base/json-reader.hh"
 
-using namespace seqdb;
-
-// ----------------------------------------------------------------------
-
-static constexpr const char* SEQDB_JSON_DUMP_VERSION = "sequence-database-v2";
-
-// ----------------------------------------------------------------------
-
-using HandlerBase = json_reader::HandlerBase<Seqdb>;
-using StringListHandler = json_reader::StringListHandler<Seqdb>;
-using MapListHandler = json_reader::MapListHandler<Seqdb>;
-
-// ----------------------------------------------------------------------
-
-class SeqHandler : public HandlerBase
-{
- public:
-    inline SeqHandler(Seqdb& aSeqdb, std::vector<SeqdbSeq>& aSeqs)
-        : HandlerBase(aSeqdb), mSeqs(aSeqs), mStarted(false), mKey(SeqdbJsonKey::Unknown) {}
-
-    inline virtual HandlerBase* StartArray()
-        {
-            if (mStarted)
-                throw json_reader::Failure();
-            mStarted = true;
-            return nullptr;
-        }
-
-    inline virtual HandlerBase* StartObject()
-        {
-            if (!mStarted)
-                throw json_reader::Failure();
-            mSeqs.emplace_back();
-            return nullptr;
-        }
-
-    inline virtual HandlerBase* EndObject()
-        {
-            return nullptr;
-        }
-
-    inline virtual HandlerBase* Key(const char* str, rapidjson::SizeType length)
-        {
-            if (!mStarted)
-                throw json_reader::Failure();
-            if (length != 1)
-                throw json_reader::Failure();
-            mKey = static_cast<SeqdbJsonKey>(*str);
-            HandlerBase* result = nullptr;
-#pragma GCC diagnostic push
-#ifdef __clang__
-#pragma GCC diagnostic ignored "-Wswitch-enum"
-#endif
-            switch (mKey) {
-              case SeqdbJsonKey::AminoAcids:
-              case SeqdbJsonKey::Nucleotides:
-              case SeqdbJsonKey::Gene:
-              case SeqdbJsonKey::AminoAcidShift:
-              case SeqdbJsonKey::NucleotideShift:
-                  break;
-              case SeqdbJsonKey::Clades:
-                  result = new StringListHandler(mTarget, mSeqs.back().clades());
-                  break;
-              case SeqdbJsonKey::HiNames:
-                  result = new StringListHandler(mTarget, mSeqs.back().hi_names());
-                  break;
-              case SeqdbJsonKey::LabIds:
-                  result = new MapListHandler(mTarget, mSeqs.back().lab_ids_raw());
-                  break;
-              case SeqdbJsonKey::Passages:
-                  result = new StringListHandler(mTarget, mSeqs.back().passages());
-                  break;
-              case SeqdbJsonKey::Reassortant:
-                  result = new StringListHandler(mTarget, mSeqs.back().reassortant());
-                  break;
-              default:
-                  break;
-            }
-#pragma GCC diagnostic pop
-            return result;
-        }
-
-    inline virtual HandlerBase* Int(int i)
-        {
-#pragma GCC diagnostic push
-#ifdef __clang__
-#pragma GCC diagnostic ignored "-Wswitch-enum"
-#endif
-            switch (mKey) {
-              case SeqdbJsonKey::AminoAcidShift:
-                  mSeqs.back().amino_acids_shift_raw() = i;
-                  break;
-              case SeqdbJsonKey::NucleotideShift:
-                  mSeqs.back().nucleotides_shift_raw() = i;
-                  break;
-              default:
-                  throw json_reader::Failure();
-            }
-#pragma GCC diagnostic pop
-            return nullptr;
-        }
-
-    inline virtual HandlerBase* Uint(unsigned u)
-        {
-            return Int(static_cast<int>(u));
-        }
-
-    inline virtual HandlerBase* String(const char* str, rapidjson::SizeType length)
-        {
-#pragma GCC diagnostic push
-#ifdef __clang__
-#pragma GCC diagnostic ignored "-Wswitch-enum"
-#endif
-            switch (mKey) {
-              case SeqdbJsonKey::AminoAcids:
-                  mSeqs.back().amino_acids().assign(str, length);
-                  break;
-              case SeqdbJsonKey::Nucleotides:
-                  mSeqs.back().nucleotides().assign(str, length);
-                  break;
-              case SeqdbJsonKey::Gene:
-                  mSeqs.back().gene().assign(str, length);
-                  break;
-              default:
-                  throw json_reader::Failure();
-            }
-#pragma GCC diagnostic pop
-            return nullptr;
-        }
-
- private:
-    std::vector<SeqdbSeq>& mSeqs;
-    bool mStarted;
-    SeqdbJsonKey mKey;
-
-}; // class SeqHandler
-
-// ----------------------------------------------------------------------
-
-class DataHandler : public HandlerBase
-{
- public:
-    inline DataHandler(Seqdb& aSeqdb, std::vector<SeqdbEntry>& aData)
-        : HandlerBase(aSeqdb), mData(aData), mStarted(false), mKey(SeqdbJsonKey::Unknown) {}
-
-    inline virtual HandlerBase* StartArray()
-        {
-            if (mStarted) {
-                throw json_reader::Failure();
-            }
-            else {
-                mStarted = true;
-            }
-            return nullptr;
-        }
-
-    inline virtual HandlerBase* StartObject()
-        {
-            if (!mStarted)
-                throw json_reader::Failure();
-            mData.emplace_back();
-            return nullptr;
-        }
-
-    inline virtual HandlerBase* EndObject()
-        {
-            return nullptr;
-        }
-
-    inline virtual HandlerBase* Key(const char* str, rapidjson::SizeType length)
-        {
-            if (!mStarted)
-                throw json_reader::Failure();
-            if (length != 1)
-                throw json_reader::Failure();
-            mKey = static_cast<SeqdbJsonKey>(*str);
-            HandlerBase* result = nullptr;
-#pragma GCC diagnostic push
-#ifdef __clang__
-#pragma GCC diagnostic ignored "-Wswitch-enum"
-#endif
-            switch (mKey) {
-              case SeqdbJsonKey::Dates:
-                  result = new StringListHandler(mTarget, mData.back().dates());
-                  break;
-              case SeqdbJsonKey::SequenceSet:
-                  result = new SeqHandler(mTarget, mData.back().seqs());
-                  break;
-              default:
-                  break;
-            }
-#pragma GCC diagnostic pop
-            return result;
-        }
-
-    inline virtual HandlerBase* String(const char* str, rapidjson::SizeType length)
-        {
-#pragma GCC diagnostic push
-#ifdef __clang__
-#pragma GCC diagnostic ignored "-Wswitch-enum"
-#endif
-            switch (mKey) {
-              case SeqdbJsonKey::Name:
-                  mData.back().name(str, length);
-                  break;
-              case SeqdbJsonKey::Continent:
-                  mData.back().continent(str, length);
-                  break;
-              case SeqdbJsonKey::Country:
-                  mData.back().country(str, length);
-                  break;
-              case SeqdbJsonKey::Lineage:
-                  mData.back().lineage(str, length);
-                  break;
-              case SeqdbJsonKey::VirusType:
-                  mData.back().virus_type(str, length);
-                  break;
-              default:
-                  throw json_reader::Failure();
-            }
-#pragma GCC diagnostic pop
-            return nullptr;
-        }
-
- private:
-    std::vector<SeqdbEntry>& mData;
-    bool mStarted;
-    SeqdbJsonKey mKey;
-
-}; // class DataHandler
-
-// ----------------------------------------------------------------------
-
-class SeqdbRootHandler : public HandlerBase
-{
- private:
-    enum class Keys { Unknown, Version, Data };
-
- public:
-    inline SeqdbRootHandler(Seqdb& aSeqdb) : HandlerBase(aSeqdb), mKey(Keys::Unknown) {}
-
-    inline virtual HandlerBase* Key(const char* str, rapidjson::SizeType length)
-        {
-            HandlerBase* result = nullptr;
-            const std::string found_key(str, length);
-            if (found_key == "  version")
-                mKey = Keys::Version;
-            else if (found_key == "data")
-                result = new DataHandler(mTarget, mTarget.entries());
-            else
-                result = HandlerBase::Key(str, length);
-            return result;
-        }
-
-    inline virtual HandlerBase* String(const char* str, rapidjson::SizeType length)
-        {
-            HandlerBase* result = nullptr;
-            switch (mKey) {
-              case Keys::Version:
-                  if (strncmp(str, SEQDB_JSON_DUMP_VERSION, std::min(length, static_cast<rapidjson::SizeType>(strlen(SEQDB_JSON_DUMP_VERSION))))) {
-                      std::cerr << "Unsupported version: \"" << std::string(str, length) << '"' << std::endl;
-                      throw json_reader::Failure();
-                  }
-                  break;
-              case Keys::Data:
-              case Keys::Unknown:
-                  result = HandlerBase::String(str, length);
-                  break;
-            }
-            return result;
-        }
-
- private:
-    Keys mKey;
-
-};
+#include "acmacs-base/read-file.hh"
+#include "acmacs-base/json-importer.hh"
+namespace jsi = json_importer;
 
 // ----------------------------------------------------------------------
 
 namespace seqdb
 {
+    static constexpr const char* SEQDB_JSON_DUMP_VERSION = "sequence-database-v2";
+
+      // ----------------------------------------------------------------------
+
+    class SeqdbDataFile
+    {
+     public:
+        inline SeqdbDataFile(Seqdb& aSeqdb) : mSeqdb(aSeqdb) {}
+
+        inline void indentation(const char* /*str*/, size_t /*length*/)
+            {
+                  // mIndentation.assign(str, length);
+                  // std::cerr << "Indentation: " << mIndentation << std::endl;
+            }
+
+        inline void version(const char* str, size_t length)
+            {
+                const std::string version{str, length};
+                if (version != SEQDB_JSON_DUMP_VERSION)
+                    throw std::runtime_error("Unsupported seqdb version: \"" + version + "\"");
+            }
+
+        inline std::vector<SeqdbEntry>& seqdb() { return mSeqdb.entries(); }
+
+     private:
+        Seqdb& mSeqdb;
+          // std::string mIndentation;
+    };
+
+      // ----------------------------------------------------------------------
+
+    using LabIds = std::map<std::string, std::vector<std::string>>;
+
+    class LabIdStorer : public jsi::StorerBase
+    {
+     public:
+        using Base = jsi::StorerBase;
+
+        inline LabIdStorer(LabIds& aTarget) : mTarget(aTarget), mStarted(false) {}
+
+    inline virtual Base* StartObject()
+        {
+            if (mStarted)
+                throw Base::Failure(typeid(*this).name() + std::string(": unexpected StartObject event"));
+            mTarget.clear();
+            mStarted = true;
+            return nullptr;
+        }
+
+    inline virtual Base* EndObject()
+        {
+            throw Base::Pop();
+        }
+
+    inline virtual Base* Key(const char* str, rapidjson::SizeType length)
+        {
+            mLab.assign(str, length);
+            return nullptr;
+        }
+
+    inline virtual Base* StartArray()
+        {
+            if (mLab.empty())
+                throw Base::Failure(typeid(*this).name() + std::string(": unexpected StartArray event"));
+            mTarget.emplace(mLab, std::vector<std::string>{});
+            return nullptr;
+        }
+
+    inline virtual Base* EndArray()
+        {
+            mLab.clear();
+            return nullptr;
+        }
+
+    inline virtual Base* String(const char* str, rapidjson::SizeType length)
+        {
+            if (mLab.empty())
+                throw Base::Failure(typeid(*this).name() + std::string(": unexpected String event"));
+            mTarget[mLab].emplace_back(str, length);
+            return nullptr;
+        }
+
+     private:
+        LabIds& mTarget;
+        bool mStarted;
+        std::string mLab;
+    };
+
     void seqdb_import(std::string aFilename, Seqdb& aSeqdb)
     {
-        json_reader::read_from_file<Seqdb, SeqdbRootHandler>(aFilename, aSeqdb);
+        jsi::data<SeqdbSeq> seq_data = {
+            {"a", jsi::field(&SeqdbSeq::amino_acids)},
+            {"c", jsi::field(&SeqdbSeq::clades)},
+            {"g", jsi::field(&SeqdbSeq::gene)},
+            {"h", jsi::field(&SeqdbSeq::hi_names)},
+            {"l", jsi::field<LabIdStorer, SeqdbSeq, LabIds>(&SeqdbSeq::lab_ids_raw)}, // {"lab": ["lab_id"]},
+            {"n", jsi::field(&SeqdbSeq::nucleotides)},
+            {"p", jsi::field(&SeqdbSeq::passages)},
+            {"r", jsi::field(&SeqdbSeq::reassortant)},
+            {"s", jsi::field(&SeqdbSeq::amino_acids_shift_raw)},
+            {"t", jsi::field(&SeqdbSeq::nucleotides_shift_raw)},
+        };
+
+        using ESS = void (SeqdbEntry::*)(const char*, size_t);
+        jsi::data<SeqdbEntry> entry_data = {
+            {"N", jsi::field(static_cast<ESS>(&SeqdbEntry::name))},
+            {"d", jsi::field(&SeqdbEntry::dates)},
+            {"C", jsi::field(static_cast<ESS>(&SeqdbEntry::continent))},
+            {"c", jsi::field(static_cast<ESS>(&SeqdbEntry::country))},
+            {"l", jsi::field(static_cast<ESS>(&SeqdbEntry::lineage))},
+            {"s", jsi::field(&SeqdbEntry::seqs, seq_data)},
+            {"v", jsi::field(static_cast<ESS>(&SeqdbEntry::virus_type))},
+        };
+
+        jsi::data<SeqdbDataFile> seqdb_data = {
+            {"_", jsi::field(&SeqdbDataFile::indentation)},
+            {"  version", jsi::field(&SeqdbDataFile::version)},
+            {"data", jsi::field(&SeqdbDataFile::seqdb, entry_data)},
+        };
+
+        SeqdbDataFile data{aSeqdb};
+        jsi::import(acmacs_base::read_file(aFilename), data, seqdb_data);
 
     } // seqdb_import
 }
