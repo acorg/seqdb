@@ -37,6 +37,8 @@ namespace seqdb
     class SeqdbSeq
     {
      public:
+        using LabIds = std::map<std::string, std::vector<std::string>>;
+
         inline SeqdbSeq() : mGene("HA") {}
 
         inline SeqdbSeq(std::string aSequence, std::string aGene)
@@ -100,8 +102,8 @@ namespace seqdb
         inline const std::vector<std::string> cdcids() const { auto i = mLabIds.find("CDC"); return i == mLabIds.end() ? std::vector<std::string>{} : i->second; }
         inline const std::vector<std::string> lab_ids_for_lab(std::string lab) const { auto i = mLabIds.find(lab); return i == mLabIds.end() ? std::vector<std::string>{} : i->second; }
         inline const std::vector<std::string> lab_ids() const { std::vector<std::string> r; for (const auto& lid: mLabIds) { for (const auto& id: lid.second) { r.emplace_back(lid.first + "#" + id); } } return r; }
-        inline const auto& lab_ids_raw() const { return mLabIds; }
-        inline auto& lab_ids_raw() { return mLabIds; }
+        inline const LabIds& lab_ids_raw() const { return mLabIds; }
+        inline LabIds& lab_ids_raw() { return mLabIds; }
         inline bool match_labid(std::string lab, std::string id) const { auto i = mLabIds.find(lab); return i != mLabIds.end() && std::find(i->second.begin(), i->second.end(), id) != i->second.end(); }
         inline const auto& passages() const { return mPassages; }
         inline auto& passages() { return mPassages; }
@@ -145,7 +147,7 @@ namespace seqdb
         std::string mAminoAcids;
         Shift mNucleotidesShift;
         Shift mAminoAcidsShift;
-        std::map<std::string, std::vector<std::string>> mLabIds;
+        LabIds mLabIds;
         std::string mGene;
         std::vector<std::string> mHiNames;
         std::vector<std::string> mReassortant;

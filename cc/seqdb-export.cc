@@ -1,9 +1,18 @@
 #include "seqdb-export.hh"
 #include "seqdb/seqdb.hh"
 #include "json-keys.hh"
-#include "acmacs-base/json-writer.hh"
 
-using namespace seqdb;
+namespace json_writer
+{
+    template <typename RW> class writer;
+}
+
+template <typename RW> json_writer::writer<RW>& operator <<(json_writer::writer<RW>&, const seqdb::SeqdbSeq&);
+template <typename RW> json_writer::writer<RW>& operator <<(json_writer::writer<RW>&, const seqdb::SeqdbEntry&);
+template <typename RW> json_writer::writer<RW>& operator <<(json_writer::writer<RW>&, const seqdb::Seqdb&);
+
+#include "acmacs-base/json-writer.hh"
+namespace jsw = json_writer;
 
 // ----------------------------------------------------------------------
 
@@ -14,9 +23,9 @@ static constexpr const char* SEQDB_JSON_DUMP_VERSION = "sequence-database-v2";
 class if_aligned
 {
  public:
-    inline if_aligned(SeqdbJsonKey key, Shift shift) : mKey(key), mShift(shift) {}
+    inline if_aligned(SeqdbJsonKey key, seqdb::Shift shift) : mKey(key), mShift(shift) {}
 
-    template <typename RW> friend inline JsonWriterT<RW>& operator <<(JsonWriterT<RW>& writer, const if_aligned& data)
+    template <typename RW> friend inline jsw::writer<RW>& operator <<(jsw::writer<RW>& writer, const if_aligned& data)
         {
             if (data.mShift.aligned())
                 writer << data.mKey << data.mShift.raw();
@@ -25,57 +34,57 @@ class if_aligned
 
  private:
     SeqdbJsonKey mKey;
-    Shift mShift;
+    seqdb::Shift mShift;
 };
 
 // ----------------------------------------------------------------------
 
-template <typename RW> inline JsonWriterT<RW>& operator <<(JsonWriterT<RW>& writer, const SeqdbSeq& seq)
+template <typename RW> jsw::writer<RW>& operator <<(jsw::writer<RW>& writer, const seqdb::SeqdbSeq& seq)
 {
-    return writer << StartObject
-                  << if_not_empty(SeqdbJsonKey::Passages, seq.passages())
-                  << if_not_empty(SeqdbJsonKey::Nucleotides, seq.nucleotides(false))
-                  << if_not_empty(SeqdbJsonKey::AminoAcids, seq.amino_acids(false))
+    return writer << jsw::start_object
+                  << jsw::if_not_empty(SeqdbJsonKey::Passages, seq.passages())
+                  << jsw::if_not_empty(SeqdbJsonKey::Nucleotides, seq.nucleotides(false))
+                  << jsw::if_not_empty(SeqdbJsonKey::AminoAcids, seq.amino_acids(false))
                   << if_aligned(SeqdbJsonKey::NucleotideShift, seq.nucleotides_shift())
                   << if_aligned(SeqdbJsonKey::AminoAcidShift, seq.amino_acids_shift())
-                  << if_not_empty(SeqdbJsonKey::LabIds, seq.lab_ids_raw())
-                  << if_not_empty(SeqdbJsonKey::Gene, seq.gene())
-                  << if_not_empty(SeqdbJsonKey::HiNames, seq.hi_names())
-                  << if_not_empty(SeqdbJsonKey::Reassortant, seq.reassortant())
-                  << if_not_empty(SeqdbJsonKey::Clades, seq.clades())
-                  << EndObject;
+                  << jsw::if_not_empty(SeqdbJsonKey::LabIds, seq.lab_ids_raw())
+                  << jsw::if_not_empty(SeqdbJsonKey::Gene, seq.gene())
+                  << jsw::if_not_empty(SeqdbJsonKey::HiNames, seq.hi_names())
+                  << jsw::if_not_empty(SeqdbJsonKey::Reassortant, seq.reassortant())
+                  << jsw::if_not_empty(SeqdbJsonKey::Clades, seq.clades())
+                  << jsw::end_object;
 }
 
 // ----------------------------------------------------------------------
 
-template <typename RW> inline JsonWriterT<RW>& operator <<(JsonWriterT<RW>& writer, const SeqdbEntry& entry)
+template <typename RW> jsw::writer<RW>& operator <<(jsw::writer<RW>& writer, const seqdb::SeqdbEntry& entry)
 {
-    return writer << StartObject
-                  << if_not_empty(SeqdbJsonKey::Name, entry.name())
-                  << if_not_empty(SeqdbJsonKey::Continent, entry.continent())
-                  << if_not_empty(SeqdbJsonKey::Country, entry.country())
-                  << if_not_empty(SeqdbJsonKey::Dates, entry.dates())
-                  << if_not_empty(SeqdbJsonKey::Lineage, entry.lineage())
-                  << if_not_empty(SeqdbJsonKey::VirusType, entry.virus_type())
+    return writer << jsw::start_object
+                  << jsw::if_not_empty(SeqdbJsonKey::Name, entry.name())
+                  << jsw::if_not_empty(SeqdbJsonKey::Continent, entry.continent())
+                  << jsw::if_not_empty(SeqdbJsonKey::Country, entry.country())
+                  << jsw::if_not_empty(SeqdbJsonKey::Dates, entry.dates())
+                  << jsw::if_not_empty(SeqdbJsonKey::Lineage, entry.lineage())
+                  << jsw::if_not_empty(SeqdbJsonKey::VirusType, entry.virus_type())
                   << SeqdbJsonKey::SequenceSet << entry.seqs()
-                  << EndObject;
+                  << jsw::end_object;
 }
 
 // ----------------------------------------------------------------------
 
-template <typename RW> inline JsonWriterT<RW>& operator <<(JsonWriterT<RW>& writer, const Seqdb& seqdb)
+template <typename RW> jsw::writer<RW>& operator <<(jsw::writer<RW>& writer, const seqdb::Seqdb& seqdb)
 {
-    return writer << StartObject
-                  << JsonObjectKey("  version") << SEQDB_JSON_DUMP_VERSION
-                  << JsonObjectKey("data") << seqdb.entries()
-                  << EndObject;
+    return writer << jsw::start_object
+                  << jsw::key("  version") << SEQDB_JSON_DUMP_VERSION
+                  << jsw::key("data") << seqdb.entries()
+                  << jsw::end_object;
 }
 
 // ----------------------------------------------------------------------
 
-void seqdb::seqdb_export(std::string aFilename, const Seqdb& aSeqdb, size_t aIndent)
+void seqdb::seqdb_export(std::string aFilename, const seqdb::Seqdb& aSeqdb, size_t aIndent)
 {
-    export_to_json(aSeqdb, SEQDB_JSON_DUMP_VERSION, aFilename, aIndent);
+    jsw::export_to_json(aSeqdb, SEQDB_JSON_DUMP_VERSION, aFilename, aIndent);
 }
 
 // ----------------------------------------------------------------------
