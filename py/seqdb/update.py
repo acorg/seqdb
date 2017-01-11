@@ -61,9 +61,9 @@ class SeqdbUpdater:
             for entry_seq in self.seqdb.iter_seq():
                 entry_seq.seq.update_clades(virus_type=entry_seq.entry.virus_type, lineage=entry_seq.entry.lineage)
 
-    def match_hidb(self, hidb_dir, verbose=False):
+    def match_hidb(self, verbose=False):
         self.seqdb.remove_hi_names()
-        self.seqdb.match_hidb(str(hidb_dir), verbose=verbose)
+        self.seqdb.match_hidb(verbose=verbose)
 
     # ----------------------------------------------------------------------
     # ----------------------------------------------------------------------

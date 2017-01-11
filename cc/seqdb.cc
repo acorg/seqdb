@@ -565,10 +565,10 @@ std::vector<std::string> Seqdb::all_passages() const
 
 // ----------------------------------------------------------------------
 
-void Seqdb::find_in_hidb_update_country_lineage(std::vector<const hidb::AntigenData*>& found, SeqdbEntry& entry, HiDbPtrs& hidb_ptrs, std::string aHiDbDir) const
+void Seqdb::find_in_hidb_update_country_lineage(std::vector<const hidb::AntigenData*>& found, SeqdbEntry& entry) const
 {
     try {
-        const hidb::HiDb& hidb = get_hidb(entry.virus_type(), hidb_ptrs, aHiDbDir);
+        const hidb::HiDb& hidb = mHiDbSet.get(entry.virus_type());
         const auto cdcids = entry.cdcids();
         if (!cdcids.empty()) {
             for (const auto& cdcid: cdcids) {
@@ -603,16 +603,15 @@ void Seqdb::find_in_hidb_update_country_lineage(std::vector<const hidb::AntigenD
                 std::cerr << messages << std::endl;
         }
     }
-    catch (NoHiDb&) {
+    catch (hidb::NoHiDb&) {
     }
 
 } // Seqdb::find_in_hidb_update_country_lineage
 
 // ----------------------------------------------------------------------
 
-void seqdb::Seqdb::match_hidb(std::string aHiDbDir, bool aVerbose)
+void seqdb::Seqdb::match_hidb(bool aVerbose)
 {
-    HiDbPtrs hidb_ptrs;
     std::ostream& report_stream = std::cerr;
 
     struct score_size_t
@@ -656,7 +655,7 @@ void seqdb::Seqdb::match_hidb(std::string aHiDbDir, bool aVerbose)
     std::vector<const SeqdbEntry*> not_matched;
     for (auto& entry: mEntries) {
         std::vector<const hidb::AntigenData*> found;
-        find_in_hidb_update_country_lineage(found, entry, hidb_ptrs, aHiDbDir);
+        find_in_hidb_update_country_lineage(found, entry);
 
           // if (aVerbose)
           //     report_stream << std::endl << entry << std::endl;
@@ -733,33 +732,6 @@ void seqdb::Seqdb::match_hidb(std::string aHiDbDir, bool aVerbose)
     }
 
 } // Seqdb::match_hidb
-
-// ----------------------------------------------------------------------
-
-const hidb::HiDb& Seqdb::get_hidb(std::string aVirusType, HiDbPtrs& aPtrs, std::string aHiDbDir) const
-{
-    auto h = aPtrs.find(aVirusType);
-    if (h == aPtrs.end()) {
-        std::string filename;
-        if (aVirusType == "A(H1N1)")
-            filename = aHiDbDir + "/hidb4.h1.json.xz";
-        else if (aVirusType == "A(H3N2)")
-            filename = aHiDbDir + "/hidb4.h3.json.xz";
-        else if (aVirusType == "B")
-            filename = aHiDbDir + "/hidb4.b.json.xz";
-        else
-            throw NoHiDb{};
-          //throw std::runtime_error("No HiDb for " + aVirusType);
-
-        std::unique_ptr<hidb::HiDb> hidb{new hidb::HiDb{}};
-          // std::cout << "opening " << filename << std::endl;
-        hidb->importFrom(filename);
-        hidb->importLocDb(aHiDbDir + "/locationdb.json.xz");
-        h = aPtrs.emplace(aVirusType, std::move(hidb)).first;
-    }
-    return *h->second;
-
-} // Seqdb::get_hidb
 
 // ----------------------------------------------------------------------
 

@@ -427,7 +427,7 @@ namespace seqdb
     class Seqdb
     {
      public:
-        inline Seqdb() {}
+        inline Seqdb(std::string aHiDbDir) : mHiDbSet{aHiDbDir} {}
 
         void load(std::string filename);
         void save(std::string filename, size_t indent = 0) const;
@@ -464,7 +464,7 @@ namespace seqdb
         std::vector<std::string> all_hi_names() const;
         std::vector<std::string> all_passages() const;
         void remove_hi_names();
-        void match_hidb(std::string aHiDbDir, bool aVerbose);
+        void match_hidb(bool aVerbose);
 
           // iterating over sequences with filtering
         inline SeqdbIterator begin() { return SeqdbIterator(*this, 0, 0); }
@@ -481,6 +481,7 @@ namespace seqdb
      private:
         std::vector<SeqdbEntry> mEntries;
         const std::regex sReYearSpace = std::regex("/[12][0-9][0-9][0-9] ");
+        hidb::HiDbSet mHiDbSet;
 
         inline std::vector<SeqdbEntry>::iterator find_insertion_place(std::string aName)
             {
@@ -496,10 +497,7 @@ namespace seqdb
         friend class SeqdbIterator;
         friend class ConstSeqdbIterator;
 
-        class NoHiDb : public std::exception {};
-        typedef std::map<std::string, std::unique_ptr<hidb::HiDb>> HiDbPtrs;
-        const hidb::HiDb& get_hidb(std::string aVirusType, HiDbPtrs& aPtrs, std::string aHiDbDir) const;
-        void find_in_hidb_update_country_lineage(std::vector<const hidb::AntigenData*>& found, SeqdbEntry& entry, HiDbPtrs& hidb_ptrs, std::string aHiDbDir) const;
+        void find_in_hidb_update_country_lineage(std::vector<const hidb::AntigenData*>& found, SeqdbEntry& entry) const;
 
     }; // class Seqdb
 

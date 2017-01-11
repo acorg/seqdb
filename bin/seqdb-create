@@ -19,7 +19,7 @@ from acmacs_base import timeit
 # ----------------------------------------------------------------------
 
 def main(args):
-    db = seqdb.Seqdb()
+    db = seqdb.Seqdb(str(Path(args.hidb_dir).expanduser()))
     db_updater = SeqdbUpdater(db, filename=args.path_to_db, load=False)
     for filename in args.input:
         data = fasta_m.read_fasta_with_name_parsing(fasta_file=filename, lab="", virus_type="")
@@ -31,7 +31,7 @@ def main(args):
         passages = db.all_passages()
         module_logger.info('Passages: {}\n  {}'.format(len(passages), "\n  ".join(passages)))
     if args.match_hidb:
-        db_updater.match_hidb(Path(args.hidb_dir).expanduser(), verbose=False)
+        db_updater.match_hidb(verbose=False)
     if args.add_clades:
         db_updater.add_clades()               # clades must be updated after matching with hidb, because matching provides info about B lineage
     # print(db.report())
