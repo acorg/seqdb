@@ -427,7 +427,7 @@ namespace seqdb
     class Seqdb
     {
      public:
-        inline Seqdb(std::string aHiDbDir) : mHiDbSet{aHiDbDir} {}
+        inline Seqdb(std::string aHiDbDir = "") : mHiDbSet{aHiDbDir} {}
 
         void load(std::string filename);
         void save(std::string filename, size_t indent = 0) const;
