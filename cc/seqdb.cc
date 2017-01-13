@@ -253,9 +253,11 @@ std::vector<std::string> SeqdbSeq::make_all_reassortant_passage_variants() const
 
 void SeqdbEntry::add_date(std::string aDate)
 {
-    auto insertion_pos = std::lower_bound(mDates.begin(), mDates.end(), aDate);
-    if (insertion_pos == mDates.end() || aDate != *insertion_pos) {
-        mDates.insert(insertion_pos, aDate);
+    if (!aDate.empty()) {
+        auto insertion_pos = std::lower_bound(mDates.begin(), mDates.end(), aDate);
+        if (insertion_pos == mDates.end() || aDate != *insertion_pos) {
+            mDates.insert(insertion_pos, aDate);
+        }
     }
 
 } // SeqdbEntry::add_date
@@ -565,7 +567,7 @@ std::vector<std::string> Seqdb::all_passages() const
 
 // ----------------------------------------------------------------------
 
-void Seqdb::find_in_hidb_update_country_lineage(std::vector<const hidb::AntigenData*>& found, SeqdbEntry& entry) const
+void Seqdb::find_in_hidb_update_country_lineage_date(std::vector<const hidb::AntigenData*>& found, SeqdbEntry& entry) const
 {
     try {
         const hidb::HiDb& hidb = mHiDbSet.get(entry.virus_type());
@@ -602,11 +604,18 @@ void Seqdb::find_in_hidb_update_country_lineage(std::vector<const hidb::AntigenD
             if (messages)
                 std::cerr << messages << std::endl;
         }
+
+          // update date
+        if (!found.empty()) {
+            for (const auto& e: found) {
+                entry.add_date(e->date());
+            }
+        }
     }
     catch (hidb::NoHiDb&) {
     }
 
-} // Seqdb::find_in_hidb_update_country_lineage
+} // Seqdb::find_in_hidb_update_country_lineage_date
 
 // ----------------------------------------------------------------------
 
@@ -655,7 +664,7 @@ void seqdb::Seqdb::match_hidb(bool aVerbose)
     std::vector<const SeqdbEntry*> not_matched;
     for (auto& entry: mEntries) {
         std::vector<const hidb::AntigenData*> found;
-        find_in_hidb_update_country_lineage(found, entry);
+        find_in_hidb_update_country_lineage_date(found, entry);
 
           // if (aVerbose)
           //     report_stream << std::endl << entry << std::endl;

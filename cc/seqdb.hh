@@ -497,7 +497,7 @@ namespace seqdb
         friend class SeqdbIterator;
         friend class ConstSeqdbIterator;
 
-        void find_in_hidb_update_country_lineage(std::vector<const hidb::AntigenData*>& found, SeqdbEntry& entry) const;
+        void find_in_hidb_update_country_lineage_date(std::vector<const hidb::AntigenData*>& found, SeqdbEntry& entry) const;
 
     }; // class Seqdb
 
