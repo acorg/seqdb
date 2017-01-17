@@ -173,8 +173,13 @@ AlignAminoAcidsData SeqdbSeq::align(bool aForce, Messages& aMessages)
 void SeqdbSeq::update_clades(std::string aVirusType, std::string aLineage)
 {
     if (aligned()) {
-        if (aVirusType == "B" && aLineage == "YAMAGATA") {
-            mClades = clades_b_yamagata(mAminoAcids, mAminoAcidsShift);
+        if (aVirusType == "B") {
+            if (aLineage == "YAMAGATA") {
+                mClades = clades_b_yamagata(mAminoAcids, mAminoAcidsShift);
+            }
+            else if (aLineage == "VICTORIA") {
+                mClades = clades_b_victoria(mAminoAcids, mAminoAcidsShift);
+            }
         }
         else if (aVirusType == "A(H1N1)") {
             mClades = clades_h1pdm(mAminoAcids, mAminoAcidsShift);

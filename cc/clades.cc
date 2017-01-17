@@ -29,6 +29,28 @@ std::vector<std::string> seqdb::clades_b_yamagata(std::string aSequence, Shift a
 
 // ----------------------------------------------------------------------
 
+std::vector<std::string> seqdb::clades_b_victoria(std::string aSequence, Shift aShift)
+{
+      // mark clade 1A (all strains if empty clade removed, otherwise clade 1B defined by L58P, clade 1 defined by N75K, N165K, S172P)
+
+      // 75K, 165K, 172P -> 1, 58P -> 1B, ? -> 1A
+    auto r = std::vector<std::string>();
+    const size_t pos58 = static_cast<size_t>(57 - aShift),
+            pos75 = static_cast<size_t>(74 - aShift),
+            pos165 = static_cast<size_t>(164 - aShift),
+            pos172 = static_cast<size_t>(171 - aShift);
+    if (aSequence.size() > pos172 && aSequence[pos75] == 'K' && aSequence[pos165] == 'K' && aSequence[pos172] == 'P')
+        r.push_back("1");
+    else if (aSequence.size() > pos58 && aSequence[pos58] == 'P')
+        r.push_back("1B");
+    else
+        r.push_back("1A");
+    return r;
+
+} // clades_b_yamagata
+
+// ----------------------------------------------------------------------
+
 std::vector<std::string> seqdb::clades_h1pdm(std::string aSequence, Shift aShift)
 {
       // 84N+162N+216T - 6B.1, 152T+173I+501E - 6B.2
