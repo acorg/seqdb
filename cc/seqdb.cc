@@ -725,7 +725,7 @@ void seqdb::Seqdb::match_hidb(bool aVerbose, bool aGreedy)
             std::sort(matching.begin(), matching.end(), [](const auto& a, const auto& b) -> bool { return a.empty() ? false : (b.empty() || a[0] < b[0]); });
 
             if (aGreedy) {
-                  // greedy matching: add all hi-names having matching reassortant and passage type (egg/cell) and having score>0
+                  // greedy matching: add all hi-names having matching reassortant and passage type (egg/cell) regardless of score
                 if (aVerbose) {
                     report_found(report_stream, found);
                     report_matching(report_stream, matching);
@@ -734,8 +734,7 @@ void seqdb::Seqdb::match_hidb(bool aVerbose, bool aGreedy)
                 for (const auto& m: matching) {
                     for (const auto& sf: m) {
                         const auto& antigen = found[sf.found_no]->data();
-                        const string_match::score_t score_threshold = passage::is_egg(antigen.passage()) ? 0 : 1;
-                        if (sf.score > score_threshold && found_assigned.count(sf.found_no) == 0) {
+                        if (found_assigned.count(sf.found_no) == 0) {
                             const auto name = antigen.full_name();
                             entry.seqs()[sf.seq_no].add_hi_name(name);
                             if (aVerbose)

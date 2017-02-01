@@ -31,7 +31,7 @@ def main(args):
         passages = db.all_passages()
         module_logger.info('Passages: {}\n  {}'.format(len(passages), "\n  ".join(passages)))
     if args.match_hidb:
-        db_updater.match_hidb(verbose=False)
+        db_updater.match_hidb(verbose=args.verbose)
     if args.add_clades:
         db_updater.add_clades()               # clades must be updated after matching with hidb, because matching provides info about B lineage
     # print(db.report())
@@ -61,6 +61,7 @@ with timeit(sys.argv[0]):
         parser.add_argument('--report-not-aligned-prefixes', type=int, action='store', dest='report_not_aligned_prefixes', default=None, help='Report prefixes of not aligned aa sequences up to the specified length (signal peptide is often 16).')
         parser.add_argument('--report-all-passages', action='store_true', dest='report_all_passages', default=False, help='Report all passages in seqdb.')
         parser.add_argument('-d', '--debug', action='store_const', dest='loglevel', const=logging.DEBUG, default=logging.INFO, help='Enable debugging output.')
+        parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', default=False)
         args = parser.parse_args()
         logging.basicConfig(level=args.loglevel, format="%(levelname)s %(asctime)s: %(message)s")
         exit_code = main(args)
