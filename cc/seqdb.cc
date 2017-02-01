@@ -310,6 +310,15 @@ void SeqdbEntry::update_subtype_name(std::string aSubtype, Messages& aMessages)
 
 // ----------------------------------------------------------------------
 
+const SeqdbSeq* SeqdbEntry::find_by_hi_name(std::string aHiName) const
+{
+    auto found = std::find_if(begin_seq(), end_seq(), [aHiName](const auto& seq) -> bool { return seq.hi_name_present(aHiName); });
+    return found == end_seq() ? nullptr : &*found;
+
+} // SeqdbEntry::find_by_hi_name
+
+// ----------------------------------------------------------------------
+
 // std::string SeqdbEntry::add_or_update_sequence(std::string aSequence, std::string aPassage, std::string aReassortant, std::string aLab, std::string aLabId, std::string aGene)
 // {
 //     Messages messages;

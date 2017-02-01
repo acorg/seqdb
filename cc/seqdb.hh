@@ -247,6 +247,8 @@ namespace seqdb
         inline auto begin_seq() const { return mSeq.begin(); }
         inline auto end_seq() const { return mSeq.end(); }
 
+        const SeqdbSeq* find_by_hi_name(std::string aHiName) const;
+
           //   // Empty passages must not be removed! this is just for testing purposes
           // inline void remove_empty_passages()
           //     {
@@ -278,9 +280,11 @@ namespace seqdb
         inline SeqdbEntrySeq(SeqdbEntry& aEntry, SeqdbSeq& aSeq) : mEntry(&aEntry), mSeq(&aSeq) {}
         inline SeqdbEntrySeq(const SeqdbEntry& aEntry, const SeqdbSeq& aSeq) : mEntry(const_cast<SeqdbEntry*>(&aEntry)), mSeq(const_cast<SeqdbSeq*>(&aSeq)) {}
 
-        inline void assign(SeqdbEntrySeq&& aEntrySeq) { mEntry = aEntrySeq.mEntry, mSeq = aEntrySeq.mSeq; }
-        inline void assign(SeqdbEntry& aEntry, SeqdbSeq& aSeq) { mEntry = &aEntry, mSeq = &aSeq; }
-        inline void assign(const SeqdbEntry& aEntry, const SeqdbSeq& aSeq) { mEntry = const_cast<SeqdbEntry*>(&aEntry), mSeq = const_cast<SeqdbSeq*>(&aSeq); }
+        inline void assign(SeqdbEntrySeq&& aEntrySeq) { mEntry = aEntrySeq.mEntry; mSeq = aEntrySeq.mSeq; }
+        inline void assign(SeqdbEntry& aEntry, SeqdbSeq& aSeq) { mEntry = &aEntry; mSeq = &aSeq; }
+        inline void assign(const SeqdbEntry& aEntry, const SeqdbSeq& aSeq) { mEntry = const_cast<SeqdbEntry*>(&aEntry); mSeq = const_cast<SeqdbSeq*>(&aSeq); }
+        inline void assign(SeqdbEntry* aEntry, SeqdbSeq* aSeq) { mEntry = aEntry; mSeq = aSeq; }
+        inline void assign(const SeqdbEntry* aEntry, const SeqdbSeq* aSeq) { mEntry = const_cast<SeqdbEntry*>(aEntry); mSeq = const_cast<SeqdbSeq*>(aSeq); }
 
         inline operator bool() const { return mEntry != nullptr && mSeq != nullptr; }
 
