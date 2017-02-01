@@ -365,6 +365,19 @@ std::vector<std::string> SeqdbEntry::make_all_names() const
 
 // ----------------------------------------------------------------------
 
+std::vector<std::string> SeqdbEntry::make_all_variants() const
+{
+    std::vector<std::string> result;
+    for (const auto& seq: seqs()) {
+        const auto variants = seq.make_all_reassortant_passage_variants();
+        result.insert(result.end(), variants.begin(), variants.end());
+    }
+    return result;
+
+} // SeqdbEntry::make_variants
+
+// ----------------------------------------------------------------------
+
 std::string Seqdb::add_sequence(std::string aName, std::string aVirusType, std::string aLineage, std::string aLab, std::string aDate, std::string aLabId, std::string aPassage, std::string aReassortant, std::string aSequence, std::string aGene)
 {
     Messages messages;

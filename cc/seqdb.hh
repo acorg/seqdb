@@ -239,6 +239,7 @@ namespace seqdb
             }
 
         std::vector<std::string> make_all_names() const;
+        std::vector<std::string> make_all_variants() const;
 
         inline const auto& seqs() const { return mSeq; }
         inline auto& seqs() { return mSeq; }
