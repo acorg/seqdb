@@ -247,7 +247,8 @@ namespace seqdb
         inline auto end_seq() { return mSeq.end(); }
         inline auto begin_seq() const { return mSeq.begin(); }
         inline auto end_seq() const { return mSeq.end(); }
-
+        inline size_t number_of_seqs() const { return seqs().size(); }
+        
         const SeqdbSeq* find_by_hi_name(std::string aHiName) const;
 
           //   // Empty passages must not be removed! this is just for testing purposes
