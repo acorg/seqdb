@@ -180,7 +180,7 @@ PYBIND11_PLUGIN(seqdb_backend)
             .def("all_hi_names", &Seqdb::all_hi_names, py::doc("returns list of all hi_names (\"h\") found in seqdb."))
             .def("all_passages", &Seqdb::all_passages, py::doc("returns list of all passages found in seqdb."))
             .def("remove_hi_names", &Seqdb::remove_hi_names, py::doc("removes all hi_names (\"h\") found in seqdb (e.g. before matching again)."))
-            .def("match_hidb", &Seqdb::match_hidb, py::arg("verbose") = false, py::doc("match all names against hidb"))
+            .def("match_hidb", &Seqdb::match_hidb, py::arg("verbose") = false, py::arg("greedy") = true, py::doc("match all names against hidb"))
             ;
 
       // ----------------------------------------------------------------------

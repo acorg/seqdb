@@ -469,7 +469,7 @@ namespace seqdb
         std::vector<std::string> all_hi_names() const;
         std::vector<std::string> all_passages() const;
         void remove_hi_names();
-        void match_hidb(bool aVerbose);
+        void match_hidb(bool aVerbose, bool aGreedy = true);
 
           // iterating over sequences with filtering
         inline SeqdbIterator begin() { return SeqdbIterator(*this, 0, 0); }
