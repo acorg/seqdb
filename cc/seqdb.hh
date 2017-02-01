@@ -291,13 +291,13 @@ namespace seqdb
 
         inline std::string make_name(std::string aPassageSeparator = " ") const
             {
-                return mSeq->hi_names().empty() ? string::strip(mEntry->name() + aPassageSeparator + mSeq->passage()) : mSeq->hi_names()[0];
+                return mEntry && mSeq ? (mSeq->hi_names().empty() ? string::strip(mEntry->name() + aPassageSeparator + mSeq->passage()) : mSeq->hi_names()[0]) : "*NOT-FOUND*";
             }
 
           // seq_id is concatenation of sequence name and passage separeted by __
         inline std::string seq_id(bool encoded) const
             {
-                std::string r = string::strip(mEntry->name() + "__" + mSeq->passage());
+                std::string r = mEntry && mSeq ? (string::strip(mEntry->name() + "__" + mSeq->passage())) : "*NOT-FOUND*";
                 if (encoded)
                     r = name_encode(r);
                 return r;
