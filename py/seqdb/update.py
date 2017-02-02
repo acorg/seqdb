@@ -88,6 +88,7 @@ class SeqdbUpdater:
         [re.compile(r"/PERTH/16/2009 V0152-14\d", re.I), r"/PERTH/16/2009"], # reassortant?
         [re.compile(r"/JILIL?N[\-\s]*NANGUAN/", re.I), r"/JILIN NANGUAN/"],
         [re.compile(r"B/PHUKET/3073/2013 BVR-1B", re.I), r"B/PHUKET/3073/2013"], # reassortant?
+        [re.compile(r"/NEIDERSACHSEN/", re.I), r"/NIEDERSACHSEN/"],
         # [re.compile(r"", re.I), r""],
         # [re.compile(r"", re.I), r""],
 
