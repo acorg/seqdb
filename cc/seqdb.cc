@@ -701,8 +701,9 @@ void Seqdb::build_hi_name_index()
     mHiNameIndex.clear();
     for (auto entry_seq: *this) {
         for (auto hi_name: entry_seq.seq().hi_names()) {
-            if (!mHiNameIndex.emplace(hi_name, entry_seq).second)
-                std::cerr << "warning:0: " << hi_name << " was already in mHiNameIndex" << std::endl;
+            const auto pos_inserted = mHiNameIndex.emplace(hi_name, entry_seq);
+            if (!pos_inserted.second)
+                std::cerr << "warning:0: " << hi_name << " was already in mHiNameIndex [" << pos_inserted.first->second.entry().name() << "] [" << entry_seq.entry().name() << ']' << std::endl;
         }
     }
 
