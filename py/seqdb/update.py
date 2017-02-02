@@ -93,7 +93,7 @@ class SeqdbUpdater:
         # [re.compile(r"", re.I), r""],
 
         # CDC-LV is reassortant?
-        [re.compile(r"\s+CDC-LV\d+[A-Z]?$", re.I), ""],   # [A(H1N1)/SOUTH AFRICA/3626/2013 CDC-LV14A]
+        [re.compile(r"[\s\-]+CDC-LV\d+[A-Z]?$", re.I), ""],   # [A(H1N1)/SOUTH AFRICA/3626/2013 CDC-LV14A]
         ]
 
     def fix_name(self, name):
