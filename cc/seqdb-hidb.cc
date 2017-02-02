@@ -95,29 +95,21 @@ static void match_greedy(SeqdbEntry& entry, const Found& found, const Matching& 
         report_matching(report_stream, matching);
     }
 
-    std::map<size_t, std::pair<decltype(matching.begin() - matching.begin()), string_match::score_t>> antigen_to_matching; // antigen index in found to (matching index and score)
+    std::map<size_t, score_seq_found_t> antigen_to_matching; // antigen index in found to (matching index and score)
     for (auto mp = matching.begin(); mp != matching.end(); ++mp) {
         for (const auto& sf: *mp) {
-            const auto ampi = antigen_to_matching.emplace(sf.found_no, std::make_pair(mp - matching.begin(), sf.score));
-            if (!ampi.second && ampi.first->second.second < sf.score) {        // already present, replace if sf has hi higher score
-                ampi.first->second.first = mp - matching.begin();
-                ampi.first->second.second = sf.score;
+            const auto ampi = antigen_to_matching.emplace(sf.found_no, sf);
+            if (!ampi.second && ampi.first->second.score < sf.score) {        // already present, replace if sf has hi higher score
+                ampi.first->second = sf;
             }
         }
     }
 
-    std::set<size_t> found_assigned;
-    for (const auto& m: matching) {
-        for (const auto& sf: m) {
-            const auto& antigen = found[sf.found_no]->data();
-            if (found_assigned.count(sf.found_no) == 0) {
-                const auto name = antigen.full_name();
-                entry.seqs()[sf.seq_no].add_hi_name(name);
-                if (aVerbose)
-                    report_stream << "    +" << sf.seq_no << " " << name << std::endl;
-                found_assigned.insert(sf.found_no);
-            }
-        }
+    for (const auto& e: antigen_to_matching) {
+        const auto name = found[e.first]->data().full_name();
+        entry.seqs()[e.second.seq_no].add_hi_name(name);
+        if (aVerbose)
+            report_stream << "    +" << e.second.seq_no << " " << name << std::endl;
     }
 }
 
