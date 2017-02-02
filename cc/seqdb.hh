@@ -248,7 +248,7 @@ namespace seqdb
         inline auto begin_seq() const { return mSeq.begin(); }
         inline auto end_seq() const { return mSeq.end(); }
         inline size_t number_of_seqs() const { return seqs().size(); }
-        
+
         const SeqdbSeq* find_by_hi_name(std::string aHiName) const;
 
           //   // Empty passages must not be removed! this is just for testing purposes
@@ -484,10 +484,16 @@ namespace seqdb
 
         template <typename Value> std::deque<std::vector<SeqdbEntrySeq>> find_identical_sequences(Value value) const;
 
+        void build_hi_name_index();
+        const SeqdbEntrySeq* find_hi_name(std::string aHiName) const;
+
      private:
+        using HiNameIndex = std::map<std::string, SeqdbEntrySeq>;
+
         std::vector<SeqdbEntry> mEntries;
         const std::regex sReYearSpace = std::regex("/[12][0-9][0-9][0-9] ");
         hidb::HiDbSet mHiDbSet;
+        HiNameIndex mHiNameIndex;
 
         inline std::vector<SeqdbEntry>::iterator find_insertion_place(std::string aName)
             {

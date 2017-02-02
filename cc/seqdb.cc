@@ -848,6 +848,29 @@ SeqdbEntrySeq Seqdb::find_by_seq_id(std::string aSeqId) const
 
 // ----------------------------------------------------------------------
 
+void Seqdb::build_hi_name_index()
+{
+    mHiNameIndex.clear();
+    for (auto entry_seq: *this) {
+        for (auto hi_name: entry_seq.seq().hi_names()) {
+            if (!mHiNameIndex.emplace(hi_name, entry_seq).second)
+                std::cerr << "warning:0: " << hi_name << " was already in mHiNameIndex" << std::endl;
+        }
+    }
+
+} // Seqdb::build_hi_name_index
+
+// ----------------------------------------------------------------------
+
+const SeqdbEntrySeq* Seqdb::find_hi_name(std::string aHiName) const
+{
+    const auto it = mHiNameIndex.find(aHiName);
+    return it == mHiNameIndex.end() ? nullptr : &it->second;
+
+} // Seqdb::find_hi_name
+
+// ----------------------------------------------------------------------
+
 void Seqdb::load(std::string filename)
 {
     seqdb_import(filename, *this);
