@@ -65,6 +65,7 @@ static void make_matching(SeqdbEntry& entry, const Found& found, Matching& match
         const passage::CellOrEgg seq_cell_or_egg = passage::cell_or_egg(seq.passages());
         for (const auto& f: found) {
             const auto& f_passage = f->data().passage();
+              // std::cerr << "match_cell_egg: " << passage::match_cell_egg(passage::cell_or_egg(f_passage), seq_cell_or_egg) << " -- " << f_passage << ':' << static_cast<int>(passage::cell_or_egg(f_passage)) << " " << seq.passages() << ':' << static_cast<int>(seq_cell_or_egg) << std::endl;
             if (seq.reassortant_match(f->data().reassortant()) && passage::match_cell_egg(passage::cell_or_egg(f_passage), seq_cell_or_egg)) {
                 std::vector<score_size_t> scores; // score and min passage length (to avoid too incomplete matches)
                 if (!seq.passages().empty())
@@ -88,7 +89,8 @@ static void make_matching(SeqdbEntry& entry, const Found& found, Matching& match
 
 // greedy matching: add all hi-names having matching reassortant and passage type (egg/cell) regardless of score
 // if antigen is in multiple matching entries, use the one with the highest score
-static void match_greedy(SeqdbEntry& entry, const Found& found, const Matching& matching, bool aVerbose, std::ostream& report_stream)
+// returns if at least one seq matched
+static bool match_greedy(SeqdbEntry& entry, const Found& found, const Matching& matching, bool aVerbose, std::ostream& report_stream)
 {
     if (aVerbose) {
         report_found(report_stream, found);
@@ -105,23 +107,28 @@ static void match_greedy(SeqdbEntry& entry, const Found& found, const Matching& 
         }
     }
 
+    bool matched = false;
     for (const auto& e: antigen_to_matching) {
         const auto name = found[e.first]->data().full_name();
         entry.seqs()[e.second.seq_no].add_hi_name(name);
+        matched = true;
         if (aVerbose)
             report_stream << "    +" << e.second.seq_no << " " << name << std::endl;
     }
+    return matched;
 }
 
 // ----------------------------------------------------------------------
 
-static void match_normal(SeqdbEntry& entry, const Found& found, const Matching& matching, bool aVerbose, std::ostream& report_stream)
+static bool match_normal(SeqdbEntry& entry, const Found& found, const Matching& matching, bool aVerbose, std::ostream& report_stream)
 {
+    bool matched = false;
     if (matching.size() == 1) {
         for (const auto& ms: matching[0]) {
             if (ms.score == matching[0][0].score) {
                 const auto name = found[ms.found_no]->data().full_name();
                 entry.seqs()[0].add_hi_name(name);
+                matched = true;
                 if (aVerbose)
                     report_stream << "    + " << name << std::endl;
             }
@@ -138,6 +145,7 @@ static void match_normal(SeqdbEntry& entry, const Found& found, const Matching& 
                 if (sf.score == m[0].score && found_assigned.count(sf.found_no) == 0) {
                     const auto name = found[sf.found_no]->data().full_name();
                     entry.seqs()[sf.seq_no].add_hi_name(name);
+                    matched = true;
                     if (aVerbose)
                         report_stream << "    +" << sf.seq_no << " " << name << std::endl;
                     found_assigned.insert(sf.found_no);
@@ -145,6 +153,7 @@ static void match_normal(SeqdbEntry& entry, const Found& found, const Matching& 
             }
         }
     }
+    return matched;
 }
 
 // ----------------------------------------------------------------------
@@ -163,10 +172,16 @@ void Seqdb::match_hidb(bool aVerbose, bool aGreedy)
         if (!found.empty()) {
             Matching matching; // for each seq list of matching [[score, min passage len], found_no] - sorted by score desc
             make_matching(entry, found, matching);
+            bool matched = false;
             if (aGreedy)
-                match_greedy(entry, found, matching, aVerbose, report_stream);
+                matched = match_greedy(entry, found, matching, aVerbose, report_stream);
             else
-                match_normal(entry, found, matching, aVerbose, report_stream);
+                matched = match_normal(entry, found, matching, aVerbose, report_stream);
+            if (!matched) {
+                if (aVerbose)
+                    report_stream << "  ?? " << entry.name() << std::endl;
+                not_matched.push_back(&entry);
+            }
         }
         else {
             if (aVerbose)

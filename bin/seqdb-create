@@ -23,10 +23,10 @@ def main(args):
     db_updater = SeqdbUpdater(db, filename=args.path_to_db, load=False)
     for filename in args.input:
         data = fasta_m.read_fasta_with_name_parsing(fasta_file=filename, lab="", virus_type="")
-        module_logger.info('{} entries to update seqdb with'.format(len(data)))
+        # module_logger.info('{} entries to update seqdb with'.format(len(data)))
         # pprint.pprint(data)
         db_updater.add(data)
-    module_logger.info('Sequences: {} Entries: {}'.format(db.number_of_seqs(), db.number_of_entries()))
+    # module_logger.info('Sequences: {} Entries: {}'.format(db.number_of_seqs(), db.number_of_entries()))
     if args.report_all_passages:
         passages = db.all_passages()
         module_logger.info('Passages: {}\n  {}'.format(len(passages), "\n  ".join(passages)))
