@@ -303,7 +303,7 @@ namespace seqdb
           // seq_id is concatenation of sequence name and passage separeted by __
         inline std::string seq_id(bool encoded) const
             {
-                std::string r = mEntry && mSeq ? (string::strip(mEntry->name() + "__" + mSeq->passage())) : "*NOT-FOUND*";
+                std::string r = (mEntry && mSeq) ? (string::strip(mEntry->name() + "__" + mSeq->passage())) : "*NOT-FOUND*";
                 if (encoded)
                     r = name_encode(r);
                 return r;
