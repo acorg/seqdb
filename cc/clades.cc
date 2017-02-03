@@ -118,3 +118,6 @@ std::vector<std::string> seqdb::clades_h3n2(std::string aSequence, Shift aShift)
 } // clades_h3n2
 
 // ----------------------------------------------------------------------
+/// Local Variables:
+/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
+/// End:
