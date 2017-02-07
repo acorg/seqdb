@@ -45,7 +45,7 @@ DIST = $(abspath dist)
 
 all: check-acmacsd-root $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) $(SEQDB_LIB)
 
-install: check-acmacsd-root $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) $(SEQDB_LIB)
+install: check-acmacsd-root install-headers $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) $(SEQDB_LIB)
 	ln -sf $(SEQDB_LIB) $(ACMACSD_ROOT)/lib
 	if [ $$(uname) = "Darwin" ]; then /usr/bin/install_name_tool -id $(ACMACSD_ROOT)/lib/$(notdir $(SEQDB_LIB)) $(ACMACSD_ROOT)/lib/$(notdir $(SEQDB_LIB)); fi
 	ln -sf $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) $(ACMACSD_ROOT)/py
@@ -54,7 +54,7 @@ install: check-acmacsd-root $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) $(SEQDB
 
 install-headers:
 	if [ ! -d $(ACMACSD_ROOT)/include/seqdb ]; then mkdir $(ACMACSD_ROOT)/include/seqdb; fi
-	for header in seqdb.hh sequence-shift.hh amino-acids.hh messages.hh; do if [ ! -f $(ACMACSD_ROOT)/include/seqdb/$$header ]; then ln -s $(abspath cc)/$$header $(ACMACSD_ROOT)/include/seqdb; fi; done
+	ln -sf $(abspath cc)/*.hh $(ACMACSD_ROOT)/include/seqdb
 
 test: install
 	test/test
