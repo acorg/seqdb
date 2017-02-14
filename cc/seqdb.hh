@@ -19,6 +19,8 @@
 
 // ----------------------------------------------------------------------
 
+class Antigens;                 // acmacs-chart
+
 namespace seqdb
 {
     class Seqdb;
@@ -486,6 +488,10 @@ namespace seqdb
 
         void build_hi_name_index();
         const SeqdbEntrySeq* find_hi_name(std::string aHiName) const;
+
+          // Matches antigens of a chart against seqdb, returns number of antigens matched.
+          // Fills aPerAntigen with EntrySeq for each antigen.
+        size_t match(const Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerAntigen, bool aVerbose) const;
 
      private:
         using HiNameIndex = std::map<std::string, SeqdbEntrySeq>;

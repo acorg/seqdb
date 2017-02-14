@@ -110,7 +110,7 @@ PYBIND11_PLUGIN(seqdb_backend)
             .def("lab_ids", &SeqdbSeq::lab_ids)
             .def("passage", &SeqdbSeq::passage)
             .def("gene", static_cast<std::string (SeqdbSeq::*)() const>(&SeqdbSeq::gene))
-            .def("clades", static_cast<const std::vector<std::string>& (SeqdbSeq::*)() const>(&SeqdbSeq::clades))
+            .def("clades", py::overload_cast<>(&SeqdbSeq::clades))
             ;
 
     py::class_<SeqdbEntry>(m, "SeqdbEntry")

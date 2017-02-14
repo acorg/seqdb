@@ -6,6 +6,7 @@
 #include "acmacs-base/timeit.hh"
 #include "acmacs-base/virus-name.hh"
 #include "locationdb/locdb.hh"
+#include "acmacs-chart/chart.hh"
 #include "seqdb/seqdb.hh"
 #include "clades.hh"
 #include "seqdb-export.hh"
@@ -717,6 +718,32 @@ const SeqdbEntrySeq* Seqdb::find_hi_name(std::string aHiName) const
     return it == mHiNameIndex.end() ? nullptr : &it->second;
 
 } // Seqdb::find_hi_name
+
+// ----------------------------------------------------------------------
+
+size_t Seqdb::match(const Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerAntigen, bool aVerbose) const
+{
+    size_t matched = 0;
+    aPerAntigen.clear();
+    for (const Antigen& antigen: aAntigens) {
+        const SeqdbEntrySeq* entry = find_hi_name(antigen.full_name());
+        if (!entry)
+            entry = find_hi_name(antigen.full_name_for_seqdb_matching());
+        if (entry) {
+            aPerAntigen.push_back(*entry);
+            ++matched;
+        }
+        else {
+            aPerAntigen.emplace_back();
+            if (aVerbose)
+                std::cerr << "WARNING: seqdb::match failed for \"" << antigen.full_name() << "\"" << std::endl;
+        }
+    }
+    if (aVerbose)
+        std::cerr << "INFO: " << matched << " antigens from chart have sequences in seqdb" << std::endl;
+    return matched;
+
+} // Seqdb::match
 
 // ----------------------------------------------------------------------
 
