@@ -225,6 +225,20 @@ std::string SeqdbSeq::amino_acids(bool aAligned, size_t aLeftPartSize) const
 
 // ----------------------------------------------------------------------
 
+// aPos counts from 1!
+char SeqdbSeq::amino_acid_at(size_t aPos) const
+{
+    if (!aligned())
+        throw SequenceNotAligned("amino_acid_at()");
+    const int offset = static_cast<int>(aPos) - 1 - mAminoAcidsShift;
+    if (offset < 0 || offset >= static_cast<int>(mAminoAcids.size()))
+        throw std::runtime_error("amino_acid_at(): Invalid pos");
+    return mAminoAcids[static_cast<size_t>(offset)];
+
+} // SeqdbSeq::amino_acid_at
+
+// ----------------------------------------------------------------------
+
 std::string SeqdbSeq::nucleotides(bool aAligned, size_t aLeftPartSize) const
 {
     std::string r = mNucleotides;

@@ -7,7 +7,7 @@ MAKEFLAGS = -w
 # ----------------------------------------------------------------------
 
 SEQDB_SOURCES = seqdb.cc seqdb-export.cc seqdb-import.cc seqdb-hidb.cc amino-acids.cc clades.cc
-SEQDB_PY_SOURCES = $(SEQDB_SOURCES) seqdb-py.cc
+SEQDB_PY_SOURCES = $(SEQDB_SOURCES) py.cc
 
 # ----------------------------------------------------------------------
 

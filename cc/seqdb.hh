@@ -131,6 +131,7 @@ namespace seqdb
         // inline int& nucleotides_shift_raw() { return mNucleotidesShift.raw(); }
         inline void amino_acids_shift_raw(int shift) { mAminoAcidsShift.raw() = shift; }
         inline void nucleotides_shift_raw(int shift) { mNucleotidesShift.raw() = shift; }
+        char amino_acid_at(size_t aPos) const; // aPos counts from 1!
 
         void amino_acids(const char* str, size_t length) { mAminoAcids.assign(str, length); }
         void nucleotides(const char* str, size_t length) { mNucleotides.assign(str, length); }
