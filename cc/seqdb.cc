@@ -761,6 +761,27 @@ size_t Seqdb::match(const Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerA
 
 // ----------------------------------------------------------------------
 
+void Seqdb::aa_at_positions_for_antigens(const Antigens& aAntigens, const std::vector<size_t>& aPositions, std::map<std::string, std::vector<size_t>>& aa_indices, bool aVerbose) const
+{
+    size_t matched = 0;
+    for (auto ag = aAntigens.begin(); ag != aAntigens.end(); ++ag) {
+        const SeqdbEntrySeq* entry = find_hi_name(ag->full_name());
+        if (!entry)
+            entry = find_hi_name(ag->full_name_for_seqdb_matching());
+        if (entry) {
+            std::string aa(aPositions.size(), 'X');
+            std::transform(aPositions.begin(), aPositions.end(), aa.begin(), [&entry](size_t pos) { return entry->seq().amino_acid_at(pos); });
+            aa_indices[aa].push_back(static_cast<size_t>(ag - aAntigens.begin()));
+            ++matched;
+        }
+    }
+    if (aVerbose)
+        std::cerr << "INFO: " << matched << " antigens from chart have sequences in seqdb" << std::endl;
+
+} // Seqdb::aa_at_positions_for_antigens
+
+// ----------------------------------------------------------------------
+
 void Seqdb::load(std::string filename)
 {
     seqdb_import(filename, *this);

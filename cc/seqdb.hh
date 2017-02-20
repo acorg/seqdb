@@ -493,6 +493,8 @@ namespace seqdb
           // Matches antigens of a chart against seqdb, returns number of antigens matched.
           // Fills aPerAntigen with EntrySeq for each antigen.
         size_t match(const Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerAntigen, bool aVerbose) const;
+          // Matches antigens of a chart against seqdb, for each matched antigen extract AA at the passed positions
+        void aa_at_positions_for_antigens(const Antigens& aAntigens, const std::vector<size_t>& aPositions, std::map<std::string, std::vector<size_t>>& aa_indices, bool aVerbose) const;
 
      private:
         using HiNameIndex = std::map<std::string, SeqdbEntrySeq>;

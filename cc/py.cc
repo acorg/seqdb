@@ -184,6 +184,8 @@ PYBIND11_PLUGIN(seqdb_backend)
             .def("match_hidb", &Seqdb::match_hidb, py::arg("verbose") = false, py::arg("greedy") = true, py::doc("match all names against hidb"))
             .def("build_hi_name_index", &Seqdb::build_hi_name_index)
             .def("find_hi_name", &Seqdb::find_hi_name, py::arg("name"), py::return_value_policy::reference, py::doc("returns entry_seq found by hi name or None"))
+            .def("aa_at_positions_for_antigens", [](const seqdb::Seqdb& aSeqdb, const Antigens& aAntigens, const std::vector<size_t>& aPositions, bool aVerbose) {
+                    std::map<std::string, std::vector<size_t>> r; aSeqdb.aa_at_positions_for_antigens(aAntigens, aPositions, r, aVerbose); return r; }, py::arg("antigens"), py::arg("positions"), py::arg("verbose"))
             ;
 
       // ----------------------------------------------------------------------
