@@ -749,8 +749,8 @@ size_t Seqdb::match(const Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerA
         }
         else {
             aPerAntigen.emplace_back();
-            if (aVerbose)
-                std::cerr << "WARNING: seqdb::match failed for \"" << antigen.full_name() << "\"" << std::endl;
+            // if (aVerbose)
+            //     std::cerr << "WARNING: seqdb::match failed for \"" << antigen.full_name() << "\"" << std::endl;
         }
     }
     if (aVerbose)
