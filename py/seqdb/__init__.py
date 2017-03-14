@@ -4,7 +4,7 @@
 
 from seqdb_backend import *
 from .fasta import export_from_seqdb
-from .update import SeqdbUpdater
+from .update import create, SeqdbUpdater
 
 # ----------------------------------------------------------------------
 

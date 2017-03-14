@@ -7,7 +7,35 @@ import os, re, pprint
 import logging; module_logger = logging.getLogger(__name__)
 from pathlib import Path
 from acmacs_base.files import backup_file
-# from . import acmacs
+from . import Seqdb, fasta as fasta_m
+
+# ----------------------------------------------------------------------
+
+def create(hidb_dir, seqdb_filename, fasta_files, match_hidb, add_clades, save, report_all_passages, report_identical, report_not_aligned_prefixes, verbose):
+    db = Seqdb(str(hidb_dir))
+    db_updater = SeqdbUpdater(db, filename=seqdb_filename, load=False)
+    for filename in fasta_files:
+        data = fasta_m.read_fasta_with_name_parsing(fasta_file=filename, lab="", virus_type="")
+        # module_logger.info('{} entries to update seqdb with'.format(len(data)))
+        # pprint.pprint(data)
+        db_updater.add(data)
+    # module_logger.info('Sequences: {} Entries: {}'.format(db.number_of_seqs(), db.number_of_entries()))
+    if report_all_passages:
+        passages = db.all_passages()
+        module_logger.info('Passages: {}\n  {}'.format(len(passages), "\n  ".join(passages)))
+    if match_hidb:
+        db_updater.match_hidb(verbose=verbose)
+        db.build_hi_name_index()          # to report duplicates
+    if add_clades:
+        db_updater.add_clades()               # clades must be updated after matching with hidb, because matching provides info about B lineage
+    # print(db.report())
+    if report_identical:
+        print(db.report_identical())
+    if report_not_aligned_prefixes:
+        print(db.report_not_aligned(report_not_aligned_prefixes))
+    print(db.report())
+    if save:
+        db_updater.save(indent=1)
 
 # ----------------------------------------------------------------------
 
