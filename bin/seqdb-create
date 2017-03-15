@@ -18,7 +18,7 @@ import seqdb
 
 def main(args):
     seqdb.create(
-        hidb_dir=Path(hidb_dir).resolve(),
+        hidb_dir=Path(args.hidb_dir).resolve(),
         seqdb_filename=args.path_to_db,
         fasta_files=args.input,
         match_hidb=args.match_hidb,
