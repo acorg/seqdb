@@ -86,9 +86,9 @@ struct PySeqdbSeqIterator
 
 // ----------------------------------------------------------------------
 
-PYBIND11_PLUGIN(seqdb_backend)
+PYBIND11_MODULE(seqdb_backend, m)
 {
-    py::module m("seqdb_backend", "Seqdb access plugin");
+    m.doc() = "Seqdb access plugin";
 
       // ----------------------------------------------------------------------
 
@@ -189,10 +189,6 @@ PYBIND11_PLUGIN(seqdb_backend)
                     std::map<std::string, std::vector<size_t>> r; aSeqdb.aa_at_positions_for_antigens(aAntigens, aPositions, r, aVerbose); return r; }, py::arg("antigens"), py::arg("positions"), py::arg("verbose"))
             .def("match_antigens", [](const seqdb::Seqdb& aSeqdb, const Antigens& aAntigens, bool aVerbose) { std::vector<seqdb::SeqdbEntrySeq> r; aSeqdb.match(aAntigens, r, aVerbose); return r; }, py::arg("antigens"), py::arg("verbose"))
             ;
-
-      // ----------------------------------------------------------------------
-
-    return m.ptr();
 }
 
 // ----------------------------------------------------------------------
