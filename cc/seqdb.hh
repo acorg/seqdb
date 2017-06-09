@@ -463,6 +463,10 @@ namespace seqdb
         // SeqdbEntry* new_entry(std::string aName);
         std::string add_sequence(std::string aName, std::string aVirusType, std::string aLineage, std::string aLab, std::string aDate, std::string aLabId, std::string aPassage, std::string aReassortant, std::string aSequence, std::string aGene);
 
+          // fills by_virus_type that maps virus type to the list of indices of mEntries
+        void split_by_virus_type(std::map<std::string, std::vector<size_t>>& by_virus_type) const;
+        void detect_insertions_deletions();
+
           // removes short sequences, removes entries having no sequences. returns messages
         std::string cleanup(bool remove_short_sequences);
 

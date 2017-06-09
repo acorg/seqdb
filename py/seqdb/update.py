@@ -20,6 +20,7 @@ def create(hidb_dir, seqdb_filename, fasta_files, match_hidb, add_clades, save, 
         # pprint.pprint(data)
         db_updater.add(data)
     # module_logger.info('Sequences: {} Entries: {}'.format(db.number_of_seqs(), db.number_of_entries()))
+    # db_updater.detect_insertions_deletions()
     if report_all_passages:
         passages = db.all_passages()
         module_logger.info('Passages: {}\n  {}'.format(len(passages), "\n  ".join(passages)))
@@ -93,6 +94,9 @@ class SeqdbUpdater:
     def match_hidb(self, verbose=False):
         self.seqdb.remove_hi_names()
         self.seqdb.match_hidb(verbose=verbose)
+
+    def detect_insertions_deletions(self):
+        self.seqdb.detect_insertions_deletions()
 
     # ----------------------------------------------------------------------
     # convert
