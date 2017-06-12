@@ -11,7 +11,6 @@ namespace seqdb
 
         void detect();
 
-     private:
         class Entry
         {
          public:
@@ -19,8 +18,10 @@ namespace seqdb
             SeqdbEntrySeq entry_seq;
             std::string amino_acids;
         };
+        using Entries = std::vector<Entry>;
 
-        std::vector<Entry> mEntries;
+        std::string mVirusType;
+        Entries mEntries;
 
     }; // class InsertionsDeletionsDetector
 

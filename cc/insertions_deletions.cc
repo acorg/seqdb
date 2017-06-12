@@ -4,7 +4,29 @@ using namespace seqdb;
 
 // ----------------------------------------------------------------------
 
+class AAsPerPosEntry : public std::string
+{
+ public:
+    inline AAsPerPosEntry() {}
+    inline void add(char aAA) { if (aAA != 'X' && aAA != '-' && find(aAA) == npos) append(1, aAA); }
+    inline bool common() const { return size() == 1; }
+};
+
+class AAsPerPos : public std::vector<AAsPerPosEntry>
+{
+ public:
+    inline AAsPerPos() {}
+    inline void adjust_size(size_t new_size) { if (size() < new_size) resize(new_size); }
+    inline void update(std::string aa) { adjust_size(aa.size()); for (size_t pos = 0; pos < aa.size(); ++pos) operator[](pos).add(aa[pos]); }
+    inline void collect(const InsertionsDeletionsDetector::Entries& entries) { std::for_each(entries.begin(), entries.end(), [this](const auto& entry) { update(entry.amino_acids); }); }
+    template <typename Func> inline void collect_if(const InsertionsDeletionsDetector::Entries& entries, Func aFunc) { std::for_each(entries.begin(), entries.end(), [this,&aFunc](const auto& entry) { if (aFunc(entry)) update(entry.amino_acids); }); }
+    inline size_t last_common() const { size_t last = static_cast<size_t>(-1); for (size_t pos = 0; pos < size(); ++pos) { if (operator[](pos).common()) last = pos; } return last; }
+};
+
+// ----------------------------------------------------------------------
+
 InsertionsDeletionsDetector::InsertionsDeletionsDetector(Seqdb& aSeqdb, std::string aVirusType)
+    : mVirusType(aVirusType)
 {
     auto iter = aSeqdb.begin();
     iter.filter_subtype(aVirusType);
@@ -23,6 +45,25 @@ InsertionsDeletionsDetector::InsertionsDeletionsDetector(Seqdb& aSeqdb, std::str
 
 void InsertionsDeletionsDetector::detect()
 {
+    AAsPerPos aas_per_pos;
+    aas_per_pos.collect(mEntries);
+    const size_t last_common = aas_per_pos.last_common();
+    std::cerr << "last_common: " << last_common << std::endl;
+    if (last_common < 500) {
+        std::vector<size_t> last_common_for_aa;
+        for (char aa: aas_per_pos[last_common + 1]) {
+            AAsPerPos aas_per_pos_for_aa;
+            aas_per_pos_for_aa.collect_if(mEntries, [&](const Entry& entry) -> bool { return entry.amino_acids[last_common + 1] == aa; });
+            last_common_for_aa.push_back(aas_per_pos_for_aa.last_common());
+        }
+        std::cerr << "last_common " << (last_common + 1) << ' ' << last_common_for_aa << std::endl;
+    }
+    else {
+        std::cout << "No insertions/deletions for " << mVirusType << std::endl;
+    }
+
+      // for (size_t pos = last_common + 1; pos < std::min(last_common + 10, aas_per_pos.size()); ++pos)
+      //     std::cerr << pos << ' ' << aas_per_pos[pos] << std::endl;
 
 } // InsertionsDeletionsDetector::detect
 
