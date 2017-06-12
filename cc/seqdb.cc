@@ -836,10 +836,8 @@ std::set<std::string> Seqdb::virus_types() const
 void Seqdb::detect_insertions_deletions()
 {
     for (std::string virus_type: virus_types()) {
-        if (virus_type == "B") {
-            InsertionsDeletionsDetector detector(*this, virus_type);
-            detector.detect();
-        }
+        InsertionsDeletionsDetector detector(*this, virus_type);
+        detector.detect();
     }
 
 } // Seqdb::detect_insertions_deletions

@@ -41,7 +41,7 @@ InsertionsDeletionsDetector::InsertionsDeletionsDetector(Seqdb& aSeqdb, std::str
         catch (SequenceNotAligned&) {
         }
     }
-    std::cerr << "Longest " << mLongest.size() << "                 " << mLongest << std::endl;
+    // std::cerr << "Longest " << mLongest.size() << "                 " << mLongest << std::endl;
       // std::cerr << mEntries.size() << " seqs for " << aVirusType << std::endl;
 
 } // InsertionsDeletionsDetector::InsertionsDeletionsDetector
@@ -55,17 +55,19 @@ void InsertionsDeletionsDetector::detect()
     AAsPerPos aas_per_pos;
     aas_per_pos.collect(mEntries);
     const auto common_pos = aas_per_pos.common_pos();
-    std::cerr << "last common: " << common_pos.back() << " total: " << common_pos.size() <<  ' '  << common_pos << std::endl;
+    std::cerr << mVirusType << ": last common: " << common_pos.back() << " total: " << common_pos.size() /* <<  ' '  << common_pos */ << std::endl;
 
+    size_t num_with_deletions = 0;
     for (auto& entry: mEntries) {
         if (!entry.pos_number.empty()) {
             entry.apply_pos_number();
-            if (entry.pos_number.front().second > 1)
-                std::cerr << entry.entry_seq.make_name() << std::endl << entry.pos_number << ' ' << entry.amino_acids << std::endl;
-              // else
-              //     std::cerr << "   " << entry.amino_acids << std::endl;
+            ++num_with_deletions;
+            // if (entry.pos_number.front().second > 1)
+            //     std::cerr << entry.entry_seq.make_name() << std::endl << entry.pos_number << ' ' << entry.amino_acids << std::endl;
         }
     }
+    if (num_with_deletions)
+        std::cout << mVirusType << ": " << num_with_deletions << " sequences with deletions detected" << std::endl;
 
 } // InsertionsDeletionsDetector::detect
 
@@ -74,7 +76,7 @@ void InsertionsDeletionsDetector::detect()
 void InsertionsDeletionsDetector::align_to_longest()
 {
     const size_t min_common = static_cast<size_t>(std::floor(mLongest.size() * 0.9));
-    std::cerr << "min_common: " << min_common << std::endl;
+      // std::cerr << mVirusType << ": min_common: " << min_common << std::endl;
     for (auto& entry: mEntries) {
         entry.align_to(mLongest, min_common);
     }
@@ -83,22 +85,30 @@ void InsertionsDeletionsDetector::align_to_longest()
 
 // ----------------------------------------------------------------------
 
+class NoAdjustPos : public std::exception { public: using std::exception::exception; };
+
 void InsertionsDeletionsDetector::Entry::align_to(std::string master, size_t min_common)
 {
     while (number_of_common(master) < min_common) {
-        const size_t adjust_pos = find_adjust_pos(master);
-        size_t max_common = 0;
-        size_t best_num_insert = 0, num_insert;
-        for (num_insert = 1; num_insert <= 5; ++num_insert) {
-            amino_acids.insert(adjust_pos, 1, '-');
-            const size_t common = number_of_common(master);
-            if (common > max_common) {
-                max_common = common;
-                best_num_insert = num_insert;
+        try {
+            const size_t adjust_pos = find_adjust_pos(master);
+            size_t max_common = 0;
+            size_t best_num_insert = 0, num_insert;
+            for (num_insert = 1; num_insert <= 5; ++num_insert) {
+                amino_acids.insert(adjust_pos, 1, '-');
+                const size_t common = number_of_common(master);
+                if (common > max_common) {
+                    max_common = common;
+                    best_num_insert = num_insert;
+                }
             }
+            amino_acids.erase(adjust_pos, num_insert - best_num_insert - 1);
+            pos_number.emplace_back(adjust_pos, best_num_insert);
         }
-        amino_acids.erase(adjust_pos, num_insert - best_num_insert - 1);
-        pos_number.emplace_back(adjust_pos, best_num_insert);
+        catch (NoAdjustPos&) {
+              // std::cerr << "NoAdjustPos: NC " << number_of_common(master) << std::endl;
+            break;
+        }
     }
 
 } // InsertionsDeletionsDetector::Entry::align_to
@@ -110,17 +120,15 @@ size_t InsertionsDeletionsDetector::Entry::find_adjust_pos(std::string master) c
     constexpr const size_t min_gap = 5;
 
     const size_t last_pos = std::min(amino_acids.size(), master.size());
-    size_t adjust_pos = static_cast<size_t>(-1);
     for (size_t pos = 0, previous_common = 0; pos < last_pos; ++pos) {
         if (common(amino_acids[pos], master[pos])) {
             if ((pos - previous_common) > min_gap) {
-                adjust_pos = previous_common + 1;
-                break;
+                return previous_common + 1;
             }
             previous_common = pos;
         }
     }
-    return adjust_pos;
+    throw NoAdjustPos{};
 
 } // InsertionsDeletionsDetector::Entry::find_adjust_pos
 
