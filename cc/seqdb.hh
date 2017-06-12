@@ -138,6 +138,9 @@ namespace seqdb
 
         std::vector<std::string> make_all_reassortant_passage_variants() const;
 
+          // amino_acid_pos counts from 0!
+        void add_deletions(size_t amino_acid_pos, size_t num_amino_acid_deletions);
+
           //   // Empty passages must not be removed! this is just for testing purposes
           // inline void remove_empty_passages()
           //     {

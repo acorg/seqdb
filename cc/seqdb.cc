@@ -271,6 +271,18 @@ std::vector<std::string> SeqdbSeq::make_all_reassortant_passage_variants() const
 
 // ----------------------------------------------------------------------
 
+  // amino_acid_pos counts from 0!
+void SeqdbSeq::add_deletions(size_t amino_acid_pos, size_t num_amino_acid_deletions)
+{
+    const size_t aa_offset = static_cast<size_t>(static_cast<int>(amino_acid_pos) - amino_acids_shift());
+    mAminoAcids.insert(aa_offset, num_amino_acid_deletions, '-');
+    const size_t nuc_offset = static_cast<size_t>(static_cast<int>(amino_acid_pos * 3) - nucleotides_shift());
+    mNucleotides.insert(nuc_offset, num_amino_acid_deletions * 3, '-');
+
+} // SeqdbSeq::add_deletions
+
+// ----------------------------------------------------------------------
+
 void SeqdbEntry::add_date(std::string aDate)
 {
     if (!aDate.empty()) {

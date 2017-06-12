@@ -57,12 +57,11 @@ void InsertionsDeletionsDetector::detect()
     const auto common_pos = aas_per_pos.common_pos();
     std::cerr << "last common: " << common_pos.back() << " total: " << common_pos.size() <<  ' '  << common_pos << std::endl;
 
-    for (const auto& entry: mEntries) {
-        const auto insertions = std::count(entry.amino_acids.begin(), entry.amino_acids.end(), '-');
-        if (insertions) {
-            std::cerr << "WARNING: modify sequence!" << std::endl;
-            if (insertions > 1)
-                std::cerr << entry.entry_seq.make_name() << std::endl << std::setw(2) << insertions << ' ' << entry.amino_acids << std::endl;
+    for (auto& entry: mEntries) {
+        if (!entry.pos_number.empty()) {
+            entry.apply_pos_number();
+            if (entry.pos_number.front().second > 1)
+                std::cerr << entry.entry_seq.make_name() << std::endl << entry.pos_number << ' ' << entry.amino_acids << std::endl;
               // else
               //     std::cerr << "   " << entry.amino_acids << std::endl;
         }
@@ -99,6 +98,7 @@ void InsertionsDeletionsDetector::Entry::align_to(std::string master, size_t min
             }
         }
         amino_acids.erase(adjust_pos, num_insert - best_num_insert - 1);
+        pos_number.emplace_back(adjust_pos, best_num_insert);
     }
 
 } // InsertionsDeletionsDetector::Entry::align_to
@@ -136,6 +136,16 @@ size_t InsertionsDeletionsDetector::Entry::number_of_common(std::string master) 
     return number_of_common;
 
 } // InsertionsDeletionsDetector::Entry::number_of_common
+
+// ----------------------------------------------------------------------
+
+void InsertionsDeletionsDetector::Entry::apply_pos_number()
+{
+    for (const auto& pn: pos_number) {
+        entry_seq.seq().add_deletions(pn.first, pn.second);
+    }
+
+} // InsertionsDeletionsDetector::Entry::apply_pos_number
 
 // ----------------------------------------------------------------------
 

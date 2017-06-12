@@ -21,10 +21,12 @@ namespace seqdb
             void align_to(std::string master, size_t min_common);
             size_t find_adjust_pos(std::string master) const;
             size_t number_of_common(std::string master) const;
+            void apply_pos_number();
             static inline bool common(char a, char b) { return a == b && a != 'X' && a != '-'; }
 
             SeqdbEntrySeq entry_seq;
             std::string amino_acids;
+            std::vector<std::pair<size_t, size_t>> pos_number; // to update amino acids in entry_seq.seq
         };
         using Entries = std::vector<Entry>;
 
