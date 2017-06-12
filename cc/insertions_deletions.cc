@@ -75,7 +75,7 @@ void InsertionsDeletionsDetector::detect()
 
 void InsertionsDeletionsDetector::align_to_longest()
 {
-    const size_t min_common = static_cast<size_t>(std::floor(mLongest.size() * 0.9));
+    const size_t min_common = static_cast<size_t>(std::floor(mLongest.size() * 0.8));
       // std::cerr << mVirusType << ": min_common: " << min_common << std::endl;
     for (auto& entry: mEntries) {
         entry.align_to(mLongest, min_common);
@@ -89,7 +89,7 @@ class NoAdjustPos : public std::exception { public: using std::exception::except
 
 void InsertionsDeletionsDetector::Entry::align_to(std::string master, size_t min_common)
 {
-    while (number_of_common(master) < min_common) {
+    while (amino_acids.size() > min_common && number_of_common(master) < min_common) {
         try {
             const size_t adjust_pos = find_adjust_pos(master);
             size_t max_common = 0;
@@ -128,6 +128,7 @@ size_t InsertionsDeletionsDetector::Entry::find_adjust_pos(std::string master) c
             previous_common = pos;
         }
     }
+      // std::cerr << "NoAdjustPos common:" << number_of_common(master) << std::endl << master << std::endl << amino_acids << std::endl;
     throw NoAdjustPos{};
 
 } // InsertionsDeletionsDetector::Entry::find_adjust_pos
