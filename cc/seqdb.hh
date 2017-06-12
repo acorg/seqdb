@@ -464,7 +464,7 @@ namespace seqdb
         std::string add_sequence(std::string aName, std::string aVirusType, std::string aLineage, std::string aLab, std::string aDate, std::string aLabId, std::string aPassage, std::string aReassortant, std::string aSequence, std::string aGene);
 
           // fills by_virus_type that maps virus type to the list of indices of mEntries
-        void split_by_virus_type(std::map<std::string, std::vector<size_t>>& by_virus_type) const;
+        std::set<std::string> virus_types() const;
         void detect_insertions_deletions();
 
           // removes short sequences, removes entries having no sequences. returns messages
@@ -523,6 +523,7 @@ namespace seqdb
         friend class ConstSeqdbIterator;
 
         void find_in_hidb_update_country_lineage_date(std::vector<const hidb::AntigenData*>& found, SeqdbEntry& entry) const;
+        // void split_by_virus_type(std::map<std::string, std::vector<size_t>>& by_virus_type) const;
 
     }; // class Seqdb
 

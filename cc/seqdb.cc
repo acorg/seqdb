@@ -11,6 +11,7 @@
 #include "clades.hh"
 #include "seqdb-export.hh"
 #include "seqdb-import.hh"
+#include "insertions_deletions.hh"
 
 using namespace seqdb;
 
@@ -799,73 +800,37 @@ void Seqdb::save(std::string filename, size_t indent) const
 
 // ----------------------------------------------------------------------
 
-void Seqdb::split_by_virus_type(std::map<std::string, std::vector<size_t>>& by_virus_type) const
+std::set<std::string> Seqdb::virus_types() const
 {
-    for (size_t index = 0; index < mEntries.size(); ++index) {
-        auto ptr_inserted = by_virus_type.emplace(mEntries[index].virus_type(), std::vector<size_t>{});
-        ptr_inserted.first->second.push_back(index);
-    }
+    std::set<std::string> result;
+    std::transform(mEntries.begin(), mEntries.end(), std::inserter(result, result.end()), [](const auto& entry) -> std::string { return entry.virus_type(); });
+    return result;
 
-} // Seqdb::split_by_virus_type
+} // Seqdb::virus_types
+
+// ----------------------------------------------------------------------
+
+// void Seqdb::split_by_virus_type(std::map<std::string, std::vector<size_t>>& by_virus_type) const
+// {
+//     for (size_t index = 0; index < mEntries.size(); ++index) {
+//         auto ptr_inserted = by_virus_type.emplace(mEntries[index].virus_type(), std::vector<size_t>{});
+//         ptr_inserted.first->second.push_back(index);
+//     }
+
+// } // Seqdb::split_by_virus_type
 
 // ----------------------------------------------------------------------
 
 void Seqdb::detect_insertions_deletions()
 {
-    std::map<std::string, std::vector<size_t>> by_virus_type;
-    split_by_virus_type(by_virus_type);
-      // std::cerr << by_virus_type << std::endl;
-    for (const auto& vt_indices: by_virus_type) {
-        std::vector<std::string> aas;
-        // std::set<std::string> last_aa;
-        // std::set<size_t> aa_len;
-        std::vector<std::map<char,std::vector<std::string>>> aas_per_pos;
-        std::string common;
-        for (size_t index: vt_indices.second) {
-            for (const auto& seq: mEntries[index].seqs()) {
-                if (seq.aligned()) {
-                    const std::string aa = seq.amino_acids(true);
-                    aas.push_back(aa);
-                    // last_aa.emplace(1, aa.back());
-                    // aa_len.insert(aa.size());
-                    if (aa.size() > aas_per_pos.size())
-                        aas_per_pos.resize(aa.size());
-                    for (size_t pos = 0; pos < aa.size(); ++pos) {
-                        if (aa[pos] != 'X' && aa[pos] != '-')
-                            aas_per_pos[pos].emplace(aa[pos], std::vector<std::string>{}).first->second.push_back(aa);
-                    }
-                }
-            }
+    for (std::string virus_type: virus_types()) {
+        if (virus_type == "B") {
+            InsertionsDeletionsDetector detector(*this, virus_type);
+            detector.detect();
         }
-        std::cerr << vt_indices.first << " " << aas.size() << std::endl;
-        if (vt_indices.first == "B") {
-            size_t last_common_pos = 0;
-            for (size_t pos = 0; pos < aas_per_pos.size(); ++pos) {
-                if (aas_per_pos[pos].size() == 1)
-                    last_common_pos = pos;
-            }
-            std::cerr << "last_common_pos: " << last_common_pos << std::endl;
-            for (size_t pos = last_common_pos; pos < std::min(last_common_pos + 10, aas_per_pos.size()); ++pos) {
-                std::cerr << pos;
-                for (const auto& e: aas_per_pos[pos])
-                    std::cerr << ' ' << e.first << ':' << e.second.size();
-                std::cerr << std::endl;
-                if (pos == 161) {
-                    for (const auto& seq: aas_per_pos[pos]['D'])
-                        std::cerr << seq << std::endl;
-                }
-            }
-        }
-        // std::cerr << "last AA: " << last_aa << std::endl;
-        // std::cerr << "AA len: " << aa_len << std::endl;
-        // if (vt_indices.first == "B")
-        //     std::copy(aas.begin(), aas.end(), std::ostream_iterator<std::string>(std::cerr, "\n"));
     }
 
 } // Seqdb::detect_insertions_deletions
-
-// ----------------------------------------------------------------------
-
 
 // ----------------------------------------------------------------------
 /// Local Variables:
