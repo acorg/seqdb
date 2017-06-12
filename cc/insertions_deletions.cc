@@ -1,3 +1,5 @@
+#include <iomanip>
+
 #include "insertions_deletions.hh"
 
 using namespace seqdb;
@@ -20,7 +22,7 @@ class AAsPerPos : public std::vector<AAsPerPosEntry>
     inline void update(std::string aa) { adjust_size(aa.size()); for (size_t pos = 0; pos < aa.size(); ++pos) operator[](pos).add(aa[pos]); }
     inline void collect(const InsertionsDeletionsDetector::Entries& entries) { std::for_each(entries.begin(), entries.end(), [this](const auto& entry) { update(entry.amino_acids); }); }
     template <typename Func> inline void collect_if(const InsertionsDeletionsDetector::Entries& entries, Func aFunc) { std::for_each(entries.begin(), entries.end(), [this,&aFunc](const auto& entry) { if (aFunc(entry)) update(entry.amino_acids); }); }
-    inline size_t last_common() const { size_t last = static_cast<size_t>(-1); for (size_t pos = 0; pos < size(); ++pos) { if (operator[](pos).common()) last = pos; } return last; }
+    inline std::vector<size_t> common_pos() const { std::vector<size_t> common; for (size_t pos = 0; pos < size(); ++pos) { if (operator[](pos).common()) { common.push_back(pos); } } return common; }
 };
 
 // ----------------------------------------------------------------------
@@ -33,10 +35,13 @@ InsertionsDeletionsDetector::InsertionsDeletionsDetector(Seqdb& aSeqdb, std::str
     for (; iter != aSeqdb.end(); ++iter) {
         try {
             mEntries.emplace_back(*iter);
+            if (mEntries.back().amino_acids.size() > mLongest.size())
+                mLongest = mEntries.back().amino_acids;
         }
         catch (SequenceNotAligned&) {
         }
     }
+    std::cerr << "Longest " << mLongest.size() << "                 " << mLongest << std::endl;
       // std::cerr << mEntries.size() << " seqs for " << aVirusType << std::endl;
 
 } // InsertionsDeletionsDetector::InsertionsDeletionsDetector
@@ -45,27 +50,95 @@ InsertionsDeletionsDetector::InsertionsDeletionsDetector(Seqdb& aSeqdb, std::str
 
 void InsertionsDeletionsDetector::detect()
 {
+    align_to_longest();
+
     AAsPerPos aas_per_pos;
     aas_per_pos.collect(mEntries);
-    const size_t last_common = aas_per_pos.last_common();
-    std::cerr << "last_common: " << last_common << std::endl;
-    if (last_common < 500) {
-        std::vector<size_t> last_common_for_aa;
-        for (char aa: aas_per_pos[last_common + 1]) {
-            AAsPerPos aas_per_pos_for_aa;
-            aas_per_pos_for_aa.collect_if(mEntries, [&](const Entry& entry) -> bool { return entry.amino_acids[last_common + 1] == aa; });
-            last_common_for_aa.push_back(aas_per_pos_for_aa.last_common());
-        }
-        std::cerr << "last_common " << (last_common + 1) << ' ' << last_common_for_aa << std::endl;
-    }
-    else {
-        std::cout << "No insertions/deletions for " << mVirusType << std::endl;
-    }
+    const auto common_pos = aas_per_pos.common_pos();
+    std::cerr << "last common: " << common_pos.back() << " total: " << common_pos.size() <<  ' '  << common_pos << std::endl;
 
-      // for (size_t pos = last_common + 1; pos < std::min(last_common + 10, aas_per_pos.size()); ++pos)
-      //     std::cerr << pos << ' ' << aas_per_pos[pos] << std::endl;
+    for (const auto& entry: mEntries) {
+        const auto insertions = std::count(entry.amino_acids.begin(), entry.amino_acids.end(), '-');
+        if (insertions) {
+            std::cerr << "WARNING: modify sequence!" << std::endl;
+            if (insertions > 1)
+                std::cerr << entry.entry_seq.make_name() << std::endl << std::setw(2) << insertions << ' ' << entry.amino_acids << std::endl;
+              // else
+              //     std::cerr << "   " << entry.amino_acids << std::endl;
+        }
+    }
 
 } // InsertionsDeletionsDetector::detect
+
+// ----------------------------------------------------------------------
+
+void InsertionsDeletionsDetector::align_to_longest()
+{
+    const size_t min_common = static_cast<size_t>(std::floor(mLongest.size() * 0.9));
+    std::cerr << "min_common: " << min_common << std::endl;
+    for (auto& entry: mEntries) {
+        entry.align_to(mLongest, min_common);
+    }
+
+} // InsertionsDeletionsDetector::align_to_longest
+
+// ----------------------------------------------------------------------
+
+void InsertionsDeletionsDetector::Entry::align_to(std::string master, size_t min_common)
+{
+    while (number_of_common(master) < min_common) {
+        const size_t adjust_pos = find_adjust_pos(master);
+        size_t max_common = 0;
+        size_t best_num_insert = 0, num_insert;
+        for (num_insert = 1; num_insert <= 5; ++num_insert) {
+            amino_acids.insert(adjust_pos, 1, '-');
+            const size_t common = number_of_common(master);
+            if (common > max_common) {
+                max_common = common;
+                best_num_insert = num_insert;
+            }
+        }
+        amino_acids.erase(adjust_pos, num_insert - best_num_insert - 1);
+    }
+
+} // InsertionsDeletionsDetector::Entry::align_to
+
+// ----------------------------------------------------------------------
+
+size_t InsertionsDeletionsDetector::Entry::find_adjust_pos(std::string master) const
+{
+    constexpr const size_t min_gap = 5;
+
+    const size_t last_pos = std::min(amino_acids.size(), master.size());
+    size_t adjust_pos = static_cast<size_t>(-1);
+    for (size_t pos = 0, previous_common = 0; pos < last_pos; ++pos) {
+        if (common(amino_acids[pos], master[pos])) {
+            if ((pos - previous_common) > min_gap) {
+                adjust_pos = previous_common + 1;
+                break;
+            }
+            previous_common = pos;
+        }
+    }
+    return adjust_pos;
+
+} // InsertionsDeletionsDetector::Entry::find_adjust_pos
+
+// ----------------------------------------------------------------------
+
+size_t InsertionsDeletionsDetector::Entry::number_of_common(std::string master) const
+{
+    const size_t last_pos = std::min(amino_acids.size(), master.size());
+    size_t number_of_common = 0;
+    for (size_t pos = 0; pos < last_pos; ++pos)
+        if (common(amino_acids[pos], master[pos]))
+            ++number_of_common;
+    return number_of_common;
+
+} // InsertionsDeletionsDetector::Entry::number_of_common
+
+// ----------------------------------------------------------------------
+
 
 // ----------------------------------------------------------------------
 
