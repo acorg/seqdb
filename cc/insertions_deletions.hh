@@ -39,6 +39,19 @@ namespace seqdb
 
     }; // class InsertionsDeletionsDetector
 
+      // ----------------------------------------------------------------------
+
+    class BLineageDetector
+    {
+     public:
+        inline BLineageDetector(Seqdb& aSeqdb) : mSeqdb(aSeqdb) {}
+        void detect();
+
+     private:
+        Seqdb& mSeqdb;
+
+    }; // class BLineageDetector
+
 } // namespace seqdb
 
 // ----------------------------------------------------------------------

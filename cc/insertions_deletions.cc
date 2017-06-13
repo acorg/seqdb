@@ -43,8 +43,7 @@ InsertionsDeletionsDetector::InsertionsDeletionsDetector(Seqdb& aSeqdb, std::str
         }
     }
     mMaster = mEntries.front().amino_acids;
-    std::cerr << mVirusType << ": master  " << mMaster << std::endl;
-      // std::cerr << mEntries.size() << " seqs for " << aVirusType << std::endl;
+    // std::cerr << mVirusType << ": master  " << mMaster << std::endl;
 
 } // InsertionsDeletionsDetector::InsertionsDeletionsDetector
 
@@ -58,7 +57,7 @@ void InsertionsDeletionsDetector::detect()
     AAsPerPos aas_per_pos;
     aas_per_pos.collect(mEntries);
     const auto common_pos = aas_per_pos.common_pos();
-    std::cerr << mVirusType << ": last common: " << common_pos.back() << " total: " << common_pos.size() /* <<  ' '  << common_pos */ << std::endl;
+    // std::cerr << mVirusType << ": last common: " << common_pos.back() << " total: " << common_pos.size() /* <<  ' '  << common_pos */ << std::endl;
 
     size_t num_with_deletions = 0;
     for (auto& entry: mEntries) {
@@ -233,6 +232,30 @@ void InsertionsDeletionsDetector::Entry::apply_pos_number()
     }
 
 } // InsertionsDeletionsDetector::Entry::apply_pos_number
+
+// ----------------------------------------------------------------------
+
+void BLineageDetector::detect()
+{
+    auto iter = mSeqdb.begin();
+    iter.filter_subtype("B");
+    for (; iter != mSeqdb.end(); ++iter) {
+        auto entry_seq = *iter;
+        const auto& seq = entry_seq.seq();
+        try {
+            const char a162 = seq.amino_acid_at(162), a163 = seq.amino_acid_at(163);
+            const std::string stored_lineage = entry_seq.entry().lineage();
+            const std::string detected_lineage = (a162 != '-' && a163 == '-') ? "YAMAGATA" : "VICTORIA"; // if deletion in both 162 and 163, it's Vic 2016-2017 outlier
+            if (stored_lineage.empty())
+                entry_seq.entry().lineage(detected_lineage);
+            else if (stored_lineage != detected_lineage)
+                std::cerr << "WARNING: lineage conflict: " << entry_seq.make_name() << "  stored: " << stored_lineage << " detected by sequence: " << detected_lineage << std::endl << "  " << seq.amino_acids(true) << std::endl;
+        }
+        catch (SequenceNotAligned&) {
+        }
+    }
+
+} // BLineageDetector::detect
 
 // ----------------------------------------------------------------------
 /// Local Variables:

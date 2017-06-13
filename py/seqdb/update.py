@@ -21,6 +21,7 @@ def create(hidb_dir, seqdb_filename, fasta_files, match_hidb, add_clades, save, 
         db_updater.add(data)
     # module_logger.info('Sequences: {} Entries: {}'.format(db.number_of_seqs(), db.number_of_entries()))
     db_updater.detect_insertions_deletions()
+    db_updater.detect_b_lineage()
     if report_all_passages:
         passages = db.all_passages()
         module_logger.info('Passages: {}\n  {}'.format(len(passages), "\n  ".join(passages)))
@@ -97,6 +98,9 @@ class SeqdbUpdater:
 
     def detect_insertions_deletions(self):
         self.seqdb.detect_insertions_deletions()
+
+    def detect_b_lineage(self):
+        self.seqdb.detect_b_lineage()
 
     # ----------------------------------------------------------------------
     # convert

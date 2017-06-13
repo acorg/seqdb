@@ -843,6 +843,15 @@ void Seqdb::detect_insertions_deletions()
 } // Seqdb::detect_insertions_deletions
 
 // ----------------------------------------------------------------------
+
+void Seqdb::detect_b_lineage()
+{
+    BLineageDetector detector(*this);
+    detector.detect();
+
+} // Seqdb::detect_b_lineage
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:

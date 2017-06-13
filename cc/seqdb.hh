@@ -469,6 +469,7 @@ namespace seqdb
           // fills by_virus_type that maps virus type to the list of indices of mEntries
         std::set<std::string> virus_types() const;
         void detect_insertions_deletions();
+        void detect_b_lineage();
 
           // removes short sequences, removes entries having no sequences. returns messages
         std::string cleanup(bool remove_short_sequences);
