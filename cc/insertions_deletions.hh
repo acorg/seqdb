@@ -16,10 +16,10 @@ namespace seqdb
          public:
             inline Entry(SeqdbEntrySeq&& aEntrySeq) : entry_seq(aEntrySeq), amino_acids(entry_seq.seq().amino_acids(true)) {}
             inline void revert() { amino_acids = entry_seq.seq().amino_acids(true); }
-            inline void insert_if(size_t pos, char aa, size_t num_insertions) { if (amino_acids[pos] == aa) amino_acids.insert(pos, num_insertions, '-'); }
+              // inline void insert_if(size_t pos, char aa, size_t num_insertions) { if (amino_acids[pos] == aa) amino_acids.insert(pos, num_insertions, '-'); }
 
             static inline bool common(char a, char b) { return a == b && a != 'X' && a != '-'; }
-            static std::vector<std::pair<size_t, size_t>> align_to(std::string master, std::string& to_align, size_t min_common);
+            static std::vector<std::pair<size_t, size_t>> align_to(std::string master, std::string& to_align);
             void apply_pos_number();
 
             SeqdbEntrySeq entry_seq;
