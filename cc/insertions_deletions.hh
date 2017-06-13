@@ -28,8 +28,8 @@ namespace seqdb
             std::vector<std::pair<size_t, size_t>> pos_number; // to update amino acids in entry_seq.seq
 
          private:
-            static size_t number_of_common(std::string a, std::string b);
-            static size_t check_adjust_pos(std::string master, std::string& to_align, size_t adjust_pos, size_t current_common);
+            static std::pair<size_t, size_t> number_of_common(std::string a, std::string b, size_t start = 0);
+            static size_t check_adjust_pos(std::string master, std::string& to_align, size_t adjust_pos);
         };
         using Entries = std::vector<Entry>;
 

@@ -140,7 +140,7 @@ std::vector<std::pair<size_t, size_t>> InsertionsDeletionsDetector::Entry::align
     if (to_align.size() > min_common) {
         size_t start = 0;
         while (start < to_align.size()) {
-            const size_t current_common = number_of_common(to_align, master);
+            const size_t current_common = number_of_common(to_align, master).first;
             if (current_common > min_common)
                 break;
             try {
@@ -148,7 +148,7 @@ std::vector<std::pair<size_t, size_t>> InsertionsDeletionsDetector::Entry::align
                 start = to_align.size();
                 for (; pos != pos_end; ++pos) {
                       // std::cerr << *pos << std::endl;
-                    const size_t best_num_insert = check_adjust_pos(master, to_align, *pos, current_common);
+                    const size_t best_num_insert = check_adjust_pos(master, to_align, *pos);
                     if (best_num_insert) {
                         pos_number.emplace_back(*pos, best_num_insert);
                         start = *pos + 1;
@@ -157,17 +157,6 @@ std::vector<std::pair<size_t, size_t>> InsertionsDeletionsDetector::Entry::align
                         break;
                     }
                 }
-
-                // for (size_t adjust_pos = 0; adjust_pos < to_align.size(); ++adjust_pos) {
-                //     adjust_pos = find_adjust_pos(master, to_align, adjust_pos);
-                //     const size_t best_num_insert = check_adjust_pos(master, to_align, adjust_pos, current_common);
-                //     if (best_num_insert) {
-                //         pos_number.emplace_back(adjust_pos, best_num_insert);
-                //         if (best_num_insert == 2)
-                //             std::cerr << adjust_pos << ' '  << to_align << std::endl;
-                //         break;
-                //     }
-                // }
             }
             catch (NoAdjustPos&) {
                   // std::cerr << "NoAdjustPos: NC " << number_of_common(to_align, master) << std::endl;
@@ -181,18 +170,18 @@ std::vector<std::pair<size_t, size_t>> InsertionsDeletionsDetector::Entry::align
 
 // ----------------------------------------------------------------------
 
-size_t InsertionsDeletionsDetector::Entry::check_adjust_pos(std::string master, std::string& to_align, size_t adjust_pos, size_t current_common)
+size_t InsertionsDeletionsDetector::Entry::check_adjust_pos(std::string master, std::string& to_align, size_t adjust_pos)
 {
     constexpr const size_t max_num_deletions = 2;
 
-    size_t max_common = current_common;
+    size_t max_common = number_of_common(to_align, master, adjust_pos + 1).first;
     size_t best_num_insert = 0, num_insert;
     for (num_insert = 1; num_insert <= max_num_deletions; ++num_insert) {
         to_align.insert(adjust_pos, 1, '-');
-        const size_t common = number_of_common(to_align, master);
-        if (common > max_common) {
-            std::cerr << "adjust_pos:" << adjust_pos << " num_insert:" << num_insert << " common:" << common << " current_common:" << current_common << std::endl;
-            max_common = common;
+        const auto common_first = number_of_common(to_align, master, adjust_pos + num_insert);
+        if (common_first.first > max_common && common_first.second == (adjust_pos + num_insert)) {
+            std::cerr << "adjust_pos:" << adjust_pos << " num_insert:" << num_insert << " common_first:" << common_first << std::endl;
+            max_common = common_first.first;
             best_num_insert = num_insert;
         }
     }
@@ -203,14 +192,18 @@ size_t InsertionsDeletionsDetector::Entry::check_adjust_pos(std::string master, 
 
 // ----------------------------------------------------------------------
 
-size_t InsertionsDeletionsDetector::Entry::number_of_common(std::string a, std::string b)
+std::pair<size_t, size_t> InsertionsDeletionsDetector::Entry::number_of_common(std::string a, std::string b, size_t start)
 {
     const size_t last_pos = std::min(a.size(), b.size());
-    size_t number_of_common = 0;
-    for (size_t pos = 0; pos < last_pos; ++pos)
-        if (common(a[pos], b[pos]))
+    size_t number_of_common = 0, first_common = static_cast<size_t>(-1);
+    for (size_t pos = start; pos < last_pos; ++pos) {
+        if (common(a[pos], b[pos])) {
             ++number_of_common;
-    return number_of_common;
+            if (first_common == static_cast<size_t>(-1))
+                first_common = pos;
+        }
+    }
+    return std::make_pair(number_of_common, first_common);
 
 } // InsertionsDeletionsDetector::Entry::number_of_common
 
