@@ -42,8 +42,10 @@ InsertionsDeletionsDetector::InsertionsDeletionsDetector(Seqdb& aSeqdb, std::str
         catch (SequenceNotAligned&) {
         }
     }
-    mMaster = mEntries.front().amino_acids;
-    // std::cerr << mVirusType << ": master  " << mMaster << std::endl;
+    if (!mEntries.empty()) {
+        mMaster = mEntries.front().amino_acids;
+        // std::cerr << mVirusType << ": master  " << mEntries.front().entry_seq.entry().virus_type() << ' ' << mEntries.front().entry_seq.make_name() << " " << mMaster << std::endl;
+    }
 
 } // InsertionsDeletionsDetector::InsertionsDeletionsDetector
 
@@ -51,26 +53,26 @@ InsertionsDeletionsDetector::InsertionsDeletionsDetector(Seqdb& aSeqdb, std::str
 
 void InsertionsDeletionsDetector::detect()
 {
-    // if (mVirusType == "B") {
-    align_to_master();
+    if (!mEntries.empty() /* && mVirusType == "B" */) {
+        align_to_master();
 
-    AAsPerPos aas_per_pos;
-    aas_per_pos.collect(mEntries);
-    const auto common_pos = aas_per_pos.common_pos();
-    // std::cerr << mVirusType << ": last common: " << common_pos.back() << " total: " << common_pos.size() /* <<  ' '  << common_pos */ << std::endl;
+        AAsPerPos aas_per_pos;
+        aas_per_pos.collect(mEntries);
+        const auto common_pos = aas_per_pos.common_pos();
+          // std::cerr << mVirusType << ": last common: " << common_pos.back() << " total: " << common_pos.size() /* <<  ' '  << common_pos */ << std::endl;
 
-    size_t num_with_deletions = 0;
-    for (auto& entry: mEntries) {
-        if (!entry.pos_number.empty()) {
-            entry.apply_pos_number();
-            ++num_with_deletions;
-            // if (entry.pos_number.front().second > 1)
-            //     std::cerr << entry.entry_seq.make_name() << std::endl << entry.pos_number << ' ' << entry.amino_acids << std::endl;
+        size_t num_with_deletions = 0;
+        for (auto& entry: mEntries) {
+            if (!entry.pos_number.empty()) {
+                entry.apply_pos_number();
+                ++num_with_deletions;
+                  // if (entry.pos_number.front().second > 1)
+                  //     std::cerr << entry.entry_seq.make_name() << std::endl << entry.pos_number << ' ' << entry.amino_acids << std::endl;
+            }
         }
+        if (num_with_deletions)
+            std::cout << mVirusType << ": " << num_with_deletions << " sequences with deletions detected, total sequences: " << mEntries.size() << std::endl;
     }
-    if (num_with_deletions)
-        std::cout << mVirusType << ": " << num_with_deletions << " sequences with deletions detected" << std::endl;
-    // }
 
 } // InsertionsDeletionsDetector::detect
 

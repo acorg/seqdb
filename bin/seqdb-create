@@ -17,10 +17,15 @@ import seqdb
 # ----------------------------------------------------------------------
 
 def main(args):
+    if len(args.input) == 1 and "*" in args.input[0]:
+        import glob
+        fasta_files = glob.glob(args.input[0]) # for debugging using xcode
+    else:
+        fasta_files = args.input
     seqdb.create(
         hidb_dir=Path(args.hidb_dir).expanduser().resolve(),
         seqdb_filename=args.path_to_db,
-        fasta_files=args.input,
+        fasta_files=fasta_files,
         match_hidb=args.match_hidb,
         add_clades=args.add_clades,
         save=args.save,
@@ -35,6 +40,7 @@ def main(args):
 with timeit(sys.argv[0]):
     try:
         import argparse
+        # print(sys.argv)
         parser = argparse.ArgumentParser(description=__doc__)
         parser.add_argument('input', nargs="+", help='Fasta files to process.')
         parser.add_argument('--db', action='store', dest='path_to_db', required=True, help='Path to sequence database.')
