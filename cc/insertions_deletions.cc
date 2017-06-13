@@ -195,8 +195,6 @@ std::vector<std::pair<size_t, size_t>> InsertionsDeletionsDetector::Entry::align
         size_t start = 0;
         while (start < to_align.size()) {
             const size_t current_common = number_of_common(to_align, master);
-            // if (current_common > min_common)
-            //     break;
             try {
                 DeletionPosSet pos_set;
                 adjust_pos pos = adjust_pos::begin(to_align, master, start), pos_end = adjust_pos::end(to_align, master);
