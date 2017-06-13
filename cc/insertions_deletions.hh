@@ -19,8 +19,8 @@ namespace seqdb
             inline void insert_if(size_t pos, char aa, size_t num_insertions) { if (amino_acids[pos] == aa) amino_acids.insert(pos, num_insertions, '-'); }
 
               // void align_to(std::string master, size_t min_common);
-            static std::vector<std::pair<size_t, size_t>> align_to(std::string master, std::string to_align, size_t min_common);
-            static size_t find_adjust_pos(std::string master, std::string to_align);
+            static inline bool common(char a, char b) { return a == b && a != 'X' && a != '-'; }
+            static std::vector<std::pair<size_t, size_t>> align_to(std::string master, std::string& to_align, size_t min_common);
             void apply_pos_number();
 
             SeqdbEntrySeq entry_seq;
@@ -29,7 +29,7 @@ namespace seqdb
 
          private:
             static size_t number_of_common(std::string a, std::string b);
-            static inline bool common(char a, char b) { return a == b && a != 'X' && a != '-'; }
+            static size_t check_adjust_pos(std::string master, std::string& to_align, size_t adjust_pos, size_t current_common);
         };
         using Entries = std::vector<Entry>;
 
