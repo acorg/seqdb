@@ -1,2 +1,3 @@
 #! /bin/bash
+export ${ACMACSD_ROOT:=$HOME/AD}
 env LD_LIBRARY_PATH=$ACMACSD_ROOT/lib time $ACMACSD_ROOT/bin/seqdb-create --db $ACMACSD_ROOT/data/seqdb.json.xz --match-hidb --clades $HOME/ac/tables-store/sequences/*.fas.bz2 >$ACMACSD_ROOT/data/$(basedname $0).log 2>&1
