@@ -53,7 +53,7 @@ namespace seqdb
     inline virtual Base* StartObject()
         {
             if (mStarted)
-                throw Base::Failure(typeid(*this).name() + std::string(": unexpected StartObject event"));
+                return jsi::storers::_i::failure(typeid(*this).name() + std::string(": unexpected StartObject event"));
             mTarget.clear();
             mStarted = true;
             return nullptr;
@@ -61,7 +61,7 @@ namespace seqdb
 
     inline virtual Base* EndObject()
         {
-            throw Base::Pop();
+            return jsi::storers::_i::pop();
         }
 
     inline virtual Base* Key(const char* str, rapidjson::SizeType length)
@@ -73,7 +73,7 @@ namespace seqdb
     inline virtual Base* StartArray()
         {
             if (mLab.empty())
-                throw Base::Failure(typeid(*this).name() + std::string(": unexpected StartArray event"));
+                return jsi::storers::_i::failure(typeid(*this).name() + std::string(": unexpected StartArray event"));
             mTarget.emplace(mLab, std::vector<std::string>{});
             return nullptr;
         }
@@ -87,7 +87,7 @@ namespace seqdb
     inline virtual Base* String(const char* str, rapidjson::SizeType length)
         {
             if (mLab.empty())
-                throw Base::Failure(typeid(*this).name() + std::string(": unexpected String event"));
+                return jsi::storers::_i::failure(typeid(*this).name() + std::string(": unexpected String event"));
             mTarget[mLab].emplace_back(str, length);
             return nullptr;
         }
