@@ -197,7 +197,9 @@ AlignData seqdb::align(std::string aAminoAcids, Messages& aMessages)
                 std::ostringstream os;
                 os << "Multiple alignment matches produce different subtypes and/or shifts: " << subtypes << "  " << shifts << std::endl
                    << "    " << aAminoAcids << std::endl
-                   << "    " << to_stream(results, [](const auto& e) -> std::string { return e.name; });
+                   << "    ";
+                std::transform(std::begin(results), std::end(results), polyfill::make_ostream_joiner(os, " "), [](const auto& e) -> std::string { return e.name; });
+
                   //std::cerr << os.str() << std::endl;
                 aMessages.warning() << os.str() << std::endl;
             }
