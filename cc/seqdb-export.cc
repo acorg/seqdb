@@ -84,7 +84,7 @@ template <typename RW> jsw::writer<RW>& operator <<(jsw::writer<RW>& writer, con
 
 void seqdb::seqdb_export(std::string aFilename, const seqdb::Seqdb& aSeqdb, size_t aIndent)
 {
-    jsw::export_to_json(aSeqdb, SEQDB_JSON_DUMP_VERSION, aFilename, aIndent);
+    jsw::export_to_json(aSeqdb, aFilename, aIndent);
 }
 
 // ----------------------------------------------------------------------
