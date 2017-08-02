@@ -57,11 +57,11 @@ test: install
 # ----------------------------------------------------------------------
 
 $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX): $(patsubst %.cc,$(BUILD)/%.o,$(SEQDB_PY_SOURCES)) | $(DIST)
-	$(GXX) -shared $(LDFLAGS) -o $@ $^ $(SEQDB_LDLIBS)
+	$(CXX) -shared $(LDFLAGS) -o $@ $^ $(SEQDB_LDLIBS)
 	@#strip $@
 
 $(SEQDB_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(SEQDB_SOURCES)) | $(DIST) $(LOCATION_DB_LIB)
-	$(GXX) -shared $(LDFLAGS) -o $@ $^ $(SEQDB_LDLIBS)
+	$(CXX) -shared $(LDFLAGS) -o $@ $^ $(SEQDB_LDLIBS)
 
 clean:
 	rm -rf $(DIST) $(BUILD)/*.o $(BUILD)/*.d
@@ -73,7 +73,7 @@ distclean: clean
 
 $(BUILD)/%.o: cc/%.cc | $(BUILD) install-headers
 	@echo $<
-	@$(GXX) $(CXXFLAGS) -c -o $@ $<
+	@$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 # ----------------------------------------------------------------------
 
