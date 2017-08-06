@@ -11,7 +11,7 @@ from . import Seqdb, fasta as fasta_m
 
 # ----------------------------------------------------------------------
 
-def create(hidb_dir, seqdb_filename, fasta_files, match_hidb, add_clades, save, report_all_passages, report_identical, report_not_aligned_prefixes, verbose):
+def create(hidb_dir, seqdb_filename, fasta_files, match_hidb, add_clades, save, report_all_passages, report_identical, report_not_aligned_prefixes, save_not_found_locations_to=None, verbose=False):
     db = Seqdb(str(hidb_dir))
     db_updater = SeqdbUpdater(db, filename=seqdb_filename, load=False)
     for filename in fasta_files:
@@ -19,14 +19,14 @@ def create(hidb_dir, seqdb_filename, fasta_files, match_hidb, add_clades, save, 
         # module_logger.info('{} entries to update seqdb with'.format(len(data)))
         # pprint.pprint(data)
         db_updater.add(data)
-    # module_logger.info('Sequences: {} Entries: {}'.format(db.number_of_seqs(), db.number_of_entries()))
+    module_logger.info('Sequences: {} Entries: {}'.format(db.number_of_seqs(), db.number_of_entries()))
     db_updater.detect_insertions_deletions()
     db_updater.detect_b_lineage()
     if report_all_passages:
         passages = db.all_passages()
         module_logger.info('Passages: {}\n  {}'.format(len(passages), "\n  ".join(passages)))
     if match_hidb:
-        db_updater.match_hidb(verbose=verbose)
+        db_updater.match_hidb(save_not_found_locations_to=save_not_found_locations_to, verbose=verbose)
         db.build_hi_name_index()          # to report duplicates
     if add_clades:
         db_updater.add_clades()               # clades must be updated after matching with hidb, because matching provides info about B lineage
@@ -92,9 +92,16 @@ class SeqdbUpdater:
             for entry_seq in self.seqdb.iter_seq():
                 entry_seq.seq.update_clades(virus_type=entry_seq.entry.virus_type, lineage=entry_seq.entry.lineage)
 
-    def match_hidb(self, verbose=False):
+    def match_hidb(self, save_not_found_locations_to=None, verbose=False):
         self.seqdb.remove_hi_names()
-        self.seqdb.match_hidb(verbose=verbose)
+        not_found_locations = self.seqdb.match_hidb(verbose=verbose)
+        if not_found_locations:
+            not_found_locations = sorted(set(not_found_locations))
+            if save_not_found_locations_to:
+                open(save_not_found_locations_to, "a").write("\n".join(not_found_locations) + "\n")
+                module_logger.warning('{} not found locations saved to {}'.format(len(not_found_locations), save_not_found_locations_to))
+            else:
+                module_logger.warning('Not found locations ({}):\n  {}'.format(len(not_found_locations), "\n  ".join(not_found_locations)))
 
     def detect_insertions_deletions(self):
         self.seqdb.detect_insertions_deletions()

@@ -92,7 +92,7 @@ void SeqdbSeq::update_gene(std::string aGene, Messages& aMessages, bool replace_
             if (replace_ha && mGene == "HA")
                 mGene = aGene;
             else
-                aMessages.warning() << "[SAMESEQ] different genes " << mGene << " vs. " << aGene << std::endl;
+                aMessages.warning() << "[SAMESEQ] different genes " << mGene << " vs. " << aGene << '\n';
         }
     }
 
@@ -149,7 +149,7 @@ AlignAminoAcidsData SeqdbSeq::align(bool aForce, Messages& aMessages)
               }
           }
           else {
-              aMessages.warning() << "Nucs not translated/aligned" /* << mNucleotides */ << std::endl;
+              aMessages.warning() << "Nucs not translated/aligned" /* << mNucleotides */ << '\n';
           }
           break;
       case aling_amino_acids:
@@ -160,7 +160,7 @@ AlignAminoAcidsData SeqdbSeq::align(bool aForce, Messages& aMessages)
               update_gene(align_data.gene, aMessages, true);
           }
           else {
-              aMessages.warning() << "AA not aligned" /* << mAminoAcids */ << std::endl;
+              aMessages.warning() << "AA not aligned" /* << mAminoAcids */ << '\n';
           }
           break;
     }
@@ -189,7 +189,7 @@ void SeqdbSeq::update_clades(std::string aVirusType, std::string aLineage)
             mClades = clades_h3n2(mAminoAcids, mAminoAcidsShift);
         }
         // else {
-        //     std::cerr << "Cannot update clades for virus type " << aVirusType << std::endl;
+        //     std::cerr << "Cannot update clades for virus type " << aVirusType << '\n';
         // }
     }
 
@@ -298,12 +298,12 @@ void SeqdbEntry::add_date(std::string aDate)
 
 void SeqdbEntry::update_lineage(std::string aLineage, Messages& aMessages)
 {
-      // std::cerr << "Lineage " << mName << " " << (aLineage.empty() ? std::string("?") : aLineage) << std::endl;
+      // std::cerr << "Lineage " << mName << " " << (aLineage.empty() ? std::string("?") : aLineage) << '\n';
     if (!aLineage.empty()) {
         if (mLineage.empty())
             mLineage = aLineage;
         else if (aLineage != mLineage)
-            aMessages.warning() << "Different lineages " << mLineage << " (stored) vs. " << aLineage << " (ignored)" << std::endl;
+            aMessages.warning() << "Different lineages " << mLineage << " (stored) vs. " << aLineage << " (ignored)" << '\n';
     }
 
 } // SeqdbEntry::update_lineage
@@ -325,7 +325,7 @@ void SeqdbEntry::update_subtype_name(std::string aSubtype, Messages& aMessages)
                     mName[5] = '2';
             }
             else {
-                aMessages.warning() << "Different subtypes " << mVirusType << " (stored) vs. " << aSubtype << " (ignored)" << std::endl;
+                aMessages.warning() << "Different subtypes " << mVirusType << " (stored) vs. " << aSubtype << " (ignored)" << '\n';
             }
         }
           // fix subtype in the name too
@@ -414,7 +414,7 @@ std::string Seqdb::add_sequence(std::string aName, std::string aVirusType, std::
     SeqdbSeq new_seq(aSequence, aGene);
     auto align_data = new_seq.align(false, messages);
     entry.update_subtype_name(align_data.subtype, messages); // updates entry.mName!
-    // std::cerr << "add " << align_data.subtype << ' ' << entry.name() << std::endl;
+    // std::cerr << "add " << align_data.subtype << ' ' << entry.name() << '\n';
 
     auto inserted_entry = find_insertion_place(entry.name());
     SeqdbSeq* inserted_seq = nullptr;
@@ -477,7 +477,7 @@ std::string Seqdb::cleanup(bool remove_short_sequences)
     auto const num_entries_before = mEntries.size();
     mEntries.erase(std::remove_if(mEntries.begin(), mEntries.end(), std::mem_fn(&SeqdbEntry::empty)), mEntries.end());
     if (mEntries.size() != num_entries_before)
-        messages.warning() << (num_entries_before - mEntries.size()) << " entries removed during cleanup" << std::endl;
+        messages.warning() << (num_entries_before - mEntries.size()) << " entries removed during cleanup" << '\n';
     return messages;
 
 } // Seqdb::cleanup
@@ -487,31 +487,31 @@ std::string Seqdb::cleanup(bool remove_short_sequences)
 std::string Seqdb::report() const
 {
     std::ostringstream os;
-    os << "Entries: " << mEntries.size() << std::endl;
+    os << "Entries: " << mEntries.size() << '\n';
 
     std::map<std::string, size_t> virus_types;
     for_each(mEntries.begin(), mEntries.end(), [&virus_types](auto& e) { ++virus_types[e.virus_type()]; });
-    os << "Virus types: " << virus_types << std::endl;
+    os << "Virus types: " << virus_types << '\n';
 
     std::map<std::string, size_t> lineages;
     for_each(mEntries.begin(), mEntries.end(), [&lineages](auto& e) { ++lineages[e.lineage()]; });
-    os << "Lineages: " << lineages << std::endl;
+    os << "Lineages: " << lineages << '\n';
 
     std::map<std::string, size_t> aligned;
     for_each(mEntries.begin(), mEntries.end(), [&aligned](auto& e) { if (any_of(e.mSeq.begin(), e.mSeq.end(), std::mem_fn(&SeqdbSeq::aligned))) ++aligned[e.virus_type()]; });
-    os << "Aligned: " << aligned << std::endl;
+    os << "Aligned: " << aligned << '\n';
 
     std::map<std::string, size_t> matched;
     for_each(mEntries.begin(), mEntries.end(), [&matched](auto& e) { if (any_of(e.mSeq.begin(), e.mSeq.end(), std::mem_fn(&SeqdbSeq::matched))) ++matched[e.virus_type()]; });
-    os << "Matched: " << matched << std::endl;
+    os << "Matched: " << matched << '\n';
 
     std::map<std::string, size_t> have_dates;
     for_each(mEntries.begin(), mEntries.end(), [&have_dates](auto& e) { if (!e.mDates.empty()) ++have_dates[e.virus_type()]; });
-    os << "Have dates: " << have_dates << std::endl;
+    os << "Have dates: " << have_dates << '\n';
 
     std::map<std::string, size_t> have_clades;
     for_each(mEntries.begin(), mEntries.end(), [&have_clades](auto& e) { if (any_of(e.mSeq.begin(), e.mSeq.end(), [](auto& seq) { return !seq.mClades.empty(); })) ++have_clades[e.virus_type()]; });
-    os << "Have clades: " << have_clades << std::endl;
+    os << "Have clades: " << have_clades << '\n';
 
     return os.str();
 
@@ -525,30 +525,30 @@ std::string Seqdb::report_identical() const
 
     auto report = [&os](std::string prefix, const auto& groups) {
         if (!groups.empty()) {
-            os << prefix << std::endl;
+            os << prefix << '\n';
             for (auto const& group: groups) {
                 for (auto const& entry: group) {
                     os << entry.make_name() << ' ';
                 }
-                os << std::endl;
+                os << '\n';
             }
         }
     };
 
     try {
         report("Identical nucleotides:", find_identical_sequences([](const SeqdbEntrySeq& e) -> std::string { try { return e.seq().nucleotides(true); } catch (SequenceNotAligned&) { return std::string(); } }));
-        os << std::endl;
+        os << '\n';
     }
     catch (std::exception& err) {
-        os << "Cannot report identical nucleotides: " << typeid(err).name() << ": " << err.what() << std::endl;
+        os << "Cannot report identical nucleotides: " << typeid(err).name() << ": " << err.what() << '\n';
     }
 
     try {
         report("Identical amino-acids:", find_identical_sequences([](const SeqdbEntrySeq& e) -> std::string { try { return e.seq().amino_acids(true); } catch (SequenceNotAligned&) { return std::string(); } }));
-        os << std::endl;
+        os << '\n';
     }
     catch (std::exception& err) {
-        os << "Cannot report identical amino-acids: " << typeid(err).name() << ": " << err.what() << std::endl;
+        os << "Cannot report identical amino-acids: " << typeid(err).name() << ": " << err.what() << '\n';
     }
 
     return os.str();
@@ -567,7 +567,7 @@ std::string Seqdb::report_not_aligned(size_t prefix_size) const
     const auto p_end = std::unique(prefixes.begin(), prefixes.end());
 
     std::ostringstream os;
-    os << "Prefixes of not aligned sequences of length " << prefix_size << ": " << p_end - prefixes.begin() << std::endl;
+    os << "Prefixes of not aligned sequences of length " << prefix_size << ": " << p_end - prefixes.begin() << '\n';
     std::copy(prefixes.begin(), p_end, std::ostream_iterator<std::string>(os, "\n"));
 
     return os.str();
@@ -625,42 +625,47 @@ void Seqdb::find_in_hidb_update_country_lineage_date(std::vector<const hidb::Ant
 {
     try {
         const hidb::HiDb& hidb = mHiDbSet.get(entry.virus_type());
-        const auto cdcids = entry.cdcids();
-        if (!cdcids.empty()) {
+        if (const auto cdcids = entry.cdcids(); !cdcids.empty()) {
             for (const auto& cdcid: cdcids) {
                 const auto f_cdcid = hidb.find_antigens_by_cdcid(cdcid);
                 std::copy(f_cdcid.begin(), f_cdcid.end(), std::back_inserter(found));
             }
         }
-        const auto f_name = hidb.find_antigens_by_name(entry.name());
-        std::copy(f_name.begin(), f_name.end(), std::back_inserter(found));
 
-        std::sort(found.begin(), found.end());
-        found.erase(std::unique(found.begin(), found.end()), found.end());
+        std::string not_found_location;
+        if (const auto f_name = hidb.find_antigens_by_name(entry.name(), &not_found_location); !f_name.empty()) {
+            std::copy(f_name.begin(), f_name.end(), std::back_inserter(found));
 
-          // update country and continent
-        if (entry.country().empty()) {
-            try {
-                const std::string country = hidb.locdb().find(virus_name::location(entry.name())).country();
-                entry.country(country);
-                entry.continent(hidb.locdb().continent_of_country(country));
-            }
-            catch (LocationNotFound&) {
-            }
-            catch (virus_name::Unrecognized&) {
-            }
+            std::sort(found.begin(), found.end());
+            found.erase(std::unique(found.begin(), found.end()), found.end());
+        }
+        else if (!not_found_location.empty()) {
+            throw LocationNotFound(not_found_location);
         }
 
-          // update lineage
-        if (entry.virus_type() == "B" && !found.empty()) {
-            Messages messages;
-            entry.update_lineage(found.front()->data().lineage(), messages);
-            if (messages)
-                std::cerr << messages << std::endl;
-        }
-
-          // update date
         if (!found.empty()) {
+              // update country and continent
+            if (entry.country().empty()) {
+                try {
+                    const std::string country = hidb.locdb().find(virus_name::location(entry.name())).country();
+                    entry.country(country);
+                    entry.continent(hidb.locdb().continent_of_country(country));
+                }
+                catch (LocationNotFound&) {
+                }
+                catch (virus_name::Unrecognized&) {
+                }
+            }
+
+              // update lineage
+            if (entry.virus_type() == "B") {
+                Messages messages;
+                entry.update_lineage(found.front()->data().lineage(), messages);
+                if (messages)
+                    std::cerr << messages << '\n';
+            }
+
+              // update date
             for (const auto& e: found) {
                 entry.add_date(e->date());
             }
@@ -679,8 +684,7 @@ SeqdbEntrySeq Seqdb::find_by_seq_id(std::string aSeqId) const
     const std::string seq_id = name_decode(aSeqId);
     auto passage_separator = seq_id.find("__");
     if (passage_separator != std::string::npos) { // seq_id
-        const auto entry = find_by_name(std::string(seq_id, 0, passage_separator));
-        if (entry != nullptr) {
+        if (const auto entry = find_by_name(std::string(seq_id, 0, passage_separator)); entry != nullptr) {
             const auto passage_distinct = string::split(std::string(seq_id, passage_separator + 2), "__", string::Split::KeepEmpty);
             auto index = passage_distinct.size() == 1 ? 0 : std::stoi(passage_distinct[1]);
             for (const auto& seq: entry->seqs()) {
@@ -695,15 +699,14 @@ SeqdbEntrySeq Seqdb::find_by_seq_id(std::string aSeqId) const
             }
         }
         else {
-            std::cerr << "Error: no entry for \"" << std::string(seq_id, 0, passage_separator) << "\" in seqdb [" << __FILE__ << ":" << __LINE__ << ']' << std::endl;
+            std::cerr << "Error: no entry for \"" << std::string(seq_id, 0, passage_separator) << "\" in seqdb [" << __FILE__ << ":" << __LINE__ << ']' << '\n';
         }
     }
     else {
         std::smatch year_space;
         const auto year_space_present = std::regex_search(seq_id, year_space, sReYearSpace);
         const std::string look_for = year_space_present ? std::string(seq_id, 0, static_cast<std::string::size_type>(year_space.position(0) + year_space.length(0)) - 1) : seq_id;
-        const auto entry = find_by_name(look_for);
-        if (entry != nullptr) {
+        if (const auto entry = find_by_name(look_for); entry != nullptr) {
             auto found = std::find_if(entry->begin_seq(), entry->end_seq(), [&seq_id](const auto& seq) -> bool { return seq.hi_name_present(seq_id); });
             if (found == entry->end_seq()) { // not found by hi_name, look by passage (or empty passage)
                 const std::string passage = year_space_present ? std::string(seq_id, static_cast<std::string::size_type>(year_space.position(0) + year_space.length(0))) : std::string();
@@ -716,7 +719,7 @@ SeqdbEntrySeq Seqdb::find_by_seq_id(std::string aSeqId) const
     }
 
     if (!result) {
-        std::cerr << "Error: \"" << seq_id << "\" not in seqdb" << std::endl;
+        std::cerr << "Error: \"" << seq_id << "\" not in seqdb" << '\n';
     }
     return result;
 
@@ -732,7 +735,7 @@ void Seqdb::build_hi_name_index()
               // const auto pos_inserted =
             mHiNameIndex.emplace(hi_name, entry_seq);
               // if (!pos_inserted.second)
-              //     std::cerr << "warning:0: " << hi_name << " was already in mHiNameIndex [" << pos_inserted.first->second.entry().name() << "] [" << entry_seq.entry().name() << ']' << std::endl;
+              //     std::cerr << "warning:0: " << hi_name << " was already in mHiNameIndex [" << pos_inserted.first->second.entry().name() << "] [" << entry_seq.entry().name() << ']' << '\n';
         }
     }
 
@@ -764,11 +767,11 @@ size_t Seqdb::match(const Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerA
         else {
             aPerAntigen.emplace_back();
             // if (aVerbose)
-            //     std::cerr << "WARNING: seqdb::match failed for \"" << antigen.full_name() << "\"" << std::endl;
+            //     std::cerr << "WARNING: seqdb::match failed for \"" << antigen.full_name() << "\"" << '\n';
         }
     }
     if (aVerbose)
-        std::cerr << "INFO: " << matched << " antigens from chart have sequences in seqdb" << std::endl;
+        std::cerr << "INFO: " << matched << " antigens from chart have sequences in seqdb" << '\n';
     return matched;
 
 } // Seqdb::match
@@ -790,7 +793,7 @@ void Seqdb::aa_at_positions_for_antigens(const Antigens& aAntigens, const std::v
         }
     }
     if (aVerbose)
-        std::cerr << "INFO: " << matched << " antigens from chart have sequences in seqdb" << std::endl;
+        std::cerr << "INFO: " << matched << " antigens from chart have sequences in seqdb" << '\n';
 
 } // Seqdb::aa_at_positions_for_antigens
 
@@ -837,7 +840,7 @@ void Seqdb::detect_insertions_deletions()
 {
     for (std::string virus_type: virus_types()) {
         if (!virus_type.empty()) {
-            std::cout << "Detect insertions/deletions for " << virus_type << std::endl;
+            std::cout << "Detect insertions/deletions for " << virus_type << '\n';
             InsertionsDeletionsDetector detector(*this, virus_type);
             detector.detect();
         }

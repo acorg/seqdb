@@ -184,7 +184,7 @@ PYBIND11_MODULE(seqdb_backend, m)
             .def("all_hi_names", &Seqdb::all_hi_names, py::doc("returns list of all hi_names (\"h\") found in seqdb."))
             .def("all_passages", &Seqdb::all_passages, py::doc("returns list of all passages found in seqdb."))
             .def("remove_hi_names", &Seqdb::remove_hi_names, py::doc("removes all hi_names (\"h\") found in seqdb (e.g. before matching again)."))
-            .def("match_hidb", &Seqdb::match_hidb, py::arg("verbose") = false, py::arg("greedy") = true, py::doc("match all names against hidb"))
+            .def("match_hidb", &Seqdb::match_hidb, py::arg("verbose") = false, py::arg("greedy") = true, py::doc("match all names against hidb, returns list of not found locations"))
             .def("build_hi_name_index", &Seqdb::build_hi_name_index)
             .def("find_hi_name", &Seqdb::find_hi_name, py::arg("name"), py::return_value_policy::reference, py::doc("returns entry_seq found by hi name or None"))
             .def("aa_at_positions_for_antigens", [](const seqdb::Seqdb& aSeqdb, const Antigens& aAntigens, const std::vector<size_t>& aPositions, bool aVerbose) {

@@ -38,7 +38,7 @@ static void report_found(std::ostream& out, const Found& found)
 {
     size_t found_no = 0;
     for (const auto& e: found) {
-        out << "  >> " << found_no << ' ' << e->data().full_name() << std::endl;
+        out << "  >> " << found_no << ' ' << e->data().full_name() << '\n';
         ++found_no;
     }
 }
@@ -50,7 +50,7 @@ static void report_matching(std::ostream& out, const Matching& matching)
         for (const auto& sf: m) {
             out << " [" << sf.score << " " << sf.len << " S:" << sf.seq_no << " F:" << sf.found_no << ']';
         }
-        out << std::endl;
+        out << '\n';
     }
 }
 
@@ -65,7 +65,7 @@ static void make_matching(SeqdbEntry& entry, const Found& found, Matching& match
         const passage::CellOrEgg seq_cell_or_egg = passage::cell_or_egg(seq.passages());
         for (const auto& f: found) {
             const auto& f_passage = f->data().passage();
-              // std::cerr << "match_cell_egg: " << passage::match_cell_egg(passage::cell_or_egg(f_passage), seq_cell_or_egg) << " -- " << f_passage << ':' << static_cast<int>(passage::cell_or_egg(f_passage)) << " " << seq.passages() << ':' << static_cast<int>(seq_cell_or_egg) << std::endl;
+              // std::cerr << "match_cell_egg: " << passage::match_cell_egg(passage::cell_or_egg(f_passage), seq_cell_or_egg) << " -- " << f_passage << ':' << static_cast<int>(passage::cell_or_egg(f_passage)) << " " << seq.passages() << ':' << static_cast<int>(seq_cell_or_egg) << '\n';
             if (seq.reassortant_match(f->data().reassortant()) && passage::match_cell_egg(passage::cell_or_egg(f_passage), seq_cell_or_egg)) {
                 std::vector<score_size_t> scores; // score and min passage length (to avoid too incomplete matches)
                 if (!seq.passages().empty())
@@ -74,7 +74,7 @@ static void make_matching(SeqdbEntry& entry, const Found& found, Matching& match
                 else
                     scores.emplace_back(string_match::match(std::string{}, f_passage), 0);
                 matching_for_seq.emplace_back(*std::max_element(scores.begin(), scores.end() /*$, [](const auto& a, const auto& b) { return a.first < b.first; }*/), seq_no, found_no);
-                  // report_stream << "  @" << seq.passages() << " @ " << f_passage << " " << score_size->first << " " << score_size->second << std::endl;
+                  // report_stream << "  @" << seq.passages() << " @ " << f_passage << " " << score_size->first << " " << score_size->second << '\n';
             }
             ++found_no;
         }
@@ -113,7 +113,7 @@ static bool match_greedy(SeqdbEntry& entry, const Found& found, const Matching& 
         entry.seqs()[e.second.seq_no].add_hi_name(name);
         matched = true;
         if (aVerbose)
-            report_stream << "    +" << e.second.seq_no << " " << name << std::endl;
+            report_stream << "    +" << e.second.seq_no << " " << name << '\n';
     }
     return matched;
 }
@@ -130,7 +130,7 @@ static bool match_normal(SeqdbEntry& entry, const Found& found, const Matching& 
                 entry.seqs()[0].add_hi_name(name);
                 matched = true;
                 if (aVerbose)
-                    report_stream << "    + " << name << std::endl;
+                    report_stream << "    + " << name << '\n';
             }
         }
     }
@@ -147,7 +147,7 @@ static bool match_normal(SeqdbEntry& entry, const Found& found, const Matching& 
                     entry.seqs()[sf.seq_no].add_hi_name(name);
                     matched = true;
                     if (aVerbose)
-                        report_stream << "    +" << sf.seq_no << " " << name << std::endl;
+                        report_stream << "    +" << sf.seq_no << " " << name << '\n';
                     found_assigned.insert(sf.found_no);
                 }
             }
@@ -158,17 +158,24 @@ static bool match_normal(SeqdbEntry& entry, const Found& found, const Matching& 
 
 // ----------------------------------------------------------------------
 
-void Seqdb::match_hidb(bool aVerbose, bool aGreedy)
+std::vector<std::string> Seqdb::match_hidb(bool aVerbose, bool aGreedy)
 {
+    std::vector<std::string> not_found_locations;
     std::ostream& report_stream = std::cerr;
 
     std::vector<const SeqdbEntry*> not_matched;
     for (auto& entry: mEntries) {
-        Found found;
-        find_in_hidb_update_country_lineage_date(found, entry);
-
         if (aVerbose)
-            report_stream << std::endl << entry << std::endl;
+            report_stream << '\n' << entry << '\n';
+
+        Found found;
+        try {
+            find_in_hidb_update_country_lineage_date(found, entry);
+        }
+        catch (LocationNotFound& err) {
+            not_found_locations.push_back(err);
+        }
+
         if (!found.empty()) {
             Matching matching; // for each seq list of matching [[score, min passage len], found_no] - sorted by score desc
             make_matching(entry, found, matching);
@@ -179,27 +186,28 @@ void Seqdb::match_hidb(bool aVerbose, bool aGreedy)
                 matched = match_normal(entry, found, matching, aVerbose, report_stream);
             if (!matched) {
                 if (aVerbose)
-                    report_stream << "  ?? " << entry.name() << std::endl;
+                    report_stream << "  <no-passage-matches-in-hidb>?? " << entry.name() << '\n';
                 not_matched.push_back(&entry);
             }
         }
         else {
             if (aVerbose)
-                report_stream << "  ?? " << entry.name() << std::endl;
+                report_stream << "  <no-name-matches-in-hidb>?? " << entry.name() << '\n';
             not_matched.push_back(&entry);
         }
         if (aVerbose)
-            report_stream << std::endl;
+            report_stream << '\n';
     }
 
-    std::cout << "Matched " << (mEntries.size() - not_matched.size()) << " of " << mEntries.size() << "  " << ((mEntries.size() - not_matched.size()) * 100.0 / mEntries.size()) << '%' << std::endl;
+    std::cout << "Matched " << (mEntries.size() - not_matched.size()) << " of " << mEntries.size() << "  " << ((mEntries.size() - not_matched.size()) * 100.0 / mEntries.size()) << '%' << '\n';
 
     if (aVerbose && !not_matched.empty()) {
-        report_stream << "Not matched " << not_matched.size() << std::endl;
+        report_stream << "Not matched " << not_matched.size() << '\n';
         for (const auto& nm: not_matched) {
-            report_stream << "  " << *nm << std::endl;
+            report_stream << "  " << *nm << '\n';
         }
     }
+    return not_found_locations;
 
 } // Seqdb::match_hidb
 

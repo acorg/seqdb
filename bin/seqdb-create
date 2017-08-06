@@ -32,6 +32,7 @@ def main(args):
         report_all_passages=args.report_all_passages,
         report_identical=args.report_identical,
         report_not_aligned_prefixes=args.report_not_aligned_prefixes,
+        save_not_found_locations_to=args.save_not_found_locations_to,
         verbose=args.verbose
         )
 
@@ -53,6 +54,7 @@ with timeit(sys.argv[0]):
         parser.add_argument('--report-identical', action='store_true', dest='report_identical', default=False, help='Report identical sequences.')
         parser.add_argument('--report-not-aligned-prefixes', type=int, action='store', dest='report_not_aligned_prefixes', default=None, help='Report prefixes of not aligned aa sequences up to the specified length (signal peptide is often 16).')
         parser.add_argument('--report-all-passages', action='store_true', dest='report_all_passages', default=False, help='Report all passages in seqdb.')
+        parser.add_argument('--save-not-found-locations', action='store', dest='save_not_found_locations_to', default=None, help='Filename to save (append) not found locations to.')
         parser.add_argument('-d', '--debug', action='store_const', dest='loglevel', const=logging.DEBUG, default=logging.INFO, help='Enable debugging output.')
         parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', default=False)
         args = parser.parse_args()

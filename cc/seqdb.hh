@@ -8,6 +8,7 @@
 #include <iterator>
 #include <deque>
 #include <map>
+#include <vector>
 #include <numeric>
 
 #include "acmacs-base/stream.hh"
@@ -481,7 +482,7 @@ namespace seqdb
         std::vector<std::string> all_hi_names() const;
         std::vector<std::string> all_passages() const;
         void remove_hi_names();
-        void match_hidb(bool aVerbose, bool aGreedy = true); // seqdb-hidb.cc
+        std::vector<std::string> match_hidb(bool aVerbose, bool aGreedy = true); // seqdb-hidb.cc  returns list of not found location names
 
           // iterating over sequences with filtering
         inline SeqdbIterator begin() { return SeqdbIterator(*this, 0, 0); }
@@ -526,6 +527,16 @@ namespace seqdb
         friend class SeqdbIterator;
         friend class ConstSeqdbIterator;
 
+        class LocationNotFound : public std::exception
+        {
+         public:
+            inline LocationNotFound(std::string aLocation) : mLocation{aLocation} {}
+            inline operator std::string() const { return mLocation; }
+         private:
+            std::string mLocation;
+        };
+
+          // throws LocationNotFound
         void find_in_hidb_update_country_lineage_date(std::vector<const hidb::AntigenData*>& found, SeqdbEntry& entry) const;
         // void split_by_virus_type(std::map<std::string, std::vector<size_t>>& by_virus_type) const;
 
