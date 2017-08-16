@@ -19,7 +19,7 @@ namespace seqdb
               // inline void insert_if(size_t pos, char aa, size_t num_insertions) { if (amino_acids[pos] == aa) amino_acids.insert(pos, num_insertions, '-'); }
 
             static inline bool common(char a, char b) { return a == b && a != 'X' && a != '-'; }
-            static std::vector<std::pair<size_t, size_t>> align_to(std::string master, std::string& to_align);
+            static std::vector<std::pair<size_t, size_t>> align_to(std::string master, std::string& to_align, const SeqdbEntrySeq& entry_seq);
             void apply_pos_number();
 
             SeqdbEntrySeq entry_seq;
