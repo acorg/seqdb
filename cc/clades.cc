@@ -8,9 +8,10 @@ using namespace seqdb;
 
 std::vector<std::string> seqdb::clades_b_yamagata(std::string aSequence, Shift aShift)
 {
-      // 165N -> Y2, 165Y -> Y3
+      // 165N -> Y2, 165Y -> Y3 (yamagata numeration, 163 is not -)
+      // 166N -> Y2, 166Y -> Y3 (victoria numeration, 163 is -)
     auto r = std::vector<std::string>();
-    auto const pos = 164 - aShift;
+    auto const pos = 165 - aShift; // use victoria numeration
     if (aSequence.size() > static_cast<size_t>(pos) && pos > 0) {
         switch (aSequence[static_cast<size_t>(pos)]) {
           case 'N':
