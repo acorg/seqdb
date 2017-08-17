@@ -1,4 +1,5 @@
 #include <iomanip>
+#include <array>
 
 #include "insertions_deletions.hh"
 
@@ -25,8 +26,8 @@ class AAsPerPos : public std::vector<AAsPerPosEntry>
     inline std::vector<size_t> common_pos() const { std::vector<size_t> common; for (size_t pos = 0; pos < size(); ++pos) { if (operator[](pos).common()) { common.push_back(pos); } } return common; }
 };
 
-class NoAdjustPos : public std::exception { public: using std::exception::exception; };
-class NotAlignedTo : public std::exception { public: using std::exception::exception; };
+// class NoAdjustPos : public std::exception { public: using std::exception::exception; };
+class SwitchMaster : public std::exception { public: using std::exception::exception; };
 
 // ----------------------------------------------------------------------
 
@@ -44,7 +45,7 @@ InsertionsDeletionsDetector::InsertionsDeletionsDetector(Seqdb& aSeqdb, std::str
     }
     if (!mEntries.empty()) {
         mMaster = mEntries.front().amino_acids;
-          // std::cerr << mVirusType << ": master  " << mEntries.front().entry_seq.entry().virus_type() << ' ' << mEntries.front().entry_seq.make_name() << "\n  " << mMaster << std::endl;
+        std::cerr << mVirusType << ": master  " << mEntries.front().entry_seq.entry().virus_type() << ' ' << mEntries.front().entry_seq.make_name() << "\n" << mMaster << std::endl;
     }
 
 } // InsertionsDeletionsDetector::InsertionsDeletionsDetector
@@ -68,6 +69,7 @@ void InsertionsDeletionsDetector::detect()
                 ++num_with_deletions;
                   // if (entry.pos_number.front().second > 1)
                   //     std::cerr << entry.entry_seq.make_name() << std::endl << entry.pos_number << ' ' << entry.amino_acids << std::endl;
+                  // std::cerr << entry.amino_acids << '\n';
             }
         }
         if (num_with_deletions)
@@ -89,18 +91,18 @@ void InsertionsDeletionsDetector::align_to_master()
             try {
                 entry.pos_number = entry.align_to(mMaster, entry.amino_acids, entry.entry_seq);
             }
-            catch (NotAlignedTo&) {
+            catch (SwitchMaster&) {
                 try {
                       // perhaps master has deletions
                     entry.align_to(entry.amino_acids, mMaster, entry.entry_seq);
                       // yes, change master to current and restart
                     mMaster = entry.amino_acids;
-                    std::cerr << mVirusType << ": master changed to " << mMaster << std::endl;
+                    std::cerr << mVirusType << ": master changed to " << entry.entry_seq.make_name() << '\n' << mMaster << '\n';
                     restart = true;
                     revert();
                     break;
                 }
-                catch (NotAlignedTo&) {
+                catch (SwitchMaster&) {
                     std::cerr << mVirusType << ": cannot find deletions in " << entry.entry_seq.make_name() << std::endl;
                 }
             }
@@ -108,6 +110,34 @@ void InsertionsDeletionsDetector::align_to_master()
     }
 
 } // InsertionsDeletionsDetector::align_to_master
+
+// ----------------------------------------------------------------------
+
+static inline size_t number_of_common(const std::string a, size_t start_a, const std::string b, size_t start_b)
+{
+    size_t num = 0;
+    for (; start_a < a.size() && start_b < b.size(); ++start_a, ++start_b) {
+        if (InsertionsDeletionsDetector::Entry::common(a[start_a], b[start_b]))
+            ++num;
+    }
+    return num;
+}
+
+static inline size_t number_of_common(const std::string a, const std::string b)
+{
+    return number_of_common(a, 0, b, 0);
+}
+
+static inline size_t number_of_common_before(const std::string a, const std::string b, size_t last)
+{
+    size_t num = 0;
+    last = std::min(std::min(last, a.size()), b.size());
+    for (size_t pos = 0; pos < last; ++pos) {
+        if (InsertionsDeletionsDetector::Entry::common(a[pos], b[pos]))
+            ++num;
+    }
+    return num;
+}
 
 // ----------------------------------------------------------------------
 
@@ -138,100 +168,82 @@ class adjust_pos
 
 // ----------------------------------------------------------------------
 
-static inline size_t number_of_common(std::string a, size_t start_a, std::string b, size_t start_b)
-{
-    size_t num = 0;
-    for (; start_a < a.size() && start_b < b.size(); ++start_a, ++start_b) {
-        if (InsertionsDeletionsDetector::Entry::common(a[start_a], b[start_b]))
-            ++num;
-    }
-    return num;
-}
-
-static inline size_t number_of_common(std::string a, std::string b)
-{
-    return number_of_common(a, 0, b, 0);
-}
-
-static inline size_t number_of_common_before(std::string a, std::string b, size_t last)
-{
-    size_t num = 0;
-    last = std::min(std::min(last, a.size()), b.size());
-    for (size_t pos = 0; pos < last; ++pos) {
-        if (InsertionsDeletionsDetector::Entry::common(a[pos], b[pos]))
-            ++num;
-    }
-    return num;
-}
-
-// ----------------------------------------------------------------------
-
 struct DeletionPos
 {
     inline DeletionPos(size_t aPos, size_t aNumDeletions, size_t aNumCommon) : pos(aPos), num_deletions(aNumDeletions), num_common(aNumCommon) {}
     inline bool operator<(const DeletionPos& aNother) const { return num_common == aNother.num_common ? pos < aNother.pos : num_common > aNother.num_common; }
     size_t pos, num_deletions, num_common;
-    inline void fix(size_t aPos, size_t aNumDeletions) { pos = aPos; num_deletions = aNumDeletions; num_common = 0; }
+    inline void fix(size_t aPos, size_t aNumDeletions, size_t aNumCommon) { pos = aPos; num_deletions = aNumDeletions; num_common = aNumCommon; }
     friend inline std::ostream& operator<<(std::ostream& out, const DeletionPos& aPos) { return out << "pos:" << aPos.pos << " num_deletions:" << aPos.num_deletions << " num_common:" << aPos.num_common; }
 };
 
 using DeletionPosSet = std::vector<DeletionPos>;
 
-static inline void update(DeletionPosSet& pos_set, std::string master, std::string to_align, size_t pos, size_t left_common)
+static inline void update(DeletionPosSet& pos_set, std::string master, std::string to_align, size_t pos, size_t common_before)
 {
     constexpr const size_t max_num_deletions = 2;
     const size_t last_pos = std::min(master.size(), to_align.size());
     if ((pos + max_num_deletions) < last_pos) {
         for (size_t num_insert = 1; num_insert <= max_num_deletions; ++num_insert) {
             if (InsertionsDeletionsDetector::Entry::common(master[pos + num_insert], to_align[pos])) {
-                pos_set.emplace_back(pos, num_insert, left_common + number_of_common(master, pos + num_insert, to_align, pos));
+                pos_set.emplace_back(pos, num_insert, common_before + number_of_common(master, pos + num_insert, to_align, pos));
             }
         }
     }
 }
 
-std::vector<std::pair<size_t, size_t>> InsertionsDeletionsDetector::Entry::align_to(std::string master, std::string& to_align, const SeqdbEntrySeq& entry_seq)
+std::vector<std::pair<size_t, size_t>> InsertionsDeletionsDetector::Entry::align_to(const std::string master, std::string& to_align, const SeqdbEntrySeq& entry_seq)
 {
-    bool verbose = false;
-    if (verbose) {
-        std::cerr << entry_seq.make_name() << std::endl;
-        std::cerr << "  " << to_align << std::endl;
-    }
+    constexpr const bool verbose = false;
+    constexpr const bool yamagata_163_hack = true;
+    if (verbose) std::cerr << entry_seq.make_name() << '\n' << to_align << '\n';
     std::vector<std::pair<size_t, size_t>> pos_number;
     size_t start = 0;
+    size_t best_common = number_of_common(master, to_align);
+    const std::string to_align_orig = to_align;
     while (start < to_align.size()) {
-        const size_t current_common = number_of_common(to_align, master);
-        try {
-            DeletionPosSet pos_set;
-            adjust_pos pos = adjust_pos::begin(to_align, master, start), pos_end = adjust_pos::end(to_align, master);
-            start = to_align.size();
-            for (; pos != pos_end; ++pos) {
-                update(pos_set, master, to_align, *pos, number_of_common_before(master, to_align, *pos));
-            }
-            if (verbose) std::cerr << "pos_set: " << pos_set << std::endl;
-            if (!pos_set.empty()) {
-                auto& del_pos = *std::min_element(pos_set.begin(), pos_set.end());
-                if (verbose) std::cerr << "del_pos: " << del_pos << std::endl;
-                if (del_pos.num_common > current_common) {
-                    if (entry_seq.entry().virus_type() == "B" && del_pos.num_deletions == 1 && del_pos.pos > (163 - 1) && del_pos.pos < 170) {
-                          // yamagata insertion incorrectly found
-                        del_pos.fix(163 - 1, 1); // -1 because we count from zero here
-                        std::cerr << "YAMAGATA insertion fixed to del_pos: " << del_pos << " for " << entry_seq.make_name() << std::endl;
-                    }
-                      // if (verbose) std::cerr << "del_pos: " << del_pos << std::endl;
-                    to_align.insert(del_pos.pos, del_pos.num_deletions, '-');
-                    start = del_pos.pos + del_pos.num_deletions + 1;
-                    pos_number.emplace_back(del_pos.pos, del_pos.num_deletions);
+        const size_t current_common = number_of_common(master, to_align);
+          // try {
+        DeletionPosSet pos_set;
+        adjust_pos pos = adjust_pos::begin(to_align, master, start), pos_end = adjust_pos::end(to_align, master);
+        start = to_align.size();
+        for (; pos != pos_end; ++pos) {
+            update(pos_set, master, to_align, *pos, number_of_common_before(master, to_align, *pos));
+        }
+        if (verbose) std::cerr << "pos_set: " << pos_set << '\n';
+        if (!pos_set.empty()) {
+            auto& del_pos = *std::min_element(pos_set.begin(), pos_set.end());
+              // if (verbose) std::cerr << "del_pos: " << del_pos << '\n';
+            if (del_pos.num_common > current_common) {
+                if (yamagata_163_hack && entry_seq.entry().virus_type() == "B" && del_pos.num_deletions == 1 && del_pos.pos > (163 - 1) && del_pos.pos <= (166 - 1)) {
+                      // yamagata insertion incorrectly found
+                    to_align.insert(163 - 1, 1, '-');
+                    del_pos.fix(163 - 1, 1, number_of_common(master, to_align)); // -1 because we count from zero here
+                    std::cerr << "YAMAGATA insertion fixed to del_pos: " << del_pos << " for " << entry_seq.make_name() << '\n';
                 }
+                else {
+                    to_align.insert(del_pos.pos, del_pos.num_deletions, '-');
+                }
+                if (verbose) std::cerr << "del_pos: " << del_pos << '\n';
+                start = del_pos.pos + del_pos.num_deletions + 1;
+                pos_number.emplace_back(del_pos.pos, del_pos.num_deletions);
+                if (best_common < del_pos.num_common)
+                    best_common = del_pos.num_common;
             }
         }
-        catch (NoAdjustPos&) {
-              // std::cerr << "NoAdjustPos: NC " << number_of_common(to_align, master) << std::endl;
-            throw NotAlignedTo{};
-        }
+          // }
+          // catch (NoAdjustPos&) {
+          //       // std::cerr << "NoAdjustPos: NC " << number_of_common(to_align, master) << '\n';
+          //     throw SwitchMaster{};
+          // }
     }
     if (verbose && !pos_number.empty()) // && pos_number.front().second > 1)
-        std::cerr << pos_number << ' '  << to_align << std::endl;
+        std::cerr << pos_number << " best-common:" << best_common << '\n' << to_align << '\n';
+    if (best_common < static_cast<size_t>(master.size() * 0.7)) {
+        if (verbose) std::cerr << "Too bad matching, should we swicth master?" << '\n';
+        to_align = to_align_orig;
+        throw SwitchMaster{};
+    }
     return pos_number;
 
 } // InsertionsDeletionsDetector::Entry::align_to
@@ -256,13 +268,13 @@ void BLineageDetector::detect()
         auto entry_seq = *iter;
         const auto& seq = entry_seq.seq();
         try {
-            if (std::initializer_list<size_t> pos_to_check = {160, 161, 164, 165, 166, 167, 68, 169, 170}; std::any_of(std::begin(pos_to_check), std::end(pos_to_check), [&seq](size_t pos) { return seq.amino_acid_at(pos) == '-'; })) {
-                  // throw std::runtime_error("Invalid deletion in B sequence for " + iter.make_name());
-                std::cerr << "ERROR: Invalid deletion in B sequence for " << iter.make_name() << std::endl;
-            }
-            const char a162 = seq.amino_acid_at(162), a163 = seq.amino_acid_at(163);
+            // if (std::initializer_list<size_t> pos_to_check = {160, 161, 164, 165, 166, 167, 68, 169, 170}; std::any_of(std::begin(pos_to_check), std::end(pos_to_check), [&seq](size_t pos) { return seq.amino_acid_at(pos) == '-'; })) {
+            //       // throw std::runtime_error("Invalid deletion in B sequence for " + iter.make_name());
+            //     std::cerr << "ERROR: Invalid deletion in B sequence for " << iter.make_name() << std::endl;
+            // }
             const std::string stored_lineage = entry_seq.entry().lineage();
-            const std::string detected_lineage = (a162 != '-' && a163 == '-') ? "YAMAGATA" : "VICTORIA"; // if deletion in both 162 and 163, it's Vic 2016-2017 outlier
+            const std::string detected_lineage = (seq.amino_acid_at(162) != '-' && (seq.amino_acid_at(163) == '-' || seq.amino_acid_at(164) == '-' || seq.amino_acid_at(165) == '-' || seq.amino_acid_at(166) == '-')) ? "YAMAGATA" : "VICTORIA"; // if deletion in both 162 and 163, it's Vic 2016-2017 outlier
+            // std::cerr << detected_lineage << ' ' << entry_seq.make_name() << '\n' << seq.amino_acids(true) << '\n';
             if (stored_lineage.empty())
                 entry_seq.entry().lineage(detected_lineage);
             else if (stored_lineage != detected_lineage)
