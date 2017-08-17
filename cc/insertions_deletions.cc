@@ -216,7 +216,9 @@ std::vector<std::pair<size_t, size_t>> InsertionsDeletionsDetector::Entry::align
               // if (verbose) std::cerr << "del_pos: " << del_pos << '\n';
             if (del_pos.num_common > current_common) {
                 if (yamagata_163_hack && entry_seq.entry().virus_type() == "B" && del_pos.num_deletions == 1 && del_pos.pos > (163 - 1) && del_pos.pos <= (166 - 1)) {
-                      // yamagata insertion incorrectly found
+                      // yamagata deletion must be at 163
+                      // David Burke 2017-08-17: deletions ( and insertions) of amino acids usually occur in regions of the protein structure where it changes direction ( loops ).
+                      // In the case of HA, this is after VPK and before NKTAT/YKNAT.
                     to_align.insert(163 - 1, 1, '-');
                     del_pos.fix(163 - 1, 1, number_of_common(master, to_align)); // -1 because we count from zero here
                     std::cerr << "YAMAGATA insertion fixed to del_pos: " << del_pos << " for " << entry_seq.make_name() << '\n';
