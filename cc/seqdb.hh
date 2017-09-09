@@ -93,6 +93,7 @@ namespace seqdb
         void update_clades(std::string aVirusType, std::string aLineage);
         inline const std::vector<std::string>& clades() const { return mClades; }
         inline std::vector<std::string>& clades() { return mClades; }
+        inline bool has_clade(std::string aClade) const { return std::find(std::begin(mClades), std::end(mClades), aClade) != std::end(mClades); }
 
         inline bool is_short() const { return mAminoAcids.empty() ? mNucleotides.size() < (MINIMUM_SEQUENCE_AA_LENGTH * 3) : mAminoAcids.size() < MINIMUM_SEQUENCE_AA_LENGTH; }
         inline bool translated() const { return !mAminoAcids.empty(); }

@@ -8,6 +8,7 @@ MAKEFLAGS = -w
 
 SEQDB_SOURCES = seqdb.cc seqdb-export.cc seqdb-import.cc seqdb-hidb.cc amino-acids.cc clades.cc insertions_deletions.cc
 SEQDB_PY_SOURCES = $(SEQDB_SOURCES) py.cc
+SEQDB_REPORT_CLADE_SRC = seqdb-report-clade.cc
 
 # ----------------------------------------------------------------------
 
@@ -32,12 +33,13 @@ PKG_INCLUDES = $(shell pkg-config --cflags liblzma) $(shell $(PYTHON_CONFIG) --i
 
 # ----------------------------------------------------------------------
 
-all: check-acmacsd-root $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) $(SEQDB_LIB)
+all: check-acmacsd-root $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) $(SEQDB_LIB) $(DIST)/seqdb-report-clade
 
-install: check-acmacsd-root install-headers $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) $(SEQDB_LIB)
+install: check-acmacsd-root install-headers $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) $(SEQDB_LIB) $(DIST)/seqdb-report-clade
 	ln -sf $(SEQDB_LIB) $(AD_LIB)
 	if [ $$(uname) = "Darwin" ]; then /usr/bin/install_name_tool -id $(AD_LIB)/$(notdir $(SEQDB_LIB)) $(AD_LIB)/$(notdir $(SEQDB_LIB)); fi
 	ln -sf $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) $(AD_PY)
+	ln -sf $(DIST)/seqdb-report-clade $(AD_BIN)
 	ln -sf $(abspath py)/* $(AD_PY)
 	ln -sf $(abspath bin)/seqdb-* $(AD_BIN)
 
@@ -64,6 +66,10 @@ $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX): $(patsubst %.cc,$(BUILD)/%.o,$(SEQ
 $(SEQDB_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(SEQDB_SOURCES)) | $(DIST) $(LOCATION_DB_LIB)
 	@echo "SHARED     " $@ # '<--' $^
 	@$(CXX) -shared $(LDFLAGS) -o $@ $^ $(SEQDB_LDLIBS)
+
+$(DIST)/seqdb-report-clade: $(patsubst %.cc,$(BUILD)/%.o,$(SEQDB_REPORT_CLADE_SRC)) | $(DIST) $(SEQDB_LIB)
+	@echo "LINK       " $@
+	@$(CXX) $(LDFLAGS) -o $@ $^ -lseqdb $(SEQDB_LDLIBS)
 
 # ----------------------------------------------------------------------
 
