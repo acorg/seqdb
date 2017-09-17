@@ -40,9 +40,6 @@ install: check-acmacsd-root install-headers $(DIST)/seqdb_backend$(PYTHON_MODULE
 install-libseqdb: $(SEQDB_LIB)
 	$(call install_lib,$^)
 
-install-headers:
-	$(call install_headers,seqdb)
-
 test: install
 	test/test
 
