@@ -23,7 +23,7 @@ SEQDB_LIB = $(DIST)/libseqdb.so
 
 CXXFLAGS = -MMD -g $(OPTIMIZATION) $(PROFILE) -fPIC -std=$(STD) $(WARNINGS) -I$(AD_INCLUDE) $(PKG_INCLUDES)
 LDFLAGS = $(OPTIMIZATION) $(PROFILE)
-SEQDB_LDLIBS = -L$(AD_LIB) -lacmacsbase -lacmacschart -llocationdb -lhidb -lacmacsbase -lboost_filesystem -lboost_system $(shell pkg-config --libs liblzma) $(shell $(PYTHON_CONFIG) --ldflags | sed -E 's/-Wl,-stack_size,[0-9]+//')
+SEQDB_LDLIBS = -L$(AD_LIB) -lacmacsbase -lacmacschart -llocationdb -lhidb -lacmacsbase $(shell pkg-config --libs liblzma) $(shell $(PYTHON_CONFIG) --ldflags | sed -E 's/-Wl,-stack_size,[0-9]+//')
 
 PKG_INCLUDES = $(shell pkg-config --cflags liblzma) $(shell $(PYTHON_CONFIG) --includes)
 
