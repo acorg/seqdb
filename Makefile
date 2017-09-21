@@ -9,6 +9,7 @@ MAKEFLAGS = -w
 SEQDB_SOURCES = seqdb.cc seqdb-export.cc seqdb-import.cc seqdb-hidb.cc amino-acids.cc clades.cc insertions_deletions.cc
 SEQDB_PY_SOURCES = $(SEQDB_SOURCES) py.cc
 SEQDB_REPORT_CLADE_SRC = seqdb-report-clade.cc
+SEQDB_REPORT_DATES_SRC = seqdb-report-dates.cc
 
 # ----------------------------------------------------------------------
 
@@ -29,11 +30,11 @@ PKG_INCLUDES = $(shell pkg-config --cflags liblzma) $(shell $(PYTHON_CONFIG) --i
 
 # ----------------------------------------------------------------------
 
-all: check-acmacsd-root $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) $(SEQDB_LIB) $(DIST)/seqdb-report-clade
+all: check-acmacsd-root $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) $(SEQDB_LIB) $(DIST)/seqdb-report-clade $(DIST)/seqdb-report-dates
 
-install: check-acmacsd-root install-headers $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) $(SEQDB_LIB) $(DIST)/seqdb-report-clade
+install: check-acmacsd-root install-headers $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) $(SEQDB_LIB) $(DIST)/seqdb-report-clade $(DIST)/seqdb-report-dates
 	ln -sf $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) $(AD_PY)
-	ln -sf $(DIST)/seqdb-report-clade $(AD_BIN)
+	ln -sf $(DIST)/seqdb-report-* $(AD_BIN)
 	ln -sf $(abspath py)/* $(AD_PY)
 	ln -sf $(abspath bin)/seqdb-* $(AD_BIN)
 
@@ -61,6 +62,10 @@ $(SEQDB_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(SEQDB_SOURCES)) | $(DIST) $(LOCATIO
 	@$(CXX) -shared $(LDFLAGS) -o $@ $^ $(SEQDB_LDLIBS)
 
 $(DIST)/seqdb-report-clade: $(patsubst %.cc,$(BUILD)/%.o,$(SEQDB_REPORT_CLADE_SRC)) | $(DIST) install-libseqdb install-headers
+	@echo "LINK       " $@
+	@$(CXX) $(LDFLAGS) -o $@ $^ -lseqdb $(SEQDB_LDLIBS)
+
+$(DIST)/seqdb-report-dates: $(patsubst %.cc,$(BUILD)/%.o,$(SEQDB_REPORT_DATES_SRC)) | $(DIST) install-libseqdb install-headers
 	@echo "LINK       " $@
 	@$(CXX) $(LDFLAGS) -o $@ $^ -lseqdb $(SEQDB_LDLIBS)
 
