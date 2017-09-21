@@ -30,9 +30,14 @@ PKG_INCLUDES = $(shell pkg-config --cflags liblzma) $(shell $(PYTHON_CONFIG) --i
 
 # ----------------------------------------------------------------------
 
-all: check-acmacsd-root $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) $(SEQDB_LIB) $(DIST)/seqdb-report-clade $(DIST)/seqdb-report-dates
+BINS_TO_MAKE = $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) \
+	       $(SEQDB_LIB) \
+	       $(DIST)/seqdb-report-clade \
+	       $(DIST)/seqdb-report-dates
 
-install: check-acmacsd-root install-headers $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) $(SEQDB_LIB) $(DIST)/seqdb-report-clade $(DIST)/seqdb-report-dates
+all: check-acmacsd-root $(BINS_TO_MAKE)
+
+install: check-acmacsd-root install-headers $(BINS_TO_MAKE)
 	ln -sf $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) $(AD_PY)
 	ln -sf $(DIST)/seqdb-report-* $(AD_BIN)
 	ln -sf $(abspath py)/* $(AD_PY)
