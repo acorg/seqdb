@@ -13,7 +13,34 @@
 #include "seqdb-import.hh"
 #include "insertions_deletions.hh"
 
+using namespace std::string_literals;
 using namespace seqdb;
+
+// ----------------------------------------------------------------------
+
+#pragma GCC diagnostic push
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wglobal-constructors"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
+#endif
+
+static std::unique_ptr<Seqdb> sSeqdb;
+
+#pragma GCC diagnostic pop
+
+const Seqdb& seqdb::get(std::string aFilename, bool aTimeit)
+{
+    if (!sSeqdb) {
+        Timeit ti_seqdb{"loading seqdb from "s + static_cast<std::string>(aFilename) + ": "};
+        sSeqdb = std::make_unique<Seqdb>();
+        sSeqdb->load(aFilename);
+        sSeqdb->build_hi_name_index();
+        if (aTimeit)
+            ti_seqdb.report();
+    }
+    return *sSeqdb;
+
+} // seqdb::get
 
 // ----------------------------------------------------------------------
 
