@@ -129,7 +129,7 @@ def export_from_seqdb(seqdb, filename, output_format, amino_acids, lab, virus_ty
 
     if hamming_distance_threshold:
         sequences = list(filter(lambda s: exclude_by_hamming_distance(sequences[0], s, hamming_distance_threshold), sequences))
-    if len(sequences) < 2:
+    if len(sequences) < 1:
         raise ValueError("Too few ({}) sequences found for exporting".format(len(sequences)))
 
     if hamming_distance_report:
