@@ -2,6 +2,7 @@
 #include <fstream>
 
 #include "acmacs-base/argc-argv.hh"
+#include "acmacs-base/string.hh"
 #include "acmacs-chart/ace.hh"
 #include "seqdb.hh"
 
@@ -14,14 +15,17 @@ int main(int argc, char* const argv[])
     try {
         argc_argv args(argc, argv, {"--seqdb"});
         if (args["-h"] || args["--help"] || args.number_of_arguments() != 2)
-            throw std::runtime_error("Usage: "s + args.program() + " [--seqdb <seqdb.json.xz>] [--amino-acids] [--aligned] <chart.ace> <output.fasta>");
+            throw std::runtime_error("Usage: "s + args.program() + " [--seqdb <seqdb.json.xz>] [--amino-acids] [--aligned] [--replace-spaces-in-names] <chart.ace> <output.fasta>");
         const auto& seqdb = seqdb::get(args.get("--seqdb", "/Users/eu/AD/data/seqdb.json.xz"));
         std::unique_ptr<Chart> chart{import_chart(args[0])};
         const auto per_antigen = seqdb.match(chart->antigens());
         std::string output;
         for (const auto& entry: per_antigen) {
             if (entry) {
-                output += ">" + entry.make_name() + "\n";
+                auto name = entry.make_name();
+                if (args["--replace-spaces-in-names"])
+                    name = string::replace(name, " ", "_");
+                output += ">" + name + "\n";
                 if (args["--amino-acids"])
                     output += entry.seq().amino_acids(args["--aligned"]);
                 else
