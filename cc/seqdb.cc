@@ -805,6 +805,16 @@ size_t Seqdb::match(const Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerA
 
 // ----------------------------------------------------------------------
 
+std::vector<SeqdbEntrySeq> Seqdb::match(const Antigens& aAntigens, bool aVerbose) const
+{
+    std::vector<SeqdbEntrySeq> per_antigen;
+    match(aAntigens, per_antigen, aVerbose);
+    return per_antigen;
+
+} // Seqdb::match
+
+// ----------------------------------------------------------------------
+
 void Seqdb::aa_at_positions_for_antigens(const Antigens& aAntigens, const std::vector<size_t>& aPositions, std::map<std::string, std::vector<size_t>>& aa_indices, bool aVerbose) const
 {
     size_t matched = 0;
