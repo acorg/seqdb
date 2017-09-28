@@ -3,6 +3,7 @@
 
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-base/string.hh"
+#include "acmacs-base/read-file.hh"
 #include "acmacs-chart/ace.hh"
 #include "seqdb.hh"
 
@@ -33,7 +34,7 @@ int main(int argc, char* const argv[])
                 output += "\n";
             }
         }
-        std::ofstream{args[1]} << output;
+        acmacs_base::write_file(args[1], output);
         return 0;
     }
     catch (std::exception& err) {
