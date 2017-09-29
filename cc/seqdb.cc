@@ -28,15 +28,13 @@ static std::unique_ptr<Seqdb> sSeqdb;
 
 #pragma GCC diagnostic pop
 
-const Seqdb& seqdb::get(std::string aFilename, bool aTimeit)
+const Seqdb& seqdb::get(std::string aFilename, report_time aTimeit)
 {
     if (!sSeqdb) {
-        Timeit ti_seqdb{"loading seqdb from "s + static_cast<std::string>(aFilename) + ": "};
+        Timeit ti_seqdb{"loading seqdb from "s + static_cast<std::string>(aFilename) + ": ", std::cerr, aTimeit};
         sSeqdb = std::make_unique<Seqdb>();
         sSeqdb->load(aFilename);
         sSeqdb->build_hi_name_index();
-        if (aTimeit)
-            ti_seqdb.report();
     }
     return *sSeqdb;
 

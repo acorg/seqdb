@@ -681,7 +681,7 @@ namespace seqdb
 
 // ----------------------------------------------------------------------
 
-    const Seqdb& get(std::string aFilename, bool aTimeit = false);
+    const Seqdb& get(std::string aFilename, report_time aTimeit = report_time::No);
 
 // ----------------------------------------------------------------------
 
