@@ -92,14 +92,14 @@ std::vector<std::string> seqdb::clades_h3n2(std::string aSequence, Shift aShift)
               r.push_back("3C3");
               break;
           case 'Y':
-              r.push_back("3C2a");
+              r.push_back("3C2A");
               if (aa_at(171, aSequence, aShift) == 'K' && aa_at(406, aSequence, aShift) == 'V' && aa_at(484, aSequence, aShift) == 'E') {
                     // Derek's message of 2016-12-23 10:32 "clade 3c.2a1"
-                  r.push_back("3C2a1");
+                  r.push_back("3C2A1");
               }
               break;
           case 'S':
-              r.push_back("3C3a");
+              r.push_back("3C3A");
               break;
           default:
                 // std::cerr << "@159: " << aSequence[pos159] << std::endl;
@@ -114,9 +114,9 @@ std::vector<std::string> seqdb::clades_h3n2(std::string aSequence, Shift aShift)
 
       // 160S -> gly, 160T -> gly, 160x -> no gly
     if (aa_at(160, aSequence, aShift) == 'S' || aa_at(160, aSequence, aShift) == 'T')
-        r.push_back("gly");
+        r.push_back("GLY");
     else
-        r.push_back("no-gly");
+        r.push_back("NO-GLY");
 
     return r;
 
