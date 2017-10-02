@@ -14,7 +14,7 @@ using namespace std::string_literals;
 int main(int argc, char* const argv[])
 {
     try {
-        argc_argv args(argc, argv, {"--seqdb"});
+        argc_argv_simple args(argc, argv, {"--seqdb"});
         if (args["-h"] || args["--help"] || args.number_of_arguments() != 2)
             throw std::runtime_error("Usage: "s + args.program() + " [--seqdb <seqdb.json.xz>] [--amino-acids] [--aligned] [--replace-spaces-in-names] <chart.ace> <output.fasta>");
         const auto& seqdb = seqdb::get(args.get("--seqdb", "/Users/eu/AD/data/seqdb.json.xz"));
