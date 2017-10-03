@@ -11,8 +11,8 @@ from . import Seqdb, fasta as fasta_m
 
 # ----------------------------------------------------------------------
 
-def create(hidb_dir, seqdb_filename, fasta_files, match_hidb, add_clades, save, report_all_passages, report_identical, report_not_aligned_prefixes, save_not_found_locations_to=None, verbose=False):
-    db = Seqdb(str(hidb_dir))
+def create(seqdb_filename, fasta_files, match_hidb, add_clades, save, report_all_passages, report_identical, report_not_aligned_prefixes, save_not_found_locations_to=None, verbose=False):
+    db = Seqdb()
     db_updater = SeqdbUpdater(db, filename=seqdb_filename, load=False)
     for filename in fasta_files:
         data = fasta_m.read_fasta_with_name_parsing(fasta_file=filename, lab="", virus_type="")

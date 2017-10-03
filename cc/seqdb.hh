@@ -680,7 +680,9 @@ namespace seqdb
 
 // ----------------------------------------------------------------------
 
-    const Seqdb& get(std::string aFilename, report_time aTimeit = report_time::No);
+    void setup(std::string aFilename);
+    void setup_dbs(std::string aDbDir);
+    const Seqdb& get(report_time aTimeit = report_time::No);
 
 // ----------------------------------------------------------------------
 

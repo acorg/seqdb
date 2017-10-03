@@ -25,20 +25,34 @@ using namespace seqdb;
 #endif
 
 static std::unique_ptr<Seqdb> sSeqdb;
+static std::string sSeqdbFilename = std::getenv("HOME") + "/AD/data/seqdb.json.xz"s;
 
 #pragma GCC diagnostic pop
 
-const Seqdb& seqdb::get(std::string aFilename, report_time aTimeit)
+void seqdb::setup(std::string aFilename)
+{
+    if (!aFilename.empty())
+        sSeqdbFilename = aFilename;
+}
+
+const Seqdb& seqdb::get(report_time aTimeit)
 {
     if (!sSeqdb) {
-        Timeit ti_seqdb{"loading seqdb from "s + static_cast<std::string>(aFilename) + ": ", std::cerr, aTimeit};
+        Timeit ti_seqdb{"loading seqdb from " + sSeqdbFilename + ": ", std::cerr, aTimeit};
         sSeqdb = std::make_unique<Seqdb>();
-        sSeqdb->load(aFilename);
+        sSeqdb->load(sSeqdbFilename);
         sSeqdb->build_hi_name_index();
     }
     return *sSeqdb;
 
 } // seqdb::get
+
+void seqdb::setup_dbs(std::string aDbDir)
+{
+    setup(aDbDir + "/seqdb.json.xz");
+    locdb_setup(aDbDir + "/locationdb.json.xz");
+    hidb::setup(aDbDir);
+}
 
 // ----------------------------------------------------------------------
 

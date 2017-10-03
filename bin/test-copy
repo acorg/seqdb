@@ -16,9 +16,8 @@ from acmacs_base import timeit
 # ----------------------------------------------------------------------
 
 def main(args):
-    seq_db = seqdb.Seqdb()
-    with timeit("loading seqdb"):
-        seq_db.load(filename=args.path_to_seqdb)
+    seqdb.seqdb_setup(filename=args.path_to_seqdb)
+    seq_db = seqdb.get_seqdb(timer=True)
     with timeit("saving seqdb"):
         seq_db.save(filename=args.output, indent=1)
 

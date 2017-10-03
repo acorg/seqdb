@@ -164,7 +164,7 @@ PYBIND11_MODULE(seqdb_backend, m)
     py::class_<Seqdb>(m, "Seqdb")
             .def(py::init<>())
               // .def("from_json", &Seqdb::from_json, py::doc("reads seqdb from json"))
-            .def("load", &Seqdb::load, py::arg("filename") = std::string(), py::doc("reads seqdb from file containing json"))
+              //.def("load", &Seqdb::load, py::arg("filename") = std::string(), py::doc("reads seqdb from file containing json"))
               //.def("json", &Seqdb::to_json, py::arg("indent") = size_t(0))
             .def("save", &Seqdb::save, py::arg("filename") = std::string(), py::arg("indent") = size_t(0), py::doc("writes seqdb into file in json format"))
             .def("number_of_entries", &Seqdb::number_of_entries)
@@ -191,6 +191,12 @@ PYBIND11_MODULE(seqdb_backend, m)
                     std::map<std::string, std::vector<size_t>> r; aSeqdb.aa_at_positions_for_antigens(aAntigens, aPositions, r, aVerbose); return r; }, py::arg("antigens"), py::arg("positions"), py::arg("verbose"))
             .def("match_antigens", [](const seqdb::Seqdb& aSeqdb, const Antigens& aAntigens, bool aVerbose) { std::vector<seqdb::SeqdbEntrySeq> r; aSeqdb.match(aAntigens, r, aVerbose); return r; }, py::arg("antigens"), py::arg("verbose"))
             ;
+
+    m.def("setup_dbs", &seqdb::setup_dbs, py::arg("db_dir"));
+    m.def("seqdb_setup", &seqdb::setup, py::arg("filename"));
+    m.def("get_seqdb", [](bool aTimer) { return seqdb::get(aTimer ? report_time::Yes : report_time::No); }, py::arg("timer") = false, py::return_value_policy::reference);
+
+
 }
 
 // ----------------------------------------------------------------------

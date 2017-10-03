@@ -23,7 +23,6 @@ def main(args):
     else:
         fasta_files = args.input
     seqdb.create(
-        hidb_dir=Path(args.hidb_dir).expanduser().resolve(),
         seqdb_filename=args.path_to_db,
         fasta_files=fasta_files,
         match_hidb=args.match_hidb,
