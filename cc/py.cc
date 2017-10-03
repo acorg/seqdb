@@ -162,7 +162,7 @@ PYBIND11_MODULE(seqdb_backend, m)
             ;
 
     py::class_<Seqdb>(m, "Seqdb")
-            .def(py::init<std::string>(), py::arg("hidb_dir") = "")
+            .def(py::init<>())
               // .def("from_json", &Seqdb::from_json, py::doc("reads seqdb from json"))
             .def("load", &Seqdb::load, py::arg("filename") = std::string(), py::doc("reads seqdb from file containing json"))
               //.def("json", &Seqdb::to_json, py::arg("indent") = size_t(0))

@@ -441,7 +441,7 @@ namespace seqdb
     class Seqdb
     {
      public:
-        inline Seqdb(std::string aHiDbDir = "") : mHiDbSet{aHiDbDir} {}
+        // inline Seqdb() = default;
 
         void load(std::string filename);
         void save(std::string filename, size_t indent = 0) const;
@@ -512,7 +512,6 @@ namespace seqdb
 
         std::vector<SeqdbEntry> mEntries;
         const std::regex sReYearSpace = std::regex("/[12][0-9][0-9][0-9] ");
-        hidb::HiDbSet mHiDbSet;
         HiNameIndex mHiNameIndex;
 
         inline std::vector<SeqdbEntry>::iterator find_insertion_place(std::string aName)

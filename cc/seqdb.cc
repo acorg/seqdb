@@ -649,7 +649,7 @@ std::vector<std::string> Seqdb::all_passages() const
 void Seqdb::find_in_hidb_update_country_lineage_date(std::vector<const hidb::AntigenData*>& found, SeqdbEntry& entry) const
 {
     try {
-        const hidb::HiDb& hidb = mHiDbSet.get(entry.virus_type());
+        const auto& hidb = hidb::get(entry.virus_type());
         if (const auto cdcids = entry.cdcids(); !cdcids.empty()) {
             for (const auto& cdcid: cdcids) {
                 const auto f_cdcid = hidb.find_antigens_by_cdcid(cdcid);
@@ -672,9 +672,9 @@ void Seqdb::find_in_hidb_update_country_lineage_date(std::vector<const hidb::Ant
               // update country and continent
             if (entry.country().empty()) {
                 try {
-                    const std::string country = hidb.locdb().find(virus_name::location(entry.name())).country();
+                    const std::string country = get_locdb().find(virus_name::location(entry.name())).country();
                     entry.country(country);
-                    entry.continent(hidb.locdb().continent_of_country(country));
+                    entry.continent(get_locdb().continent_of_country(country));
                 }
                 catch (LocationNotFound&) {
                 }
