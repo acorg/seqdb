@@ -38,7 +38,7 @@ void seqdb::setup(std::string aFilename)
 const Seqdb& seqdb::get(report_time aTimeit)
 {
     if (!sSeqdb) {
-        Timeit ti_seqdb{"loading seqdb from " + sSeqdbFilename + ": ", std::cerr, aTimeit};
+        Timeit ti_seqdb{"loading seqdb from " + sSeqdbFilename + ": ", aTimeit};
         sSeqdb = std::make_unique<Seqdb>();
         sSeqdb->load(sSeqdbFilename);
         sSeqdb->build_hi_name_index();
