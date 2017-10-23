@@ -29,8 +29,8 @@ int main(int argc, char* const argv[])
         if (args["-h"] || args["--help"] || args.number_of_arguments() != 2) {
             throw std::runtime_error("Usage: "s + args.program() + sUsage + args.usage_options());
         }
-        // const bool verbose = args["-v"] || args["--verbose"];
-        seqdb::setup_dbs(args["--db-dir"]);
+        const bool verbose = args["-v"] || args["--verbose"];
+        seqdb::setup_dbs(args["--db-dir"], verbose);
         const auto& seqdb = seqdb::get();
         std::unique_ptr<Chart> chart{import_chart(args[0])};
         const auto per_antigen = seqdb.match(chart->antigens());

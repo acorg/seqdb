@@ -22,8 +22,8 @@ int main(int argc, char* const argv[])
         if (args["-h"] || args["--help"] || args.number_of_arguments() != 1) {
             throw std::runtime_error("Usage: "s + args.program() + sUsage + args.usage_options());
         }
-        // const bool verbose = args["-v"] || args["--verbose"];
-        seqdb::setup_dbs(args["--db-dir"]);
+        const bool verbose = args["-v"] || args["--verbose"];
+        seqdb::setup_dbs(args["--db-dir"], verbose);
         for (const auto entry: seqdb::get()) {
             if (entry.seq().has_clade(args[0]))
                 std::cout << entry.make_name() << '\n';

@@ -192,8 +192,8 @@ PYBIND11_MODULE(seqdb_backend, m)
             .def("match_antigens", [](const seqdb::Seqdb& aSeqdb, const Antigens& aAntigens, bool aVerbose) { std::vector<seqdb::SeqdbEntrySeq> r; aSeqdb.match(aAntigens, r, aVerbose); return r; }, py::arg("antigens"), py::arg("verbose"))
             ;
 
-    m.def("setup_dbs", &seqdb::setup_dbs, py::arg("db_dir"));
-    m.def("seqdb_setup", &seqdb::setup, py::arg("filename"));
+    m.def("setup_dbs", &seqdb::setup_dbs, py::arg("db_dir"), py::arg("verbose") = false);
+    m.def("seqdb_setup", &seqdb::setup, py::arg("filename"), py::arg("verbose") = false);
     m.def("get_seqdb", [](bool aTimer) { return seqdb::get(aTimer ? report_time::Yes : report_time::No); }, py::arg("timer") = false, py::return_value_policy::reference);
 
 

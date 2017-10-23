@@ -687,8 +687,8 @@ namespace seqdb
 
 // ----------------------------------------------------------------------
 
-    void setup(std::string aFilename);
-    void setup_dbs(std::string aDbDir);
+    void setup(std::string aFilename, bool aVerbose);
+    void setup_dbs(std::string aDbDir, bool aVerbose);
     const Seqdb& get(report_time aTimeit = report_time::No);
 
 // ----------------------------------------------------------------------

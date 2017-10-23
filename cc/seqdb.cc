@@ -26,11 +26,13 @@ using namespace seqdb;
 
 static std::unique_ptr<Seqdb> sSeqdb;
 static std::string sSeqdbFilename = std::getenv("HOME") + "/AD/data/seqdb.json.xz"s;
+static bool sVerbose = false;
 
 #pragma GCC diagnostic pop
 
-void seqdb::setup(std::string aFilename)
+void seqdb::setup(std::string aFilename, bool aVerbose)
 {
+    sVerbose = aVerbose;
     if (!aFilename.empty())
         sSeqdbFilename = aFilename;
 }
@@ -38,7 +40,7 @@ void seqdb::setup(std::string aFilename)
 const Seqdb& seqdb::get(report_time aTimeit)
 {
     if (!sSeqdb) {
-        Timeit ti_seqdb{"loading seqdb from " + sSeqdbFilename + ": ", aTimeit};
+        Timeit ti_seqdb{"SeqDb loading from " + sSeqdbFilename + ": ", sVerbose ? report_time::Yes : aTimeit};
         sSeqdb = std::make_unique<Seqdb>();
         sSeqdb->load(sSeqdbFilename);
         sSeqdb->build_hi_name_index();
@@ -47,11 +49,11 @@ const Seqdb& seqdb::get(report_time aTimeit)
 
 } // seqdb::get
 
-void seqdb::setup_dbs(std::string aDbDir)
+void seqdb::setup_dbs(std::string aDbDir, bool aVerbose)
 {
-    setup(aDbDir + "/seqdb.json.xz");
-    locdb_setup(aDbDir + "/locationdb.json.xz");
-    hidb::setup(aDbDir);
+    setup(aDbDir + "/seqdb.json.xz", aVerbose);
+    locdb_setup(aDbDir + "/locationdb.json.xz", aVerbose);
+    hidb::setup(aDbDir, {}, aVerbose);
 }
 
 // ----------------------------------------------------------------------
