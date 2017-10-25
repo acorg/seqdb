@@ -40,7 +40,7 @@ void seqdb::setup(std::string aFilename, bool aVerbose)
 const Seqdb& seqdb::get(report_time aTimeit)
 {
     if (!sSeqdb) {
-        Timeit ti_seqdb{"SeqDb loading from " + sSeqdbFilename + ": ", sVerbose ? report_time::Yes : aTimeit};
+        Timeit ti_seqdb{"DEBUG: SeqDb loading from " + sSeqdbFilename + ": ", sVerbose ? report_time::Yes : aTimeit};
         sSeqdb = std::make_unique<Seqdb>();
         sSeqdb->load(sSeqdbFilename);
         sSeqdb->build_hi_name_index();
