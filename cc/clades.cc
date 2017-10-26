@@ -41,6 +41,8 @@ std::vector<std::string> seqdb::clades_b_victoria(std::string aSequence, Shift a
             pos162 = static_cast<size_t>(161 - aShift),
             pos163 = static_cast<size_t>(162 - aShift),
             pos165 = static_cast<size_t>(164 - aShift),
+            pos166 = static_cast<size_t>(165 - aShift),
+            pos167 = static_cast<size_t>(166 - aShift),
             pos172 = static_cast<size_t>(171 - aShift);
     if (aSequence.size() > pos172 && aSequence[pos75] == 'K' && aSequence[pos165] == 'K' && aSequence[pos172] == 'P' && aSequence[pos58] != 'P')
         r.push_back("1A");
@@ -48,8 +50,11 @@ std::vector<std::string> seqdb::clades_b_victoria(std::string aSequence, Shift a
         r.push_back("1B");
     else
         r.push_back("1");
+      // B/Vic always has '-' at pos163
     if (aSequence.size() > pos163 && aSequence[pos162] == '-' && aSequence[pos163] == '-')
         r.push_back("DEL2017"); // B/Vic deletion mutant 2017
+    else if (aSequence.size() > pos167 && aSequence[pos163] == '-' && aSequence[pos166] == '-' && aSequence[pos167] == '-')
+        r.push_back("TRIPLEDEL2017"); // B/Vic triple deletion mutant 2017
     return r;
 
 } // clades_b_yamagata

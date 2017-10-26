@@ -49,10 +49,22 @@ const Seqdb& seqdb::get(report_time aTimeit)
 
 } // seqdb::get
 
+Seqdb& seqdb::get_for_updating(report_time aTimeit)
+{
+    return const_cast<Seqdb&>(get(aTimeit));
+
+} // seqdb::get_for_updating
+
 void seqdb::setup_dbs(std::string aDbDir, bool aVerbose)
 {
-    setup(aDbDir + "/seqdb.json.xz", aVerbose);
-    locdb_setup(aDbDir + "/locationdb.json.xz", aVerbose);
+    if (!aDbDir.empty()) {
+        setup(aDbDir + "/seqdb.json.xz", aVerbose);
+        locdb_setup(aDbDir + "/locationdb.json.xz", aVerbose);
+    }
+    else {
+        setup(std::string{}, aVerbose);
+        locdb_setup(std::string{}, aVerbose);
+    }
     hidb::setup(aDbDir, {}, aVerbose);
 }
 
@@ -212,7 +224,7 @@ AlignAminoAcidsData SeqdbSeq::align(bool aForce, Messages& aMessages)
 
 // ----------------------------------------------------------------------
 
-void SeqdbSeq::update_clades(std::string aVirusType, std::string aLineage)
+const std::vector<std::string>& SeqdbSeq::update_clades(std::string aVirusType, std::string aLineage)
 {
     if (aligned()) {
         if (aVirusType == "B") {
@@ -233,6 +245,7 @@ void SeqdbSeq::update_clades(std::string aVirusType, std::string aLineage)
         //     std::cerr << "Cannot update clades for virus type " << aVirusType << '\n';
         // }
     }
+    return mClades;
 
 } // SeqdbSeq::update_clades
 
@@ -862,6 +875,7 @@ void Seqdb::aa_at_positions_for_antigens(const Antigens& aAntigens, const std::v
 void Seqdb::load(std::string filename)
 {
     seqdb_import(filename, *this);
+    mLoadedFromFilename = filename;
 
 } // Seqdb::from_json_file
 
@@ -869,6 +883,10 @@ void Seqdb::load(std::string filename)
 
 void Seqdb::save(std::string filename, size_t indent) const
 {
+    if (filename.empty())
+        filename = mLoadedFromFilename;
+    if (filename.empty())
+        throw std::runtime_error{"Empty filename to save seqdb to"};
     seqdb_export(filename, *this, indent);
 
 } // Seqdb::save
@@ -907,6 +925,21 @@ void Seqdb::detect_insertions_deletions()
     }
 
 } // Seqdb::detect_insertions_deletions
+
+// ----------------------------------------------------------------------
+
+void Seqdb::update_clades(bool aVerbose)
+{
+    std::map<std::string, size_t> clade_count;
+    for (auto entry_seq: *this) {
+        const auto& clades = entry_seq.seq().update_clades(entry_seq.entry().virus_type(), entry_seq.entry().lineage());
+        for (const auto& clade: clades)
+            ++clade_count[clade];
+    }
+    if (aVerbose)
+        std::cerr << "INFO: clades: " << clade_count << '\n';
+
+} // Seqdb::update_clades
 
 // ----------------------------------------------------------------------
 

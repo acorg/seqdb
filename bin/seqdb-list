@@ -18,7 +18,8 @@ from acmacs_base import timeit
 # ----------------------------------------------------------------------
 
 def main(args):
-    seqdb_m.seqdb_setup(args.path_to_seqdb)
+    if args.path_to_seqdb:
+        seqdb_m.seqdb_setup(args.path_to_seqdb)
     seqdb = seqdb_m.get_seqdb(timer=True)
     if args.list_all:
         print("Entries:", seqdb.number_of_entries(), " Seqs:", seqdb.number_of_seqs())
@@ -51,7 +52,7 @@ with timeit(sys.argv[0]):
         parser = argparse.ArgumentParser(description=__doc__)
         parser.add_argument('-d', '--debug', action='store_const', dest='loglevel', const=logging.DEBUG, default=logging.INFO, help='Enable debugging output.')
 
-        parser.add_argument('--db', action='store', dest='path_to_seqdb', default=os.path.expanduser("~/AD/data/seqdb.json.xz"), help='Path to sequence database.')
+        parser.add_argument('--db', action='store', dest='path_to_seqdb', default=None, help='Path to sequence database.')
         parser.add_argument('--re', action="store", dest="filter_re", default=None, help='List filtered by regex (like finding base-seq for exporting).')
         parser.add_argument('--id', action="store", dest="seq_id", default=None, help='Seq_id to look for.')
         parser.add_argument('--name', action="store", dest="name", default=None, help='Name to look for.')

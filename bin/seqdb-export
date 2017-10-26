@@ -25,8 +25,9 @@ def main(args):
         if args.hamming_distance_threshold is None:
             args.hamming_distance_threshold = 140
         args.name_encode = True
-    seq_db = seqdb.Seqdb()
-    seq_db.load(filename=args.path_to_seqdb)
+    if args.path_to_seqdb:
+        seqdb.seqdb_setup(filename=args.path_to_seqdb)
+    seq_db = seqdb.get_seqdb(True)
     r = fasta_m.export_from_seqdb(
         seqdb=seq_db,
         filename=Path(args.output),
@@ -90,7 +91,7 @@ with timeit(sys.argv[0]):
 
         parser.add_argument('--tree-maker', action='store_true', dest='tree_maker', default=False, help='Shorthand for --aligned --most-common-length --name-format "{seq_id}" --hamming-distance-threshold 140 --name-encode')
 
-        parser.add_argument('--db', action='store', dest='path_to_seqdb', required=True, help='Path to sequence database.')
+        parser.add_argument('--db', action='store', dest='path_to_seqdb', default=None, help='Path to sequence database.')
         parser.add_argument('output', nargs="?", help='Fasta file to write.')
 
         args = parser.parse_args()

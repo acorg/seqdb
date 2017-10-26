@@ -33,6 +33,7 @@ BINS_TO_MAKE = $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) \
 	       $(DIST)/seqdb-report-clade \
 	       $(DIST)/seqdb-report-dates \
 	       $(DIST)/seqdb-export-sequences-of-chart \
+	       $(DIST)/seqdb-update-clades \
 
 all: check-acmacsd-root $(BINS_TO_MAKE)
 

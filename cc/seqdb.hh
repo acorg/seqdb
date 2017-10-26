@@ -90,7 +90,7 @@ namespace seqdb
         void update_gene(std::string aGene, Messages& aMessages, bool replace_ha = false);
         void add_reassortant(std::string aReassortant);
         void add_lab_id(std::string aLab, std::string aLabId);
-        void update_clades(std::string aVirusType, std::string aLineage);
+        const std::vector<std::string>& update_clades(std::string aVirusType, std::string aLineage);
         inline const std::vector<std::string>& clades() const { return mClades; }
         inline std::vector<std::string>& clades() { return mClades; }
         inline bool has_clade(std::string aClade) const { return std::find(std::begin(mClades), std::end(mClades), aClade) != std::end(mClades); }
@@ -444,7 +444,7 @@ namespace seqdb
         // inline Seqdb() = default;
 
         void load(std::string filename);
-        void save(std::string filename, size_t indent = 0) const;
+        void save(std::string filename = std::string{}, size_t indent = 0) const;
 
         inline size_t number_of_entries() const { return mEntries.size(); }
         inline size_t number_of_seqs() const { return std::accumulate(mEntries.begin(), mEntries.end(), 0U, [](size_t acc, const auto& e) { return acc + e.seqs().size(); }); }
@@ -472,6 +472,7 @@ namespace seqdb
         std::set<std::string> virus_types() const;
         void detect_insertions_deletions();
         void detect_b_lineage();
+        void update_clades(bool aVerbose);
 
           // removes short sequences, removes entries having no sequences. returns messages
         std::string cleanup(bool remove_short_sequences);
@@ -520,6 +521,7 @@ namespace seqdb
         std::vector<SeqdbEntry> mEntries;
         const std::regex sReYearSpace = std::regex("/[12][0-9][0-9][0-9] ");
         HiNameIndex mHiNameIndex;
+        std::string mLoadedFromFilename;
 
         inline std::vector<SeqdbEntry>::iterator find_insertion_place(std::string aName)
             {
@@ -690,6 +692,7 @@ namespace seqdb
     void setup(std::string aFilename, bool aVerbose);
     void setup_dbs(std::string aDbDir, bool aVerbose);
     const Seqdb& get(report_time aTimeit = report_time::No);
+    Seqdb& get_for_updating(report_time aTimeit = report_time::No);
 
 // ----------------------------------------------------------------------
 
