@@ -33,7 +33,7 @@ int main(int argc, char* const argv[])
         seqdb::setup_dbs(args["--db-dir"], verbose);
         const auto& seqdb = seqdb::get();
         std::unique_ptr<Chart> chart{import_chart(args[0])};
-        const auto per_antigen = seqdb.match(chart->antigens());
+        const auto per_antigen = seqdb.match(chart->antigens(), chart->chart_info().virus_type());
         std::string output;
         for (const auto& entry: per_antigen) {
             if (entry) {

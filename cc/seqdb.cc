@@ -793,7 +793,7 @@ const SeqdbEntrySeq* Seqdb::find_hi_name(std::string aHiName) const
 
 // ----------------------------------------------------------------------
 
-size_t Seqdb::match(const Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerAntigen, bool aVerbose) const
+size_t Seqdb::match(const Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerAntigen, std::string aChartVirusType, bool aVerbose) const
 {
     size_t matched = 0;
     aPerAntigen.clear();
@@ -802,8 +802,14 @@ size_t Seqdb::match(const Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerA
         if (!entry)
             entry = find_hi_name(antigen.full_name_for_seqdb_matching());
         if (entry) {
-            aPerAntigen.push_back(*entry);
-            ++matched;
+            if (!aChartVirusType.empty() && aChartVirusType != entry->entry().virus_type()) {
+                if (aVerbose)
+                    std::cerr << "WARNING: Seqdb::match: virus type mismatch: chart:" << aChartVirusType << " seq:" << entry->entry().virus_type() << " name: " << antigen.full_name() << '\n';
+            }
+            else {
+                aPerAntigen.push_back(*entry);
+                ++matched;
+            }
         }
         else {
             aPerAntigen.emplace_back();
@@ -819,10 +825,10 @@ size_t Seqdb::match(const Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerA
 
 // ----------------------------------------------------------------------
 
-std::vector<SeqdbEntrySeq> Seqdb::match(const Antigens& aAntigens, bool aVerbose) const
+std::vector<SeqdbEntrySeq> Seqdb::match(const Antigens& aAntigens, std::string aChartVirusType, bool aVerbose) const
 {
     std::vector<SeqdbEntrySeq> per_antigen;
-    match(aAntigens, per_antigen, aVerbose);
+    match(aAntigens, per_antigen, aChartVirusType, aVerbose);
     return per_antigen;
 
 } // Seqdb::match

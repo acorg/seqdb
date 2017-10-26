@@ -189,7 +189,7 @@ PYBIND11_MODULE(seqdb_backend, m)
             .def("find_hi_name", &Seqdb::find_hi_name, py::arg("name"), py::return_value_policy::reference, py::doc("returns entry_seq found by hi name or None"))
             .def("aa_at_positions_for_antigens", [](const seqdb::Seqdb& aSeqdb, const Antigens& aAntigens, const std::vector<size_t>& aPositions, bool aVerbose) {
                     std::map<std::string, std::vector<size_t>> r; aSeqdb.aa_at_positions_for_antigens(aAntigens, aPositions, r, aVerbose); return r; }, py::arg("antigens"), py::arg("positions"), py::arg("verbose"))
-            .def("match_antigens", [](const seqdb::Seqdb& aSeqdb, const Antigens& aAntigens, bool aVerbose) { std::vector<seqdb::SeqdbEntrySeq> r; aSeqdb.match(aAntigens, r, aVerbose); return r; }, py::arg("antigens"), py::arg("verbose"))
+            .def("match_antigens", [](const seqdb::Seqdb& aSeqdb, const Antigens& aAntigens, std::string aChartVirusType, bool aVerbose) { std::vector<seqdb::SeqdbEntrySeq> r; aSeqdb.match(aAntigens, r, aChartVirusType, aVerbose); return r; }, py::arg("antigens"), py::arg("virus_type") = std::string{}, py::arg("verbose") = true)
             ;
 
     m.def("setup_dbs", &seqdb::setup_dbs, py::arg("db_dir"), py::arg("verbose") = false);
