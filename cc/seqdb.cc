@@ -806,6 +806,9 @@ size_t Seqdb::match(const Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerA
                 if (aVerbose)
                     std::cerr << "WARNING: Seqdb::match: virus type mismatch: chart:" << aChartVirusType << " seq:" << entry->entry().virus_type() << " name: " << antigen.full_name() << '\n';
             }
+            else if (!antigen.lineage().empty() && antigen.lineage() != entry->entry().lineage()) {
+                std::cerr << "WARNING: Seqdb::match: lineage mismatch: antigen:" << antigen.lineage() << " seq:" << entry->entry().lineage() << " name: " << antigen.full_name() << '\n';
+            }
             else {
                 aPerAntigen.push_back(*entry);
                 ++matched;
