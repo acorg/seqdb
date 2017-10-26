@@ -24,9 +24,10 @@ int main(int argc, char* const argv[])
         }
         const bool verbose = args["-v"] || args["--verbose"];
         seqdb::setup_dbs(args["--db-dir"], verbose);
-        for (const auto entry: seqdb::get()) {
-            if (entry.seq().has_clade(args[0]))
-                std::cout << entry.make_name() << '\n';
+        for (const auto entry_seq: seqdb::get()) {
+            if (entry_seq.seq().has_clade(args[0]))
+                std::cout << std::setw(60) << std::left << entry_seq.make_name()
+                          << " -- " << entry_seq.entry().virus_type() << ' ' << entry_seq.entry().lineage() << ' ' << entry_seq.entry().dates() << '\n';
         }
         return 0;
     }
