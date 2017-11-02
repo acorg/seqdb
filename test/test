@@ -22,7 +22,7 @@ trap failed ERR
 
 # ======================================================================
 
-export LD_LIBRARY_PATH="$HOME"/AD/lib
+export LD_LIBRARY_PATH="$ACMACSD_ROOT"/lib
 cd "$TESTDIR"
 ../bin/seqdb-create --db "$TDIR"/seqdb.json.xz ./test.fas.xz
 ../bin/test-copy --db "$TDIR"/seqdb.json.xz "$TDIR"/seqdb2.json.xz
