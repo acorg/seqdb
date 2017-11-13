@@ -142,9 +142,9 @@ static AlignEntry ALIGN_RAW_DATA[] = {
       // leads to wrong alignment due to insertion before the regex {"A(H1N1)", "",         "HA",     162, std::regex("[KQ]SY[AI]N[ND]K[EG]KEVLVLWG[IV]HHP"),           220, false, "h1-KSY"},
     {"A(H1N1)", "",         "HA",     105, std::regex("SSISSFER"),                                      200, false, "h1-SSI"},
 
-    {"A(H1N1)", "",         "NA",       0, std::regex("MNPNQKIITIG[SW]VCMTI"),                           20, false, "h1-NA-1"},
-    {"A(H1N1)", "",         "NA", Shift(), std::regex("FAAGQSVVSVKLAGNSSLCPVSGWAIYSK"),                 200, false, "h1-NA-2"},
-    {"A(H1N1)", "",         "NA", Shift(), std::regex("QASYKIFRIEKGKI"),                                300, false, "h1-NA-3"},
+    {"A(H1N1)", "",         "NA",       0, std::regex("MNPNQKIITIG[SW][VI]CMTI"),                        20, false, "h1-NA-1"},
+    {"A(H1N1)", "",         "NA",      73, std::regex("FAAGQSVVSVKLAGNSSLCPVSGWAIYSK"),                 200, false, "h1-NA-2"},
+    {"A(H1N1)", "",         "NA",     249, std::regex("QASYKIFRIEKGKI"),                                300, false, "h1-NA-3"},
 
     {"A(H1N1)", "",         "M1", Shift(), std::regex("MSLLTEVETYVLSIIPSGPLKAEIAQRLESVFAGKNTDLEAL"),    100, false, "h1-M1-1"},
     {"A(H1N1)", "",         "M1", Shift(), std::regex("MGLIYNRMGTVTTEAAFGLVCA"),                        200, false, "h1-M1-2"},
