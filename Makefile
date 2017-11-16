@@ -26,7 +26,8 @@ SEQDB_LDLIBS = \
 	$(AD_LIB)/$(call shared_lib_name,libacmacsbase,1,0) \
 	$(AD_LIB)/$(call shared_lib_name,liblocationdb,1,0) \
 	$(AD_LIB)/$(call shared_lib_name,libacmacschart,1,0) \
-	-L$(AD_LIB) -lhidb $(shell pkg-config --libs liblzma) $(shell $(PYTHON_CONFIG) --ldflags | sed -E 's/-Wl,-stack_size,[0-9]+//')
+	$(AD_LIB)/$(call shared_lib_name,libhidb,1,0) \
+	$(shell pkg-config --libs liblzma) $(shell $(PYTHON_CONFIG) --ldflags | sed -E 's/-Wl,-stack_size,[0-9]+//')
 
 PKG_INCLUDES = $(shell pkg-config --cflags liblzma) $(shell $(PYTHON_CONFIG) --includes)
 
@@ -71,7 +72,7 @@ $(SEQDB_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(SEQDB_SOURCES)) | $(DIST) $(LOCATIO
 
 $(DIST)/%: $(BUILD)/%.o | install-libseqdb
 	@printf "%-16s %s\n" "LINK" $@
-	@$(CXX) $(LDFLAGS) -o $@ $^ -lseqdb $(SEQDB_LDLIBS)
+	@$(CXX) $(LDFLAGS) -o $@ $^ -L$(AD_LIB) -lseqdb $(SEQDB_LDLIBS)
 
 # ======================================================================
 ### Local Variables:
