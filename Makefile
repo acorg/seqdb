@@ -22,7 +22,11 @@ SEQDB_LIB = $(DIST)/libseqdb.so
 
 CXXFLAGS = -MMD -g $(OPTIMIZATION) $(PROFILE) -fPIC -std=$(STD) $(WARNINGS) -I$(AD_INCLUDE) $(PKG_INCLUDES)
 LDFLAGS = $(OPTIMIZATION) $(PROFILE)
-SEQDB_LDLIBS = $(AD_LIB)/$(call shared_lib_name,libacmacsbase,1,0) $(AD_LIB)/$(call shared_lib_name,libacmacschart,1,0) -L$(AD_LIB) -llocationdb -lhidb $(shell pkg-config --libs liblzma) $(shell $(PYTHON_CONFIG) --ldflags | sed -E 's/-Wl,-stack_size,[0-9]+//')
+SEQDB_LDLIBS = \
+	$(AD_LIB)/$(call shared_lib_name,libacmacsbase,1,0) \
+	$(AD_LIB)/$(call shared_lib_name,liblocationdb,1,0) \
+	$(AD_LIB)/$(call shared_lib_name,libacmacschart,1,0) \
+	-L$(AD_LIB) -lhidb $(shell pkg-config --libs liblzma) $(shell $(PYTHON_CONFIG) --ldflags | sed -E 's/-Wl,-stack_size,[0-9]+//')
 
 PKG_INCLUDES = $(shell pkg-config --cflags liblzma) $(shell $(PYTHON_CONFIG) --includes)
 
