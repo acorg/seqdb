@@ -6,50 +6,53 @@ MAKEFLAGS = -w
 
 # ----------------------------------------------------------------------
 
+TARGETS = \
+	$(SEQDB_LIB) \
+	$(SEQDB_PY_LIB) \
+	$(DIST)/seqdb-report-clade \
+	$(DIST)/seqdb-report-dates \
+	$(DIST)/seqdb-export-sequences-of-chart \
+	$(DIST)/seqdb-update-clades
+
 SEQDB_SOURCES = seqdb.cc seqdb-export.cc seqdb-import.cc seqdb-hidb.cc amino-acids.cc clades.cc insertions_deletions.cc
 SEQDB_PY_SOURCES = $(SEQDB_SOURCES) py.cc
+
+SEQDB_LIB_MAJOR = 1
+SEQDB_LIB_MINOR = 0
+SEQDB_LIB_NAME = libseqdb
+SEQDB_LIB = $(DIST)/$(call shared_lib_name,$(SEQDB_LIB_NAME),$(SEQDB_LIB_MAJOR),$(SEQDB_LIB_MINOR))
+
+SEQDB_PY_LIB_MAJOR = 1
+SEQDB_PY_LIB_MINOR = 0
+SEQDB_PY_LIB_NAME = seqdb_backend
+SEQDB_PY_LIB = $(DIST)/$(SEQDB_PY_LIB_NAME)$(PYTHON_MODULE_SUFFIX)
 
 # ----------------------------------------------------------------------
 
 include $(ACMACSD_ROOT)/share/makefiles/Makefile.g++
+include $(ACMACSD_ROOT)/share/makefiles/Makefile.python
 include $(ACMACSD_ROOT)/share/makefiles/Makefile.dist-build.vars
-
-PYTHON_VERSION = $(shell python3 -c 'import sys; print("{0.major}.{0.minor}".format(sys.version_info))')
-PYTHON_CONFIG = python$(PYTHON_VERSION)-config
-PYTHON_MODULE_SUFFIX = $(shell $(PYTHON_CONFIG) --extension-suffix)
-
-SEQDB_LIB = $(DIST)/libseqdb.so
 
 CXXFLAGS = -MMD -g $(OPTIMIZATION) $(PROFILE) -fPIC -std=$(STD) $(WARNINGS) -I$(AD_INCLUDE) $(PKG_INCLUDES)
 LDFLAGS = $(OPTIMIZATION) $(PROFILE)
-SEQDB_LDLIBS = \
+LDLIBS = \
 	$(AD_LIB)/$(call shared_lib_name,libacmacsbase,1,0) \
 	$(AD_LIB)/$(call shared_lib_name,liblocationdb,1,0) \
 	$(AD_LIB)/$(call shared_lib_name,libacmacschart,1,0) \
 	$(AD_LIB)/$(call shared_lib_name,libhidb,1,0) \
 	$(shell pkg-config --libs liblzma) $(shell $(PYTHON_CONFIG) --ldflags | sed -E 's/-Wl,-stack_size,[0-9]+//')
 
-PKG_INCLUDES = $(shell pkg-config --cflags liblzma) $(shell $(PYTHON_CONFIG) --includes)
+PKG_INCLUDES = $(shell pkg-config --cflags liblzma) $(PYTHON_INCLUDES)
 
 # ----------------------------------------------------------------------
 
-BINS_TO_MAKE = $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) \
-	       $(SEQDB_LIB) \
-	       $(DIST)/seqdb-report-clade \
-	       $(DIST)/seqdb-report-dates \
-	       $(DIST)/seqdb-export-sequences-of-chart \
-	       $(DIST)/seqdb-update-clades \
+all: check-acmacsd-root $(TARGETS)
 
-all: check-acmacsd-root $(BINS_TO_MAKE)
-
-install: check-acmacsd-root install-headers $(BINS_TO_MAKE)
-	ln -sf $(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX) $(AD_PY)
-	ln -sf $(DIST)/seqdb-* $(AD_BIN)
+install: check-acmacsd-root install-headers $(TARGETS)
+	$(call install_lib,$(SEQDB_LIB))
+	$(call install_py_lib,$(SEQDB_PY_LIB))
 	ln -sf $(abspath py)/* $(AD_PY)
 	ln -sf $(abspath bin)/seqdb-* $(AD_BIN)
-
-install-libseqdb: $(SEQDB_LIB)
-	$(call install_lib,$^)
 
 test: install
 	test/test
@@ -62,17 +65,17 @@ include $(ACMACSD_ROOT)/share/makefiles/Makefile.rtags
 
 # ----------------------------------------------------------------------
 
-$(DIST)/seqdb_backend$(PYTHON_MODULE_SUFFIX): $(patsubst %.cc,$(BUILD)/%.o,$(SEQDB_PY_SOURCES)) | $(DIST) install-headers
+$(SEQDB_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(SEQDB_SOURCES)) | $(DIST) install-headers
 	@printf "%-16s %s\n" "SHARED" $@
-	@$(CXX) -shared $(LDFLAGS) -o $@ $^ $(SEQDB_LDLIBS)
+	@$(call make_shared,$(SEQDB_LIB_NAME),$(SEQDB_LIB_MAJOR),$(SEQDB_LIB_MINOR)) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
-$(SEQDB_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(SEQDB_SOURCES)) | $(DIST) $(LOCATION_DB_LIB) install-headers
+$(SEQDB_PY_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(SEQDB_PY_SOURCES)) | $(DIST)
 	@printf "%-16s %s\n" "SHARED" $@
-	@$(CXX) -shared $(LDFLAGS) -o $@ $^ $(SEQDB_LDLIBS)
+	@$(call make_shared,$(SEQDB_PY_LIB_NAME),$(SEQDB_PY_LIB_MAJOR),$(SEQDB_PY_LIB_MINOR)) $(LDFLAGS) -o $@ $^ $(LDLIBS) $(PYTHON_LDLIBS)
 
-$(DIST)/%: $(BUILD)/%.o | install-libseqdb
+$(DIST)/%: $(BUILD)/%.o | $(SEQDB_LIB)
 	@printf "%-16s %s\n" "LINK" $@
-	@$(CXX) $(LDFLAGS) -o $@ $^ -L$(AD_LIB) -lseqdb $(SEQDB_LDLIBS)
+	@$(CXX) $(LDFLAGS) -o $@ $^ $(SEQDB_LIB) $(LDLIBS)
 
 # ======================================================================
 ### Local Variables:
