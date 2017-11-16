@@ -6,7 +6,7 @@
 #include "acmacs-base/timeit.hh"
 #include "acmacs-base/virus-name.hh"
 #include "locationdb/locdb.hh"
-#include "acmacs-chart/chart.hh"
+#include "acmacs-chart-1/chart.hh"
 #include "seqdb/seqdb.hh"
 #include "clades.hh"
 #include "seqdb-export.hh"
