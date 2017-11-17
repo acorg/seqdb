@@ -62,11 +62,11 @@ static void make_matching(SeqdbEntry& entry, const Found& found, Matching& match
     for (auto& seq: entry.seqs()) {
         std::vector<score_seq_found_t> matching_for_seq;
         size_t found_no = 0;
-        const passage::CellOrEgg seq_cell_or_egg = passage::cell_or_egg(seq.passages());
+        const acmacs::passage::CellOrEgg seq_cell_or_egg = passage::cell_or_egg(seq.passages());
         for (const auto& f: found) {
             const auto& f_passage = f->data().passage();
-              // std::cerr << "match_cell_egg: " << passage::match_cell_egg(passage::cell_or_egg(f_passage), seq_cell_or_egg) << " -- " << f_passage << ':' << static_cast<int>(passage::cell_or_egg(f_passage)) << " " << seq.passages() << ':' << static_cast<int>(seq_cell_or_egg) << '\n';
-            if (seq.reassortant_match(f->data().reassortant()) && passage::match_cell_egg(passage::cell_or_egg(f_passage), seq_cell_or_egg)) {
+              // std::cerr << "match_cell_egg: " << acmacs::passage::match_cell_egg(acmacs::passage::cell_or_egg(f_passage), seq_cell_or_egg) << " -- " << f_passage << ':' << static_cast<int>(passage::cell_or_egg(f_passage)) << " " << seq.passages() << ':' << static_cast<int>(seq_cell_or_egg) << '\n';
+            if (seq.reassortant_match(f->data().reassortant()) && acmacs::passage::match_cell_egg(acmacs::passage::cell_or_egg(f_passage), seq_cell_or_egg)) {
                 std::vector<score_size_t> scores; // score and min passage length (to avoid too incomplete matches)
                 if (!seq.passages().empty())
                     std::transform(seq.passages().begin(), seq.passages().end(), std::back_inserter(scores),
