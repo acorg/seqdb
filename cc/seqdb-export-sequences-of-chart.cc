@@ -4,8 +4,9 @@
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/read-file.hh"
-#include "acmacs-chart-1/ace.hh"
-#include "seqdb.hh"
+#include "acmacs-chart-2/factory-import.hh"
+#include "acmacs-chart-2/chart.hh"
+#include "seqdb/seqdb.hh"
 
 using namespace std::string_literals;
 
@@ -32,8 +33,8 @@ int main(int argc, char* const argv[])
         const bool verbose = args["-v"] || args["--verbose"];
         seqdb::setup_dbs(args["--db-dir"], verbose);
         const auto& seqdb = seqdb::get();
-        std::unique_ptr<Chart> chart{import_chart(args[0])};
-        const auto per_antigen = seqdb.match(chart->antigens(), chart->chart_info().virus_type());
+        auto chart = acmacs::chart::import_factory(args[0], acmacs::chart::Verify::None);
+        const auto per_antigen = seqdb.match(*chart->antigens(), chart->info()->virus_type());
         std::string output;
         for (const auto& entry: per_antigen) {
             if (entry) {

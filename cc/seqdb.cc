@@ -6,7 +6,7 @@
 #include "acmacs-base/timeit.hh"
 #include "acmacs-base/virus-name.hh"
 #include "locationdb/locdb.hh"
-#include "acmacs-chart-1/chart.hh"
+#include "acmacs-chart-2/chart.hh"
 #include "seqdb/seqdb.hh"
 #include "clades.hh"
 #include "seqdb-export.hh"
@@ -806,21 +806,21 @@ const SeqdbEntrySeq* Seqdb::find_hi_name(std::string aHiName) const
 
 // ----------------------------------------------------------------------
 
-size_t Seqdb::match(const Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerAntigen, std::string aChartVirusType, bool aVerbose) const
+size_t Seqdb::match(const acmacs::chart::Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerAntigen, std::string aChartVirusType, bool aVerbose) const
 {
     size_t matched = 0;
     aPerAntigen.clear();
-    for (const Antigen& antigen: aAntigens) {
-        const SeqdbEntrySeq* entry = find_hi_name(antigen.full_name());
+    for (auto antigen: aAntigens) {
+        const SeqdbEntrySeq* entry = find_hi_name(antigen->full_name());
         if (!entry)
-            entry = find_hi_name(antigen.full_name_for_seqdb_matching());
+            entry = find_hi_name(antigen->full_name_for_seqdb_matching());
         if (entry) {
             if (!aChartVirusType.empty() && aChartVirusType != entry->entry().virus_type()) {
                 if (aVerbose)
-                    std::cerr << "WARNING: Seqdb::match: virus type mismatch: chart:" << aChartVirusType << " seq:" << entry->entry().virus_type() << " name: " << antigen.full_name() << '\n';
+                    std::cerr << "WARNING: Seqdb::match: virus type mismatch: chart:" << aChartVirusType << " seq:" << entry->entry().virus_type() << " name: " << antigen->full_name() << '\n';
             }
-            else if (!antigen.lineage().empty() && antigen.lineage() != entry->entry().lineage()) {
-                std::cerr << "WARNING: Seqdb::match: lineage mismatch: antigen:" << antigen.lineage() << " seq:" << entry->entry().lineage() << " name: " << antigen.full_name() << '\n';
+            else if (antigen->lineage() != acmacs::chart::BLineage::Unknown && antigen->lineage() != entry->entry().lineage()) {
+                std::cerr << "WARNING: Seqdb::match: lineage mismatch: antigen:" << antigen->lineage() << " seq:" << entry->entry().lineage() << " name: " << antigen->full_name() << '\n';
             }
             else {
                 aPerAntigen.push_back(*entry);
@@ -830,7 +830,7 @@ size_t Seqdb::match(const Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerA
         else {
             aPerAntigen.emplace_back();
             // if (aVerbose)
-            //     std::cerr << "WARNING: seqdb::match failed for \"" << antigen.full_name() << "\"" << '\n';
+            //     std::cerr << "WARNING: seqdb::match failed for \"" << antigen->full_name() << "\"" << '\n';
         }
     }
     if (aVerbose)
@@ -841,7 +841,7 @@ size_t Seqdb::match(const Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerA
 
 // ----------------------------------------------------------------------
 
-std::vector<SeqdbEntrySeq> Seqdb::match(const Antigens& aAntigens, std::string aChartVirusType, bool aVerbose) const
+std::vector<SeqdbEntrySeq> Seqdb::match(const acmacs::chart::Antigens& aAntigens, std::string aChartVirusType, bool aVerbose) const
 {
     std::vector<SeqdbEntrySeq> per_antigen;
     match(aAntigens, per_antigen, aChartVirusType, aVerbose);
@@ -851,17 +851,17 @@ std::vector<SeqdbEntrySeq> Seqdb::match(const Antigens& aAntigens, std::string a
 
 // ----------------------------------------------------------------------
 
-void Seqdb::aa_at_positions_for_antigens(const Antigens& aAntigens, const std::vector<size_t>& aPositions, std::map<std::string, std::vector<size_t>>& aa_indices, bool aVerbose) const
+void Seqdb::aa_at_positions_for_antigens(const acmacs::chart::Antigens& aAntigens, const std::vector<size_t>& aPositions, std::map<std::string, std::vector<size_t>>& aa_indices, bool aVerbose) const
 {
     size_t matched = 0;
     for (auto ag = aAntigens.begin(); ag != aAntigens.end(); ++ag) {
-        const SeqdbEntrySeq* entry = find_hi_name(ag->full_name());
+        const SeqdbEntrySeq* entry = find_hi_name((*ag)->full_name());
         if (!entry)
-            entry = find_hi_name(ag->full_name_for_seqdb_matching());
+            entry = find_hi_name((*ag)->full_name_for_seqdb_matching());
         if (entry) {
             std::string aa(aPositions.size(), 'X');
             std::transform(aPositions.begin(), aPositions.end(), aa.begin(), [&entry](size_t pos) { return entry->seq().amino_acid_at(pos); });
-            aa_indices[aa].push_back(static_cast<size_t>(ag - aAntigens.begin()));
+            aa_indices[aa].push_back(ag.index());
             ++matched;
         }
     }
