@@ -12,7 +12,7 @@ using namespace std::string_literals;
 
 // ----------------------------------------------------------------------
 
-constexpr const char* sUsage = " [options] <chart.ace> <output.fasta>\n";
+constexpr const char* sUsage = " [options] <chart> <output.fasta>\n";
 
 int main(int argc, char* const argv[])
 {

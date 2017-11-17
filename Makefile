@@ -17,7 +17,7 @@ TARGETS = \
 SEQDB_SOURCES = seqdb.cc seqdb-export.cc seqdb-import.cc seqdb-hidb.cc amino-acids.cc clades.cc insertions_deletions.cc
 SEQDB_PY_SOURCES = $(SEQDB_SOURCES) py.cc
 
-SEQDB_LIB_MAJOR = 1
+SEQDB_LIB_MAJOR = 2
 SEQDB_LIB_MINOR = 0
 SEQDB_LIB_NAME = libseqdb
 SEQDB_LIB = $(DIST)/$(call shared_lib_name,$(SEQDB_LIB_NAME),$(SEQDB_LIB_MAJOR),$(SEQDB_LIB_MINOR))
