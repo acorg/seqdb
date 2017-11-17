@@ -819,7 +819,7 @@ size_t Seqdb::match(const acmacs::chart::Antigens& aAntigens, std::vector<SeqdbE
                 if (aVerbose)
                     std::cerr << "WARNING: Seqdb::match: virus type mismatch: chart:" << aChartVirusType << " seq:" << entry->entry().virus_type() << " name: " << antigen->full_name() << '\n';
             }
-            else if (antigen->lineage() != acmacs::chart::BLineage::Unknown && antigen->lineage() != entry->entry().lineage()) {
+            else if (antigen->lineage() != acmacs::chart::BLineage::Unknown && static_cast<std::string>(antigen->lineage()) != entry->entry().lineage()) {
                 std::cerr << "WARNING: Seqdb::match: lineage mismatch: antigen:" << antigen->lineage() << " seq:" << entry->entry().lineage() << " name: " << antigen->full_name() << '\n';
             }
             else {

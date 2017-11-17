@@ -1,4 +1,5 @@
 #include "acmacs-base/pybind11.hh"
+#include "acmacs-chart-2/chart.hh"
 #include "seqdb/seqdb.hh"
 
 using namespace seqdb;
