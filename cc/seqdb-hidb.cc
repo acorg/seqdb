@@ -62,7 +62,7 @@ static void make_matching(SeqdbEntry& entry, const Found& found, Matching& match
     for (auto& seq: entry.seqs()) {
         std::vector<score_seq_found_t> matching_for_seq;
         size_t found_no = 0;
-        const acmacs::passage::CellOrEgg seq_cell_or_egg = passage::cell_or_egg(seq.passages());
+        const auto seq_cell_or_egg = acmacs::passage::cell_or_egg(seq.passages());
         for (const auto& f: found) {
             const auto& f_passage = f->data().passage();
               // std::cerr << "match_cell_egg: " << acmacs::passage::match_cell_egg(acmacs::passage::cell_or_egg(f_passage), seq_cell_or_egg) << " -- " << f_passage << ':' << static_cast<int>(passage::cell_or_egg(f_passage)) << " " << seq.passages() << ':' << static_cast<int>(seq_cell_or_egg) << '\n';
