@@ -49,7 +49,7 @@ int main(int argc, char* const argv[])
                 output += "\n";
             }
         }
-        acmacs_base::write_file(args[1], output);
+        acmacs::file::write(args[1], output);
         return 0;
     }
     catch (std::exception& err) {
