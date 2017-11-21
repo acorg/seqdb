@@ -12,6 +12,7 @@ TARGETS = \
 	$(DIST)/seqdb-report-clade \
 	$(DIST)/seqdb-report-dates \
 	$(DIST)/seqdb-export-sequences-of-chart \
+	$(DIST)/seqdb-export-sequences-and-layout-of-chart \
 	$(DIST)/seqdb-update-clades
 
 SEQDB_SOURCES = seqdb.cc seqdb-export.cc seqdb-import.cc seqdb-hidb.cc amino-acids.cc clades.cc insertions_deletions.cc
@@ -53,7 +54,7 @@ install: check-acmacsd-root install-headers $(TARGETS)
 	$(call install_py_lib,$(SEQDB_PY_LIB))
 	ln -sf $(abspath py)/* $(AD_PY)
 	ln -sf $(abspath bin)/seqdb-* $(AD_BIN)
-	ln -sf $(abspath dist)/seqdb-{export-sequences-of-chart,report-clade,report-dates,update-clades} $(AD_BIN)
+	ln -sf $(abspath dist)/seqdb-export-* $(abspath dist)/seqdb-report-* $(abspath dist)/seqdb-update-* $(AD_BIN)
 
 test: install
 	test/test
