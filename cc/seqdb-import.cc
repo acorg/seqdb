@@ -131,7 +131,7 @@ namespace seqdb
         };
 
         SeqdbDataFile data{aSeqdb};
-        jsi::import(acmacs::file::read(aFilename, true), data, seqdb_data);
+        jsi::import(acmacs::file::read(aFilename), data, seqdb_data);
 
     } // seqdb_import
 }
