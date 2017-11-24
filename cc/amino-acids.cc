@@ -22,9 +22,9 @@ AlignAminoAcidsData seqdb::translate_and_align(std::string aNucleotides, Message
     std::vector<AlignAminoAcidsData> r;
     AlignAminoAcidsData not_aligned;
     for (int offset = 0; offset < 3; ++offset) {
-        auto amino_acids = translate_nucleotides_to_amino_acids(aNucleotides, static_cast<size_t>(offset), aMessages);
+        const auto amino_acids = translate_nucleotides_to_amino_acids(aNucleotides, static_cast<size_t>(offset), aMessages);
         // std::cerr << offset << " " << amino_acids << std::endl;
-        auto aa_parts = string::split(amino_acids, "*");
+        const auto aa_parts = string::split(amino_acids, "*");
         size_t prefix_len = 0;
         for (const auto& part: aa_parts) {
             if (part.size() >= MINIMUM_SEQUENCE_AA_LENGTH) {
@@ -169,12 +169,12 @@ static AlignEntry ALIGN_RAW_DATA[] = {
     {"B", "", "",    Shift(), std::regex("GNFLWLLHV"),                                                           45, false, "B-CNIC"}, // Only CNIC sequences 2008-2009 have it, perhaps not HA
 };
 
-AlignData seqdb::align(std::string aAminoAcids, Messages& aMessages)
+AlignData seqdb::align(std::string_view aAminoAcids, Messages& aMessages)
 {
     std::vector<AlignEntry> results;
     for (auto raw_data = std::begin(ALIGN_RAW_DATA); raw_data != std::end(ALIGN_RAW_DATA); ++raw_data) {
-        std::smatch m;
-        if (std::regex_search(aAminoAcids.cbegin(), aAminoAcids.cbegin() + static_cast<std::string::difference_type>(std::min(aAminoAcids.size(), raw_data->endpos)), m, raw_data->re)) {
+        std::cmatch m;
+        if (std::regex_search(aAminoAcids.cbegin(), aAminoAcids.cbegin() + std::min(aAminoAcids.size(), raw_data->endpos), m, raw_data->re)) {
             AlignEntry r(*raw_data);
             if (raw_data->signalpeptide) {
                 r.shift = - (m[0].second - aAminoAcids.cbegin());
