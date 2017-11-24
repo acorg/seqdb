@@ -53,7 +53,7 @@ namespace seqdb
     AlignAminoAcidsData translate_and_align(std::string aNucleotides, Messages& aMessages);
 
     std::string translate_nucleotides_to_amino_acids(std::string aNucleotides, size_t aOffset, Messages& aMessages);
-    AlignData align(std::string aAminoAcids, Messages& aMessages);
+    AlignData align(std::string_view aAminoAcids, Messages& aMessages);
 
 // ----------------------------------------------------------------------
 

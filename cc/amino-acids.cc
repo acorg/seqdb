@@ -169,12 +169,12 @@ static AlignEntry ALIGN_RAW_DATA[] = {
     {"B", "", "",    Shift(), std::regex("GNFLWLLHV"),                                                           45, false, "B-CNIC"}, // Only CNIC sequences 2008-2009 have it, perhaps not HA
 };
 
-AlignData seqdb::align(std::string aAminoAcids, Messages& aMessages)
+AlignData seqdb::align(std::string_view aAminoAcids, Messages& aMessages)
 {
     std::vector<AlignEntry> results;
     for (auto raw_data = std::begin(ALIGN_RAW_DATA); raw_data != std::end(ALIGN_RAW_DATA); ++raw_data) {
-        std::smatch m;
-        if (std::regex_search(aAminoAcids.cbegin(), aAminoAcids.cbegin() + static_cast<std::string::difference_type>(std::min(aAminoAcids.size(), raw_data->endpos)), m, raw_data->re)) {
+        std::cmatch m;
+        if (std::regex_search(aAminoAcids.cbegin(), aAminoAcids.cbegin() + std::min(aAminoAcids.size(), raw_data->endpos), m, raw_data->re)) {
             AlignEntry r(*raw_data);
             if (raw_data->signalpeptide) {
                 r.shift = - (m[0].second - aAminoAcids.cbegin());
