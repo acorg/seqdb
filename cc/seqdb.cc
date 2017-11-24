@@ -675,19 +675,19 @@ std::vector<std::string> Seqdb::all_passages() const
 
 // ----------------------------------------------------------------------
 
-void Seqdb::find_in_hidb_update_country_lineage_date(std::vector<const hidb::AntigenData*>& found, SeqdbEntry& entry) const
+void Seqdb::find_in_hidb_update_country_lineage_date(hidb::AntigenPList& found, SeqdbEntry& entry) const
 {
     try {
-        const auto& hidb = hidb::get(entry.virus_type());
+        auto hidb_antigens = hidb::get(entry.virus_type()).antigens();
         if (const auto cdcids = entry.cdcids(); !cdcids.empty()) {
             for (const auto& cdcid: cdcids) {
-                const auto f_cdcid = hidb.find_antigens_by_cdcid(cdcid);
+                const auto f_cdcid = hidb_antigens->find_labid(cdcid);
                 std::copy(f_cdcid.begin(), f_cdcid.end(), std::back_inserter(found));
             }
         }
 
         std::string not_found_location;
-        if (const auto f_name = hidb.find_antigens_by_name(entry.name(), &not_found_location); !f_name.empty()) {
+        if (const auto f_name = hidb_antigens->find_antigens_by_name(entry.name(), &not_found_location); !f_name.empty()) {
             std::copy(f_name.begin(), f_name.end(), std::back_inserter(found));
 
             std::sort(found.begin(), found.end());

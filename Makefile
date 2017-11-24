@@ -40,7 +40,7 @@ LDLIBS = \
 	$(AD_LIB)/$(call shared_lib_name,libacmacsbase,1,0) \
 	$(AD_LIB)/$(call shared_lib_name,liblocationdb,1,0) \
 	$(AD_LIB)/$(call shared_lib_name,libacmacschart,2,0) \
-	$(AD_LIB)/$(call shared_lib_name,libhidb,1,0) \
+	$(AD_LIB)/$(call shared_lib_name,libhidb,5,0) \
 	$(shell pkg-config --libs liblzma) $(shell $(PYTHON_CONFIG) --ldflags | sed -E 's/-Wl,-stack_size,[0-9]+//')
 
 PKG_INCLUDES = $(shell pkg-config --cflags liblzma) $(PYTHON_INCLUDES)

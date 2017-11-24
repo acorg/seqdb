@@ -13,7 +13,7 @@
 
 #include "acmacs-base/stream.hh"
 #include "acmacs-base/name-encode.hh"
-#include "hidb/hidb.hh"
+#include "hidb-5/hidb.hh"
 #include "seqdb/sequence-shift.hh"
 #include "seqdb/amino-acids.hh"
 #include "seqdb/messages.hh"
@@ -547,7 +547,7 @@ namespace seqdb
         };
 
           // throws LocationNotFound
-        void find_in_hidb_update_country_lineage_date(std::vector<const hidb::AntigenData*>& found, SeqdbEntry& entry) const;
+        void find_in_hidb_update_country_lineage_date(hidb::AntigenPList& found, SeqdbEntry& entry) const;
         // void split_by_virus_type(std::map<std::string, std::vector<size_t>>& by_virus_type) const;
 
     }; // class Seqdb
