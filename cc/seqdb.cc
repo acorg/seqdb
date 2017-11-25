@@ -677,55 +677,45 @@ std::vector<std::string> Seqdb::all_passages() const
 
 void Seqdb::find_in_hidb_update_country_lineage_date(hidb::AntigenPList& found, SeqdbEntry& entry) const
 {
-    try {
-        auto hidb_antigens = hidb::get(entry.virus_type()).antigens();
-        if (const auto cdcids = entry.cdcids(); !cdcids.empty()) {
-            for (const auto& cdcid: cdcids) {
-                const auto f_cdcid = hidb_antigens->find_labid(cdcid);
-                std::copy(f_cdcid.begin(), f_cdcid.end(), std::back_inserter(found));
-            }
-        }
-
-        std::string not_found_location;
-        if (const auto f_name = hidb_antigens->find_antigens_by_name(entry.name(), &not_found_location); !f_name.empty()) {
-            std::copy(f_name.begin(), f_name.end(), std::back_inserter(found));
-
-            std::sort(found.begin(), found.end());
-            found.erase(std::unique(found.begin(), found.end()), found.end());
-        }
-        else if (!not_found_location.empty()) {
-            throw LocationNotFound(not_found_location);
-        }
-
-        if (!found.empty()) {
-              // update country and continent
-            if (entry.country().empty()) {
-                try {
-                    const std::string country = get_locdb().find(virus_name::location(entry.name())).country();
-                    entry.country(country);
-                    entry.continent(get_locdb().continent_of_country(country));
-                }
-                catch (LocationNotFound&) {
-                }
-                catch (virus_name::Unrecognized&) {
-                }
-            }
-
-              // update lineage
-            if (entry.virus_type() == "B") {
-                Messages messages;
-                entry.update_lineage(found.front()->data().lineage(), messages);
-                if (messages)
-                    std::cerr << messages << '\n';
-            }
-
-              // update date
-            for (const auto& e: found) {
-                entry.add_date(e->date());
-            }
+    auto hidb_antigens = hidb::get(entry.virus_type()).antigens();
+    if (const auto cdcids = entry.cdcids(); !cdcids.empty()) {
+        for (const auto& cdcid: cdcids) {
+            const auto f_cdcid = hidb_antigens->find_labid(cdcid);
+            std::copy(f_cdcid.begin(), f_cdcid.end(), std::back_inserter(found));
         }
     }
-    catch (hidb::NoHiDb&) {
+
+    const auto antigen_index_list = hidb_antigens->find(entry.name(), true);
+    std::transform(antigen_index_list.begin(), antigen_index_list.end(), std::back_inserter(found), [](const hidb::AntigenPIndex& antigen_index) -> hidb::AntigenP { return antigen_index.first; });
+    std::sort(found.begin(), found.end());
+    found.erase(std::unique(found.begin(), found.end()), found.end());
+
+    if (!found.empty()) {
+          // update country and continent
+        if (entry.country().empty()) {
+            try {
+                const std::string country = get_locdb().find(virus_name::location(entry.name())).country();
+                entry.country(country);
+                entry.continent(get_locdb().continent_of_country(country));
+            }
+            catch (LocationNotFound&) {
+            }
+            catch (virus_name::Unrecognized&) {
+            }
+        }
+
+          // update lineage
+        if (entry.virus_type() == "B") {
+            Messages messages;
+            entry.update_lineage(found.front()->lineage(), messages);
+            if (messages)
+                std::cerr << messages << '\n';
+        }
+
+          // update date
+        for (const auto& e: found) {
+            entry.add_date(e->date());
+        }
     }
 
 } // Seqdb::find_in_hidb_update_country_lineage_date
