@@ -27,6 +27,8 @@ namespace seqdb
     class Seqdb;
     class SeqdbIterator;
 
+    class import_error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
+    
 // ----------------------------------------------------------------------
 
     class SequenceNotAligned : public std::runtime_error
