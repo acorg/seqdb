@@ -13,7 +13,7 @@
 
 #include "acmacs-base/stream.hh"
 #include "acmacs-base/name-encode.hh"
-#include "hidb/hidb.hh"
+#include "hidb-4/hidb.hh"
 #include "seqdb/sequence-shift.hh"
 #include "seqdb/amino-acids.hh"
 #include "seqdb/messages.hh"
