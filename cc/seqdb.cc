@@ -6,7 +6,7 @@
 #include "acmacs-base/timeit.hh"
 #include "acmacs-base/virus-name.hh"
 #include "locationdb/locdb.hh"
-#include "acmacs-chart-1/chart.hh"
+#include "acmacs-chart-2/chart.hh"
 #include "seqdb/seqdb.hh"
 #include "clades.hh"
 #include "seqdb-export.hh"
@@ -40,10 +40,15 @@ void seqdb::setup(std::string aFilename, bool aVerbose)
 const Seqdb& seqdb::get(report_time aTimeit)
 {
     if (!sSeqdb) {
-        Timeit ti_seqdb{"DEBUG: SeqDb loading from " + sSeqdbFilename + ": ", sVerbose ? report_time::Yes : aTimeit};
-        sSeqdb = std::make_unique<Seqdb>();
-        sSeqdb->load(sSeqdbFilename);
-        sSeqdb->build_hi_name_index();
+        try {
+            Timeit ti_seqdb{"DEBUG: SeqDb loading from " + sSeqdbFilename + ": ", sVerbose ? report_time::Yes : aTimeit};
+            sSeqdb = std::make_unique<Seqdb>();
+            sSeqdb->load(sSeqdbFilename);
+            sSeqdb->build_hi_name_index();
+        }
+        catch (std::exception& err) {
+            throw import_error("seqdb import: "s + err.what());
+        }
     }
     return *sSeqdb;
 
@@ -675,57 +680,47 @@ std::vector<std::string> Seqdb::all_passages() const
 
 // ----------------------------------------------------------------------
 
-void Seqdb::find_in_hidb_update_country_lineage_date(std::vector<const hidb::AntigenData*>& found, SeqdbEntry& entry) const
+void Seqdb::find_in_hidb_update_country_lineage_date(hidb::AntigenPList& found, SeqdbEntry& entry) const
 {
-    try {
-        const auto& hidb = hidb::get(entry.virus_type());
-        if (const auto cdcids = entry.cdcids(); !cdcids.empty()) {
-            for (const auto& cdcid: cdcids) {
-                const auto f_cdcid = hidb.find_antigens_by_cdcid(cdcid);
-                std::copy(f_cdcid.begin(), f_cdcid.end(), std::back_inserter(found));
-            }
-        }
-
-        std::string not_found_location;
-        if (const auto f_name = hidb.find_antigens_by_name(entry.name(), &not_found_location); !f_name.empty()) {
-            std::copy(f_name.begin(), f_name.end(), std::back_inserter(found));
-
-            std::sort(found.begin(), found.end());
-            found.erase(std::unique(found.begin(), found.end()), found.end());
-        }
-        else if (!not_found_location.empty()) {
-            throw LocationNotFound(not_found_location);
-        }
-
-        if (!found.empty()) {
-              // update country and continent
-            if (entry.country().empty()) {
-                try {
-                    const std::string country = get_locdb().find(virus_name::location(entry.name())).country();
-                    entry.country(country);
-                    entry.continent(get_locdb().continent_of_country(country));
-                }
-                catch (LocationNotFound&) {
-                }
-                catch (virus_name::Unrecognized&) {
-                }
-            }
-
-              // update lineage
-            if (entry.virus_type() == "B") {
-                Messages messages;
-                entry.update_lineage(found.front()->data().lineage(), messages);
-                if (messages)
-                    std::cerr << messages << '\n';
-            }
-
-              // update date
-            for (const auto& e: found) {
-                entry.add_date(e->date());
-            }
+    auto hidb_antigens = hidb::get(entry.virus_type()).antigens();
+    if (const auto cdcids = entry.cdcids(); !cdcids.empty()) {
+        for (const auto& cdcid: cdcids) {
+            const auto f_cdcid = hidb_antigens->find_labid(cdcid);
+            std::copy(f_cdcid.begin(), f_cdcid.end(), std::back_inserter(found));
         }
     }
-    catch (hidb::NoHiDb&) {
+
+    const auto antigen_index_list = hidb_antigens->find(entry.name(), true);
+    std::transform(antigen_index_list.begin(), antigen_index_list.end(), std::back_inserter(found), [](const hidb::AntigenPIndex& antigen_index) -> hidb::AntigenP { return antigen_index.first; });
+    std::sort(found.begin(), found.end());
+    found.erase(std::unique(found.begin(), found.end()), found.end());
+
+    if (!found.empty()) {
+          // update country and continent
+        if (entry.country().empty()) {
+            try {
+                const std::string country = get_locdb().find(virus_name::location(entry.name())).country();
+                entry.country(country);
+                entry.continent(get_locdb().continent_of_country(country));
+            }
+            catch (LocationNotFound&) {
+            }
+            catch (virus_name::Unrecognized&) {
+            }
+        }
+
+          // update lineage
+        if (entry.virus_type() == "B") {
+            Messages messages;
+            entry.update_lineage(found.front()->lineage(), messages);
+            if (messages)
+                std::cerr << messages << '\n';
+        }
+
+          // update date
+        for (const auto& e: found) {
+            entry.add_date(e->date());
+        }
     }
 
 } // Seqdb::find_in_hidb_update_country_lineage_date
@@ -806,21 +801,21 @@ const SeqdbEntrySeq* Seqdb::find_hi_name(std::string aHiName) const
 
 // ----------------------------------------------------------------------
 
-size_t Seqdb::match(const Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerAntigen, std::string aChartVirusType, bool aVerbose) const
+size_t Seqdb::match(const acmacs::chart::Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerAntigen, std::string aChartVirusType, bool aVerbose) const
 {
     size_t matched = 0;
     aPerAntigen.clear();
-    for (const Antigen& antigen: aAntigens) {
-        const SeqdbEntrySeq* entry = find_hi_name(antigen.full_name());
+    for (auto antigen: aAntigens) {
+        const SeqdbEntrySeq* entry = find_hi_name(antigen->full_name());
         if (!entry)
-            entry = find_hi_name(antigen.full_name_for_seqdb_matching());
+            entry = find_hi_name(antigen->full_name_for_seqdb_matching());
         if (entry) {
             if (!aChartVirusType.empty() && aChartVirusType != entry->entry().virus_type()) {
                 if (aVerbose)
-                    std::cerr << "WARNING: Seqdb::match: virus type mismatch: chart:" << aChartVirusType << " seq:" << entry->entry().virus_type() << " name: " << antigen.full_name() << '\n';
+                    std::cerr << "WARNING: Seqdb::match: virus type mismatch: chart:" << aChartVirusType << " seq:" << entry->entry().virus_type() << " name: " << antigen->full_name() << '\n';
             }
-            else if (!antigen.lineage().empty() && antigen.lineage() != entry->entry().lineage()) {
-                std::cerr << "WARNING: Seqdb::match: lineage mismatch: antigen:" << antigen.lineage() << " seq:" << entry->entry().lineage() << " name: " << antigen.full_name() << '\n';
+            else if (antigen->lineage() != acmacs::chart::BLineage::Unknown && static_cast<std::string>(antigen->lineage()) != entry->entry().lineage()) {
+                std::cerr << "WARNING: Seqdb::match: lineage mismatch: antigen:" << antigen->lineage() << " seq:" << entry->entry().lineage() << " name: " << antigen->full_name() << '\n';
             }
             else {
                 aPerAntigen.push_back(*entry);
@@ -830,7 +825,7 @@ size_t Seqdb::match(const Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerA
         else {
             aPerAntigen.emplace_back();
             // if (aVerbose)
-            //     std::cerr << "WARNING: seqdb::match failed for \"" << antigen.full_name() << "\"" << '\n';
+            //     std::cerr << "WARNING: seqdb::match failed for \"" << antigen->full_name() << "\"" << '\n';
         }
     }
     if (aVerbose)
@@ -841,7 +836,7 @@ size_t Seqdb::match(const Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerA
 
 // ----------------------------------------------------------------------
 
-std::vector<SeqdbEntrySeq> Seqdb::match(const Antigens& aAntigens, std::string aChartVirusType, bool aVerbose) const
+std::vector<SeqdbEntrySeq> Seqdb::match(const acmacs::chart::Antigens& aAntigens, std::string aChartVirusType, bool aVerbose) const
 {
     std::vector<SeqdbEntrySeq> per_antigen;
     match(aAntigens, per_antigen, aChartVirusType, aVerbose);
@@ -851,17 +846,17 @@ std::vector<SeqdbEntrySeq> Seqdb::match(const Antigens& aAntigens, std::string a
 
 // ----------------------------------------------------------------------
 
-void Seqdb::aa_at_positions_for_antigens(const Antigens& aAntigens, const std::vector<size_t>& aPositions, std::map<std::string, std::vector<size_t>>& aa_indices, bool aVerbose) const
+void Seqdb::aa_at_positions_for_antigens(const acmacs::chart::Antigens& aAntigens, const std::vector<size_t>& aPositions, std::map<std::string, std::vector<size_t>>& aa_indices, bool aVerbose) const
 {
     size_t matched = 0;
     for (auto ag = aAntigens.begin(); ag != aAntigens.end(); ++ag) {
-        const SeqdbEntrySeq* entry = find_hi_name(ag->full_name());
+        const SeqdbEntrySeq* entry = find_hi_name((*ag)->full_name());
         if (!entry)
-            entry = find_hi_name(ag->full_name_for_seqdb_matching());
+            entry = find_hi_name((*ag)->full_name_for_seqdb_matching());
         if (entry) {
             std::string aa(aPositions.size(), 'X');
             std::transform(aPositions.begin(), aPositions.end(), aa.begin(), [&entry](size_t pos) { return entry->seq().amino_acid_at(pos); });
-            aa_indices[aa].push_back(static_cast<size_t>(ag - aAntigens.begin()));
+            aa_indices[aa].push_back(ag.index());
             ++matched;
         }
     }

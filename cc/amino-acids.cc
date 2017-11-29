@@ -22,9 +22,9 @@ AlignAminoAcidsData seqdb::translate_and_align(std::string aNucleotides, Message
     std::vector<AlignAminoAcidsData> r;
     AlignAminoAcidsData not_aligned;
     for (int offset = 0; offset < 3; ++offset) {
-        auto amino_acids = translate_nucleotides_to_amino_acids(aNucleotides, static_cast<size_t>(offset), aMessages);
+        const auto amino_acids = translate_nucleotides_to_amino_acids(aNucleotides, static_cast<size_t>(offset), aMessages);
         // std::cerr << offset << " " << amino_acids << std::endl;
-        auto aa_parts = string::split(amino_acids, "*");
+        const auto aa_parts = string::split(amino_acids, "*");
         size_t prefix_len = 0;
         for (const auto& part: aa_parts) {
             if (part.size() >= MINIMUM_SEQUENCE_AA_LENGTH) {

@@ -29,7 +29,7 @@ struct score_seq_found_t : public score_size_t
     inline bool operator<(const score_seq_found_t& a) const { return score > a.score; }
 };
 
-using Found = std::vector<const hidb::AntigenData*>;
+using Found = std::vector<hidb::AntigenP>;
 using Matching = std::vector<std::vector<score_seq_found_t>>;
 
 // ----------------------------------------------------------------------
@@ -38,7 +38,7 @@ static void report_found(std::ostream& out, const Found& found)
 {
     size_t found_no = 0;
     for (const auto& e: found) {
-        out << "  >> " << found_no << ' ' << e->data().full_name() << '\n';
+        out << "  >> " << found_no << ' ' << e->full_name() << '\n';
         ++found_no;
     }
 }
@@ -63,10 +63,10 @@ static void make_matching(SeqdbEntry& entry, const Found& found, Matching& match
         std::vector<score_seq_found_t> matching_for_seq;
         size_t found_no = 0;
         const auto seq_cell_or_egg = acmacs::passage::cell_or_egg(seq.passages());
-        for (const auto& f: found) {
-            const auto& f_passage = f->data().passage();
+        for (auto f: found) {
+            const auto f_passage = f->passage();
               // std::cerr << "match_cell_egg: " << acmacs::passage::match_cell_egg(acmacs::passage::cell_or_egg(f_passage), seq_cell_or_egg) << " -- " << f_passage << ':' << static_cast<int>(passage::cell_or_egg(f_passage)) << " " << seq.passages() << ':' << static_cast<int>(seq_cell_or_egg) << '\n';
-            if (seq.reassortant_match(f->data().reassortant()) && acmacs::passage::match_cell_egg(acmacs::passage::cell_or_egg(f_passage), seq_cell_or_egg)) {
+            if (seq.reassortant_match(f->reassortant()) && acmacs::passage::match_cell_egg(acmacs::passage::cell_or_egg(f_passage), seq_cell_or_egg)) {
                 std::vector<score_size_t> scores; // score and min passage length (to avoid too incomplete matches)
                 if (!seq.passages().empty())
                     std::transform(seq.passages().begin(), seq.passages().end(), std::back_inserter(scores),
@@ -109,7 +109,7 @@ static bool match_greedy(SeqdbEntry& entry, const Found& found, const Matching& 
 
     bool matched = false;
     for (const auto& e: antigen_to_matching) {
-        const auto name = found[e.first]->data().full_name();
+        const auto name = found[e.first]->full_name();
         entry.seqs()[e.second.seq_no].add_hi_name(name);
         matched = true;
         if (aVerbose)
@@ -126,7 +126,7 @@ static bool match_normal(SeqdbEntry& entry, const Found& found, const Matching& 
     if (matching.size() == 1) {
         for (const auto& ms: matching[0]) {
             if (ms.score == matching[0][0].score) {
-                const auto name = found[ms.found_no]->data().full_name();
+                const auto name = found[ms.found_no]->full_name();
                 entry.seqs()[0].add_hi_name(name);
                 matched = true;
                 if (aVerbose)
@@ -143,7 +143,7 @@ static bool match_normal(SeqdbEntry& entry, const Found& found, const Matching& 
         for (const auto& m: matching) {
             for (const auto& sf: m) {
                 if (sf.score == m[0].score && found_assigned.count(sf.found_no) == 0) {
-                    const auto name = found[sf.found_no]->data().full_name();
+                    const auto name = found[sf.found_no]->full_name();
                     entry.seqs()[sf.seq_no].add_hi_name(name);
                     matched = true;
                     if (aVerbose)
