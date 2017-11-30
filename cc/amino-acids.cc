@@ -3,7 +3,7 @@
 #include <regex>
 #include <numeric>
 
-#include "acmacs-base/string.hh"
+#include "acmacs-base/string-split.hh"
 #include "acmacs-base/stream.hh"
 #include "seqdb/amino-acids.hh"
 
@@ -24,7 +24,7 @@ AlignAminoAcidsData seqdb::translate_and_align(std::string aNucleotides, Message
     for (int offset = 0; offset < 3; ++offset) {
         const auto amino_acids = translate_nucleotides_to_amino_acids(aNucleotides, static_cast<size_t>(offset), aMessages);
         // std::cerr << offset << " " << amino_acids << std::endl;
-        const auto aa_parts = string::split(amino_acids, "*");
+        const auto aa_parts = acmacs::string::split(amino_acids, "*");
         size_t prefix_len = 0;
         for (const auto& part: aa_parts) {
             if (part.size() >= MINIMUM_SEQUENCE_AA_LENGTH) {

@@ -4,6 +4,7 @@
 
 #include "acmacs-base/read-file.hh"
 #include "acmacs-base/timeit.hh"
+#include "acmacs-base/string-split.hh"
 #include "acmacs-base/virus-name.hh"
 #include "locationdb/locdb.hh"
 #include "acmacs-chart-2/chart.hh"
@@ -734,7 +735,7 @@ SeqdbEntrySeq Seqdb::find_by_seq_id(std::string aSeqId) const
     auto passage_separator = seq_id.find("__");
     if (passage_separator != std::string::npos) { // seq_id
         if (const auto entry = find_by_name(std::string(seq_id, 0, passage_separator)); entry != nullptr) {
-            const auto passage_distinct = string::split(std::string(seq_id, passage_separator + 2), "__", string::Split::KeepEmpty);
+            const auto passage_distinct = acmacs::string::split(std::string(seq_id, passage_separator + 2), "__", acmacs::string::Split::KeepEmpty);
             auto index = passage_distinct.size() == 1 ? 0 : std::stoi(std::string(passage_distinct[1]));
             for (const auto& seq: entry->seqs()) {
                 if (seq.passage() == passage_distinct[0]) {
