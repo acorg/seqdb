@@ -77,7 +77,7 @@ $(SEQDB_PY_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(SEQDB_PY_SOURCES)) | $(DIST)
 
 $(DIST)/%: $(BUILD)/%.o | $(SEQDB_LIB)
 	@printf "%-16s %s\n" "LINK" $@
-	@$(CXX) $(LDFLAGS) -o $@ $^ $(SEQDB_LIB) $(LDLIBS)
+	@$(CXX) $(LDFLAGS) -o $@ $^ $(SEQDB_LIB) $(LDLIBS) $(AD_RPATH)
 
 # ======================================================================
 ### Local Variables:
