@@ -692,7 +692,22 @@ void Seqdb::find_in_hidb_update_country_lineage_date(hidb::AntigenPList& found, 
             }
         }
 
-        const auto antigen_index_list = hidb_antigens->find(entry.name(), true);
+        std::string name = entry.name();
+        hidb::AntigenPIndexList antigen_index_list;
+        try {
+            antigen_index_list = hidb_antigens->find(name, hidb::FixLocation::Yes, hidb::FindFuzzy::No);
+        }
+        catch (LocationNotFound&) {
+            if (std::count(name.begin(), name.end(), '/') == 4) {
+                  // perhaps isolation split with / and there is no host
+                  // in that case HI table usually has - instead of / (fixed manually by Eu on table parsing)
+                const auto parts = acmacs::string::split(name, "/", acmacs::string::Split::KeepEmpty);
+                name = string::join("/", {parts[0], parts[1], string::join("-", {parts[2], parts[3]}), parts[4]});
+                antigen_index_list = hidb_antigens->find(name, hidb::FixLocation::Yes, hidb::FindFuzzy::No);
+            }
+            else
+                throw;
+        }
         std::transform(antigen_index_list.begin(), antigen_index_list.end(), std::back_inserter(found), [](const hidb::AntigenPIndex& antigen_index) -> hidb::AntigenP { return antigen_index.first; });
         std::sort(found.begin(), found.end());
         found.erase(std::unique(found.begin(), found.end()), found.end());
