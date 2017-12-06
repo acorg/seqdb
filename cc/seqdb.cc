@@ -683,18 +683,23 @@ std::vector<std::string> Seqdb::all_passages() const
 
 void Seqdb::find_in_hidb_update_country_lineage_date(hidb::AntigenPList& found, SeqdbEntry& entry) const
 {
-    auto hidb_antigens = hidb::get(entry.virus_type()).antigens();
-    if (const auto cdcids = entry.cdcids(); !cdcids.empty()) {
-        for (const auto& cdcid: cdcids) {
-            const auto f_cdcid = hidb_antigens->find_labid(cdcid);
-            std::copy(f_cdcid.begin(), f_cdcid.end(), std::back_inserter(found));
+    try {
+        auto hidb_antigens = hidb::get(entry.virus_type()).antigens();
+        if (const auto cdcids = entry.cdcids(); !cdcids.empty()) {
+            for (const auto& cdcid: cdcids) {
+                const auto f_cdcid = hidb_antigens->find_labid(cdcid);
+                std::copy(f_cdcid.begin(), f_cdcid.end(), std::back_inserter(found));
+            }
         }
-    }
 
-    const auto antigen_index_list = hidb_antigens->find(entry.name(), true);
-    std::transform(antigen_index_list.begin(), antigen_index_list.end(), std::back_inserter(found), [](const hidb::AntigenPIndex& antigen_index) -> hidb::AntigenP { return antigen_index.first; });
-    std::sort(found.begin(), found.end());
-    found.erase(std::unique(found.begin(), found.end()), found.end());
+        const auto antigen_index_list = hidb_antigens->find(entry.name(), true);
+        std::transform(antigen_index_list.begin(), antigen_index_list.end(), std::back_inserter(found), [](const hidb::AntigenPIndex& antigen_index) -> hidb::AntigenP { return antigen_index.first; });
+        std::sort(found.begin(), found.end());
+        found.erase(std::unique(found.begin(), found.end()), found.end());
+    }
+    catch (hidb::get_error& err) {
+        std::cerr << "WARNING: no HiDb for " << entry.name() << ": " << err.what() << '\n';
+    }
 
     if (!found.empty()) {
           // update country and continent
