@@ -9,6 +9,7 @@ MAKEFLAGS = -w
 TARGETS = \
 	$(SEQDB_LIB) \
 	$(SEQDB_PY_LIB) \
+	$(DIST)/seqdb-info \
 	$(DIST)/seqdb-report-clade \
 	$(DIST)/seqdb-report-dates \
 	$(DIST)/seqdb-export-sequences-of-chart \
@@ -52,9 +53,9 @@ all: check-acmacsd-root install-headers $(TARGETS)
 install: check-acmacsd-root install-headers $(TARGETS)
 	$(call install_lib,$(SEQDB_LIB))
 	$(call install_py_lib,$(SEQDB_PY_LIB))
+	ln -sf $(abspath dist)/seqdb-* $(AD_BIN)
 	ln -sf $(abspath py)/* $(AD_PY)
 	ln -sf $(abspath bin)/seqdb-* $(AD_BIN)
-	ln -sf $(abspath dist)/seqdb-export-* $(abspath dist)/seqdb-report-* $(abspath dist)/seqdb-update-* $(AD_BIN)
 
 test: install
 	test/test
