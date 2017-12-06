@@ -539,15 +539,6 @@ namespace seqdb
         friend class SeqdbIterator;
         friend class ConstSeqdbIterator;
 
-        class LocationNotFound : public std::exception
-        {
-         public:
-            inline LocationNotFound(const std::string& aLocation) : mLocation{aLocation} {}
-            inline operator std::string() const { return mLocation; }
-         private:
-            std::string mLocation;
-        };
-
           // throws LocationNotFound
         void find_in_hidb_update_country_lineage_date(hidb::AntigenPList& found, SeqdbEntry& entry) const;
         // void split_by_virus_type(std::map<std::string, std::vector<size_t>>& by_virus_type) const;

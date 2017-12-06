@@ -2,7 +2,7 @@
 
 #include "acmacs-base/string-matcher.hh"
 #include "acmacs-base/passage.hh"
-
+#include "locationdb/locdb.hh"
 #include "seqdb/seqdb.hh"
 
 using namespace seqdb;
@@ -160,6 +160,7 @@ static bool match_normal(SeqdbEntry& entry, const Found& found, const Matching& 
 
 std::vector<std::string> Seqdb::match_hidb(bool aVerbose, bool aGreedy)
 {
+    using namespace std::string_literals;
     std::vector<std::string> not_found_locations;
     std::ostream& report_stream = std::cerr;
 
@@ -173,7 +174,7 @@ std::vector<std::string> Seqdb::match_hidb(bool aVerbose, bool aGreedy)
             find_in_hidb_update_country_lineage_date(found, entry);
         }
         catch (LocationNotFound& err) {
-            not_found_locations.push_back(err);
+            not_found_locations.push_back(err.what() + " in "s + entry.name());
         }
 
         if (!found.empty()) {

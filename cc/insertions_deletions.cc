@@ -103,7 +103,7 @@ void InsertionsDeletionsDetector::align_to_master()
                     break;
                 }
                 catch (SwitchMaster&) {
-                    std::cerr << mVirusType << ": cannot find deletions in " << entry.entry_seq.make_name() << std::endl;
+                      // std::cerr << mVirusType << ": cannot find deletions in " << entry.entry_seq.make_name() << std::endl;
                 }
             }
         }
@@ -221,7 +221,7 @@ std::vector<std::pair<size_t, size_t>> InsertionsDeletionsDetector::Entry::align
                       // In the case of HA, this is after VPK and before NKTAT/YKNAT.
                     to_align.insert(163 - 1, 1, '-');
                     del_pos.fix(163 - 1, 1, number_of_common(master, to_align)); // -1 because we count from zero here
-                    std::cerr << "YAMAGATA insertion fixed to del_pos: " << del_pos << " for " << entry_seq.make_name() << '\n';
+                      // std::cerr << "YAMAGATA insertion fixed to del_pos: " << del_pos << " for " << entry_seq.make_name() << '\n';
                 }
                 else {
                     to_align.insert(del_pos.pos, del_pos.num_deletions, '-');
