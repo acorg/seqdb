@@ -248,6 +248,15 @@ namespace seqdb
                 return r;
             }
 
+        inline std::vector<std::string> lab_ids() const
+            {
+                std::vector<std::string> r;
+                std::for_each(mSeq.begin(), mSeq.end(), [&r](auto const & seq) {auto seq_lab_ids = seq.lab_ids(); r.insert(r.end(), std::make_move_iterator(seq_lab_ids.begin()), std::make_move_iterator(seq_lab_ids.end())); });
+                std::sort(r.begin(), r.end());
+                r.erase(std::unique(r.begin(), r.end()), r.end());
+                return r;
+            }
+
         std::vector<std::string> make_all_names() const;
         std::vector<std::string> make_all_variants() const;
 

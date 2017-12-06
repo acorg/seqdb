@@ -12,6 +12,7 @@ TARGETS = \
 	$(DIST)/seqdb-info \
 	$(DIST)/seqdb-report-clade \
 	$(DIST)/seqdb-report-dates \
+	$(DIST)/seqdb-report-not-found-in-hidb \
 	$(DIST)/seqdb-export-sequences-of-chart \
 	$(DIST)/seqdb-export-sequences-and-layout-of-chart \
 	$(DIST)/seqdb-update-clades
