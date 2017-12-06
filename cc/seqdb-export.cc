@@ -84,6 +84,8 @@ template <typename RW> jsw::writer<RW>& operator <<(jsw::writer<RW>& writer, con
 
 void seqdb::seqdb_export(std::string aFilename, const seqdb::Seqdb& aSeqdb, size_t aIndent)
 {
+    if (aFilename.empty())
+        throw std::runtime_error{"Empty filename to export seqdb to"};
     jsw::export_to_json(aSeqdb, aFilename, aIndent);
 }
 

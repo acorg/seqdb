@@ -31,7 +31,7 @@ static bool sVerbose = false;
 
 #pragma GCC diagnostic pop
 
-void seqdb::setup(std::string aFilename, bool aVerbose)
+void seqdb::setup(const std::string& aFilename, bool aVerbose)
 {
     sVerbose = aVerbose;
     if (!aFilename.empty())
@@ -61,7 +61,7 @@ Seqdb& seqdb::get_for_updating(report_time aTimeit)
 
 } // seqdb::get_for_updating
 
-void seqdb::setup_dbs(std::string aDbDir, bool aVerbose)
+void seqdb::setup_dbs(const std::string& aDbDir, bool aVerbose)
 {
     if (!aDbDir.empty()) {
         setup(aDbDir + "/seqdb.json.xz", aVerbose);
@@ -133,7 +133,7 @@ bool SeqdbSeq::match_update_amino_acids(const SeqdbSeq& aNewSeq)
 
 // ----------------------------------------------------------------------
 
-void SeqdbSeq::add_passage(std::string aPassage)
+void SeqdbSeq::add_passage(const std::string& aPassage)
 {
     if (!aPassage.empty() && std::find(mPassages.begin(), mPassages.end(), aPassage) == mPassages.end())
         mPassages.push_back(aPassage);
@@ -142,7 +142,7 @@ void SeqdbSeq::add_passage(std::string aPassage)
 
 // ----------------------------------------------------------------------
 
-void SeqdbSeq::update_gene(std::string aGene, Messages& aMessages, bool replace_ha)
+void SeqdbSeq::update_gene(const std::string& aGene, Messages& aMessages, bool replace_ha)
 {
     if (!aGene.empty()) {
         if (mGene.empty())
@@ -159,7 +159,7 @@ void SeqdbSeq::update_gene(std::string aGene, Messages& aMessages, bool replace_
 
 // ----------------------------------------------------------------------
 
-void SeqdbSeq::add_reassortant(std::string aReassortant)
+void SeqdbSeq::add_reassortant(const std::string& aReassortant)
 {
     if (!aReassortant.empty() && std::find(mReassortant.begin(), mReassortant.end(), aReassortant) == mReassortant.end())
         mReassortant.push_back(aReassortant);
@@ -168,7 +168,7 @@ void SeqdbSeq::add_reassortant(std::string aReassortant)
 
 // ----------------------------------------------------------------------
 
-void SeqdbSeq::add_lab_id(std::string aLab, std::string aLabId)
+void SeqdbSeq::add_lab_id(const std::string& aLab, const std::string& aLabId)
 {
     if (!aLab.empty()) {
         auto& lab_ids = mLabIds[aLab];
@@ -230,7 +230,7 @@ AlignAminoAcidsData SeqdbSeq::align(bool aForce, Messages& aMessages)
 
 // ----------------------------------------------------------------------
 
-const std::vector<std::string>& SeqdbSeq::update_clades(std::string aVirusType, std::string aLineage)
+const std::vector<std::string>& SeqdbSeq::update_clades(const std::string& aVirusType, const std::string& aLineage)
 {
     if (aligned()) {
         if (aVirusType == "B") {
@@ -343,7 +343,7 @@ void SeqdbSeq::add_deletions(size_t amino_acid_pos, size_t num_amino_acid_deleti
 
 // ----------------------------------------------------------------------
 
-void SeqdbEntry::add_date(std::string aDate)
+void SeqdbEntry::add_date(const std::string& aDate)
 {
     if (!aDate.empty()) {
         auto insertion_pos = std::lower_bound(mDates.begin(), mDates.end(), aDate);
@@ -356,7 +356,7 @@ void SeqdbEntry::add_date(std::string aDate)
 
 // ----------------------------------------------------------------------
 
-void SeqdbEntry::update_lineage(std::string aLineage, Messages& aMessages)
+void SeqdbEntry::update_lineage(const std::string& aLineage, Messages& aMessages)
 {
       // std::cerr << "Lineage " << mName << " " << (aLineage.empty() ? std::string("?") : aLineage) << '\n';
     if (!aLineage.empty()) {
@@ -370,7 +370,7 @@ void SeqdbEntry::update_lineage(std::string aLineage, Messages& aMessages)
 
 // ----------------------------------------------------------------------
 
-void SeqdbEntry::update_subtype_name(std::string aSubtype, Messages& aMessages)
+void SeqdbEntry::update_subtype_name(const std::string& aSubtype, Messages& aMessages)
 {
     if (!aSubtype.empty()) {
         if (mVirusType.empty()) {
@@ -397,7 +397,7 @@ void SeqdbEntry::update_subtype_name(std::string aSubtype, Messages& aMessages)
 
 // ----------------------------------------------------------------------
 
-const SeqdbSeq* SeqdbEntry::find_by_hi_name(std::string aHiName) const
+const SeqdbSeq* SeqdbEntry::find_by_hi_name(const std::string& aHiName) const
 {
     auto found = std::find_if(begin_seq(), end_seq(), [aHiName](const auto& seq) -> bool { return seq.hi_name_present(aHiName); });
     return found == end_seq() ? nullptr : &*found;
@@ -406,7 +406,7 @@ const SeqdbSeq* SeqdbEntry::find_by_hi_name(std::string aHiName) const
 
 // ----------------------------------------------------------------------
 
-// std::string SeqdbEntry::add_or_update_sequence(std::string aSequence, std::string aPassage, std::string aReassortant, std::string aLab, std::string aLabId, std::string aGene)
+// std::string SeqdbEntry::add_or_update_sequence(const std::string& aSequence, const std::string& aPassage, const std::string& aReassortant, const std::string& aLab, const std::string& aLabId, const std::string& aGene)
 // {
 //     Messages messages;
 //     const bool nucs = is_nucleotides(aSequence);
@@ -465,7 +465,7 @@ std::vector<std::string> SeqdbEntry::make_all_variants() const
 
 // ----------------------------------------------------------------------
 
-std::string Seqdb::add_sequence(std::string aName, std::string aVirusType, std::string aLineage, std::string aLab, std::string aDate, std::string aLabId, std::string aPassage, std::string aReassortant, std::string aSequence, std::string aGene)
+std::string Seqdb::add_sequence(const std::string& aName, const std::string& aVirusType, const std::string& aLineage, const std::string& aLab, const std::string& aDate, const std::string& aLabId, const std::string& aPassage, const std::string& aReassortant, const std::string& aSequence, const std::string& aGene)
 {
     Messages messages;
     std::string name = virus_name::normalize(aName);
@@ -509,7 +509,7 @@ std::string Seqdb::add_sequence(std::string aName, std::string aVirusType, std::
 
 // ----------------------------------------------------------------------
 
-// SeqdbEntry* Seqdb::new_entry(std::string aName)
+// SeqdbEntry* Seqdb::new_entry(const std::string& aName)
 // {
 //     auto const first = find_insertion_place(aName);
 //     if (first != mEntries.end() && aName == first->name())
@@ -583,7 +583,7 @@ std::string Seqdb::report_identical() const
 {
     std::ostringstream os;
 
-    auto report = [&os](std::string prefix, const auto& groups) {
+    auto report = [&os](const std::string& prefix, const auto& groups) {
         if (!groups.empty()) {
             os << prefix << '\n';
             for (auto const& group: groups) {
@@ -728,7 +728,7 @@ void Seqdb::find_in_hidb_update_country_lineage_date(hidb::AntigenPList& found, 
 
 // ----------------------------------------------------------------------
 
-SeqdbEntrySeq Seqdb::find_by_seq_id(std::string aSeqId) const
+SeqdbEntrySeq Seqdb::find_by_seq_id(const std::string& aSeqId) const
 {
     SeqdbEntrySeq result;
     const std::string seq_id = name_decode(aSeqId);
@@ -793,7 +793,7 @@ void Seqdb::build_hi_name_index()
 
 // ----------------------------------------------------------------------
 
-const SeqdbEntrySeq* Seqdb::find_hi_name(std::string aHiName) const
+const SeqdbEntrySeq* Seqdb::find_hi_name(const std::string& aHiName) const
 {
     const auto it = mHiNameIndex.find(aHiName);
     return it == mHiNameIndex.end() ? nullptr : &it->second;
@@ -802,7 +802,7 @@ const SeqdbEntrySeq* Seqdb::find_hi_name(std::string aHiName) const
 
 // ----------------------------------------------------------------------
 
-size_t Seqdb::match(const acmacs::chart::Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerAntigen, std::string aChartVirusType, bool aVerbose) const
+size_t Seqdb::match(const acmacs::chart::Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerAntigen, const std::string& aChartVirusType, bool aVerbose) const
 {
     size_t matched = 0;
     aPerAntigen.clear();
@@ -837,7 +837,7 @@ size_t Seqdb::match(const acmacs::chart::Antigens& aAntigens, std::vector<SeqdbE
 
 // ----------------------------------------------------------------------
 
-std::vector<SeqdbEntrySeq> Seqdb::match(const acmacs::chart::Antigens& aAntigens, std::string aChartVirusType, bool aVerbose) const
+std::vector<SeqdbEntrySeq> Seqdb::match(const acmacs::chart::Antigens& aAntigens, const std::string& aChartVirusType, bool aVerbose) const
 {
     std::vector<SeqdbEntrySeq> per_antigen;
     match(aAntigens, per_antigen, aChartVirusType, aVerbose);
@@ -868,7 +868,7 @@ void Seqdb::aa_at_positions_for_antigens(const acmacs::chart::Antigens& aAntigen
 
 // ----------------------------------------------------------------------
 
-void Seqdb::load(std::string filename)
+void Seqdb::load(const std::string& filename)
 {
     seqdb_import(filename, *this);
     mLoadedFromFilename = filename;
@@ -877,13 +877,9 @@ void Seqdb::load(std::string filename)
 
 // ----------------------------------------------------------------------
 
-void Seqdb::save(std::string filename, size_t indent) const
+void Seqdb::save(const std::string& filename, size_t indent) const
 {
-    if (filename.empty())
-        filename = mLoadedFromFilename;
-    if (filename.empty())
-        throw std::runtime_error{"Empty filename to save seqdb to"};
-    seqdb_export(filename, *this, indent);
+    seqdb_export(filename.empty() ? mLoadedFromFilename : filename, *this, indent);
 
 } // Seqdb::save
 
@@ -892,7 +888,7 @@ void Seqdb::save(std::string filename, size_t indent) const
 std::set<std::string> Seqdb::virus_types() const
 {
     std::set<std::string> result;
-    std::transform(mEntries.begin(), mEntries.end(), std::inserter(result, result.end()), [](const auto& entry) -> std::string { return entry.virus_type(); });
+    std::transform(mEntries.begin(), mEntries.end(), std::inserter(result, result.end()), [](const auto& entry) { return entry.virus_type(); });
     return result;
 
 } // Seqdb::virus_types
