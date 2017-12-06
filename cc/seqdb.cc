@@ -705,8 +705,10 @@ void Seqdb::find_in_hidb_update_country_lineage_date(hidb::AntigenPList& found, 
                 name = string::join("/", {parts[0], parts[1], string::join("-", {parts[2], parts[3]}), parts[4]});
                 antigen_index_list = hidb_antigens->find(name, hidb::FixLocation::Yes, hidb::FindFuzzy::No);
             }
-            else
-                throw;
+            else {
+                  // try without fixing location
+                antigen_index_list = hidb_antigens->find(name, hidb::FixLocation::No, hidb::FindFuzzy::No);
+            }
         }
         std::transform(antigen_index_list.begin(), antigen_index_list.end(), std::back_inserter(found), [](const hidb::AntigenPIndex& antigen_index) -> hidb::AntigenP { return antigen_index.first; });
         std::sort(found.begin(), found.end());
