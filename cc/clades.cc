@@ -97,12 +97,12 @@ std::vector<std::string> seqdb::clades_h3n2(std::string aSequence, Shift aShift)
               r.push_back("3C3");
               break;
           case 'Y':
+              r.push_back("3C2A");
               if (aa_at(171, aSequence, aShift) == 'K' && aa_at(406, aSequence, aShift) == 'V' && aa_at(484, aSequence, aShift) == 'E') {
                     // Derek's message of 2016-12-23 10:32 "clade 3c.2a1"
+                    // 3c.2a1 is a sub-clade of 3c2a
                   r.push_back("3C2A1");
               }
-              else
-                  r.push_back("3C2A");
               break;
           case 'S':
               r.push_back("3C3A");
