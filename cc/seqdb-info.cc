@@ -11,6 +11,7 @@ struct Info
     size_t entries = 0;
     size_t sequences = 0;
     size_t with_hi_names = 0;
+    std::map<std::string, size_t> with_hi_names_by_month;
     std::map<std::string, size_t> clades;
 };
 
@@ -19,6 +20,9 @@ inline std::ostream& operator<<(std::ostream& s, const Info& c)
     s << "Entries:    " << c.entries << '\n'
       << "Seqs:       " << c.sequences << '\n'
       << "HI matched: " << c.with_hi_names << '\n';
+    for (auto [month, count]: c.with_hi_names_by_month)
+        s << "    " << month << ' ' << count << '\n';
+    s << "By clade:\n";
     for (auto [clade, count]: c.clades)
         s << std::setw(10) << clade << ": " << count << '\n';
     return s;
@@ -39,8 +43,11 @@ int main(int argc, char* const argv[])
             ++target.entries;
             target.sequences += entry.number_of_seqs();
             for (const auto& seq: entry.seqs()) {
-                if (!seq.hi_names().empty())
+                if (!seq.hi_names().empty()) {
                     ++target.with_hi_names;
+                    if (const auto date = entry.date(); !date.empty())
+                        ++target.with_hi_names_by_month[date.substr(0, 7)];
+                }
                 for (const auto& clade: seq.clades())
                     ++target.clades[clade];
             }
