@@ -37,7 +37,7 @@ int main(int argc, char* const argv[])
         const bool amino_acids = args["--amino-acids"];
         seqdb::setup_dbs(args["--db-dir"], verbose);
         const auto& seqdb = seqdb::get();
-        auto chart = acmacs::chart::import_factory(args[0], acmacs::chart::Verify::None, args["--time"] ? report_time::Yes : report_time::No);
+        auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, args["--time"] ? report_time::Yes : report_time::No);
         auto antigens = chart->antigens();
         const auto per_antigen = seqdb.match(*antigens, chart->info()->virus_type());
 
