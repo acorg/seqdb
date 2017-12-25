@@ -2,6 +2,7 @@
 #include <tuple>
 #include <set>
 
+#include "acmacs-base/acmacsd.hh"
 #include "acmacs-base/read-file.hh"
 #include "acmacs-base/timeit.hh"
 #include "acmacs-base/virus-name.hh"
@@ -13,7 +14,6 @@
 #include "seqdb-import.hh"
 #include "insertions_deletions.hh"
 
-using namespace std::string_literals;
 using namespace seqdb;
 
 // ----------------------------------------------------------------------
@@ -25,7 +25,7 @@ using namespace seqdb;
 #endif
 
 static std::unique_ptr<Seqdb> sSeqdb;
-static std::string sSeqdbFilename = std::getenv("HOME") + "/AD/data/seqdb.json.xz"s;
+static std::string sSeqdbFilename = acmacs::acmacsd_root() + "/data/seqdb.json.xz";
 static bool sVerbose = false;
 
 #pragma GCC diagnostic pop
@@ -39,6 +39,7 @@ void seqdb::setup(std::string aFilename, bool aVerbose)
 
 const Seqdb& seqdb::get(report_time aTimeit)
 {
+    using namespace std::string_literals;
     if (!sSeqdb) {
         try {
             Timeit ti_seqdb{"DEBUG: SeqDb loading from " + sSeqdbFilename + ": ", sVerbose ? report_time::Yes : aTimeit};
