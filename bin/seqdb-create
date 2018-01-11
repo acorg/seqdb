@@ -25,6 +25,7 @@ def main(args):
     seqdb.create(
         seqdb_filename=args.path_to_db,
         fasta_files=fasta_files,
+        db_dir=args.hidb_dir,
         match_hidb=args.match_hidb,
         add_clades=args.add_clades,
         save=args.save,

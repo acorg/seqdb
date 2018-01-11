@@ -7,11 +7,13 @@ import os, re, pprint
 import logging; module_logger = logging.getLogger(__name__)
 from pathlib import Path
 from acmacs_base.files import backup_file
-from . import Seqdb, fasta as fasta_m
+from . import Seqdb, setup_dbs, fasta as fasta_m
 
 # ----------------------------------------------------------------------
 
-def create(seqdb_filename, fasta_files, match_hidb, add_clades, save, report_all_passages, report_identical, report_not_aligned_prefixes, save_not_found_locations_to=None, verbose=False):
+def create(seqdb_filename, fasta_files, db_dir, match_hidb, add_clades, save, report_all_passages, report_identical, report_not_aligned_prefixes, save_not_found_locations_to=None, verbose=False):
+    if db_dir is not None:
+        setup_dbs(db_dir=db_dir, verbose=verbose)
     db = Seqdb()
     db_updater = SeqdbUpdater(db, filename=seqdb_filename, load=False)
     for filename in fasta_files:
