@@ -41,6 +41,23 @@ def main(args):
     elif args.seq_id:
         r = seqdb.find_by_seq_id(args.seq_id)
         print(r.seq_id(encoded=False))
+    elif args.lab or args.subtype or args.lineage:
+        result = seqdb.iter_seq()
+        if args.lab:
+            result = result.filter_lab(args.lab)
+        if args.subtype:
+            result = result.filter_subtype(args.subtype)
+        if args.lineage:
+            result = result.filter_lineage(args.lineage)
+        if args.start or args.end:
+            result = result.filter_date_range(args.start or "", args.end or "")
+        entries = 0
+        for e in result: # seqdb.iter_seq().filter_lab(args.lab).filter_subtype(args.subtype or "").filter_lineage(args.lineage or ""):
+            print("{} [{}] {} {} {}".format(e.make_name(), e.entry.date(), e.entry.lineage, e.seq.lab(), e.seq.clades()))
+            print("  Seq_id:", e.seq_id(encoded=False))
+            print("  HI names:\n    ", "\n    ".join(e.seq.hi_names), sep="")
+            entries += 1
+        print(entries, " sequences listed")
     elif args.report:
         print(seqdb.report())
 
@@ -56,6 +73,11 @@ with timeit(sys.argv[0]):
         parser.add_argument('--re', action="store", dest="filter_re", default=None, help='List filtered by regex (like finding base-seq for exporting).')
         parser.add_argument('--id', action="store", dest="seq_id", default=None, help='Seq_id to look for.')
         parser.add_argument('--name', action="store", dest="name", default=None, help='Name to look for.')
+        parser.add_argument('--lab', action="store", dest="lab", default=None, help='List filtered by lab.')
+        parser.add_argument('--flu', action="store", dest="subtype", default=None, help='List filtered by subtype: A(H1N1), A(H3N2), B.')
+        parser.add_argument('--lineage', action="store", dest="lineage", default=None, help='List filtered by lineage: VICTORIA, YAMAGATA.')
+        parser.add_argument('--start', action="store", dest="start", default=None, help='List isolated after date.')
+        parser.add_argument('--end', action="store", dest="end", default=None, help='List isolated before date.')
         parser.add_argument('--all', action="store_true", dest="list_all", default=False, help='List all seq ids.')
         parser.add_argument('--report', action="store_true", dest="report", default=False, help='report.')
 
