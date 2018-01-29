@@ -22,6 +22,7 @@ int main(int argc, char* const argv[])
                 {"--db-dir", ""},
                 {"--amino-acids", false},
                 {"--aligned", false},
+                {"--encoded-names", false, "add field with encoded seq_id to match against newick tree names"},
                 {"--projection", 0L},
                 {"--time", false, "report time of loading chart"},
                 {"-v", false},
@@ -35,6 +36,7 @@ int main(int argc, char* const argv[])
         const bool verbose = args["-v"] || args["--verbose"];
         const bool aligned = args["--aligned"];
         const bool amino_acids = args["--amino-acids"];
+        const bool encoded_names = args["--encoded-names"];
         seqdb::setup_dbs(args["--db-dir"], verbose);
         const auto& seqdb = seqdb::get();
         auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, args["--time"] ? report_time::Yes : report_time::No);
@@ -47,9 +49,11 @@ int main(int argc, char* const argv[])
         size_t have_sequences = 0;
         for (size_t ag_no = 0; ag_no < antigens->size(); ++ag_no) {
             writer.add_field((*antigens)[ag_no]->full_name());
+            const auto& entry = per_antigen[ag_no];
+            if (entry && encoded_names)
+                writer.add_field(entry.seq_id(seqdb::SeqdbEntrySeq::encoded_t::yes));
             for (size_t dim = 0; dim < number_of_dimensions; ++dim)
                 writer.add_field(acmacs::to_string(layout->coordinate(ag_no, dim)));
-            const auto& entry = per_antigen[ag_no];
             if (entry) {
                 ++have_sequences;
                 if (amino_acids)

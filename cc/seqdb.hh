@@ -319,11 +319,12 @@ namespace seqdb
                 return mEntry && mSeq ? (mSeq->hi_names().empty() ? string::strip(mEntry->name() + aPassageSeparator + mSeq->passage()) : mSeq->hi_names()[0]) : "*NOT-FOUND*";
             }
 
+        enum class encoded_t { no, yes };
           // seq_id is concatenation of sequence name and passage separeted by __
-        inline std::string seq_id(bool encoded) const
+        inline std::string seq_id(encoded_t encoded) const
             {
                 std::string r = (mEntry && mSeq) ? (string::strip(mEntry->name() + "__" + mSeq->passage())) : "*NOT-FOUND*";
-                if (encoded)
+                if (encoded == encoded_t::yes)
                     r = name_encode(r);
                 return r;
             }
