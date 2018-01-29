@@ -50,8 +50,12 @@ int main(int argc, char* const argv[])
         for (size_t ag_no = 0; ag_no < antigens->size(); ++ag_no) {
             writer.add_field((*antigens)[ag_no]->full_name());
             const auto& entry = per_antigen[ag_no];
-            if (entry && encoded_names)
-                writer.add_field(entry.seq_id(seqdb::SeqdbEntrySeq::encoded_t::yes));
+            if (encoded_names) {
+                if (entry)
+                    writer.add_field(entry.seq_id(seqdb::SeqdbEntrySeq::encoded_t::yes));
+                else
+                    writer.add_empty_field();
+            }
             for (size_t dim = 0; dim < number_of_dimensions; ++dim)
                 writer.add_field(acmacs::to_string(layout->coordinate(ag_no, dim)));
             if (entry) {
