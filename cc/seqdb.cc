@@ -263,7 +263,7 @@ std::string SeqdbSeq::amino_acids(bool aAligned, size_t aLeftPartSize) const
     std::string r = mAminoAcids;
     if (aAligned) {
         if (!aligned())
-            throw SequenceNotAligned("amino_acids()");
+            throw SequenceNotAligned("SeqdbSeq::amino_acids()");
         r = shift(r, mAminoAcidsShift + static_cast<int>(aLeftPartSize), 'X');
 
           // find the longest part not having *, replace parts before longest with X, truncate traling parts
@@ -291,10 +291,10 @@ std::string SeqdbSeq::amino_acids(bool aAligned, size_t aLeftPartSize) const
 char SeqdbSeq::amino_acid_at(size_t aPos) const
 {
     if (!aligned())
-        throw SequenceNotAligned("amino_acid_at()");
+        throw SequenceNotAligned("SeqdbSeq::amino_acid_at()");
     const int offset = static_cast<int>(aPos) - 1 - mAminoAcidsShift;
     if (offset < 0 || offset >= static_cast<int>(mAminoAcids.size()))
-        throw std::runtime_error("amino_acid_at(): Invalid pos");
+        throw std::runtime_error("SeqdbSeq::amino_acid_at(): Invalid pos");
     return mAminoAcids[static_cast<size_t>(offset)];
 
 } // SeqdbSeq::amino_acid_at

@@ -14,9 +14,9 @@ namespace seqdb
         class Entry
         {
          public:
-            inline Entry(SeqdbEntrySeq&& aEntrySeq) : entry_seq(aEntrySeq), amino_acids(entry_seq.seq().amino_acids(true)) {}
-            inline void revert() { amino_acids = entry_seq.seq().amino_acids(true); }
-              // inline void insert_if(size_t pos, char aa, size_t num_insertions) { if (amino_acids[pos] == aa) amino_acids.insert(pos, num_insertions, '-'); }
+            Entry(SeqdbEntrySeq&& aEntrySeq) : entry_seq(aEntrySeq), amino_acids(entry_seq.seq().amino_acids(true)) {}
+            void revert() { amino_acids = entry_seq.seq().amino_acids(true); }
+              // void insert_if(size_t pos, char aa, size_t num_insertions) { if (amino_acids[pos] == aa) amino_acids.insert(pos, num_insertions, '-'); }
 
             static inline bool common(char a, char b) { return a == b && a != 'X' && a != '-'; }
             static std::vector<std::pair<size_t, size_t>> align_to(const std::string master, std::string& to_align, const SeqdbEntrySeq& entry_seq);
@@ -35,7 +35,7 @@ namespace seqdb
      private:
         void align_to_master();
 
-        inline void revert() { std::for_each(mEntries.begin(), mEntries.end(), [](auto& entry) { entry.revert(); }); }
+        void revert() { std::for_each(mEntries.begin(), mEntries.end(), [](auto& entry) { entry.revert(); }); }
 
     }; // class InsertionsDeletionsDetector
 
@@ -44,7 +44,7 @@ namespace seqdb
     class BLineageDetector
     {
      public:
-        inline BLineageDetector(Seqdb& aSeqdb) : mSeqdb(aSeqdb) {}
+        BLineageDetector(Seqdb& aSeqdb) : mSeqdb(aSeqdb) {}
         void detect();
 
      private:

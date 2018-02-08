@@ -34,7 +34,7 @@ namespace seqdb
     class SequenceNotAligned : public std::runtime_error
     {
      public:
-        inline SequenceNotAligned(std::string prefix) : std::runtime_error(prefix + ": sequence not aligned") {}
+        SequenceNotAligned(std::string prefix) : std::runtime_error(prefix + ": sequence not aligned") {}
     };
 
 // ----------------------------------------------------------------------
@@ -44,9 +44,9 @@ namespace seqdb
      public:
         using LabIds = std::map<std::string, std::vector<std::string>>;
 
-        inline SeqdbSeq() : mGene("HA") {}
+        SeqdbSeq() : mGene("HA") {}
 
-        inline SeqdbSeq(const std::string& aSequence, const std::string& aGene)
+        SeqdbSeq(const std::string& aSequence, const std::string& aGene)
             : SeqdbSeq()
             {
                 if (is_nucleotides(aSequence))
@@ -57,7 +57,7 @@ namespace seqdb
                     mGene = aGene;
             }
 
-        // inline SeqdbSeq(bool aNucs, const std::string& aSequence, const std::string& aGene)
+        // SeqdbSeq(bool aNucs, const std::string& aSequence, const std::string& aGene)
         //     : SeqdbSeq()
         //     {
         //         if (aNucs)
@@ -68,7 +68,7 @@ namespace seqdb
         //             mGene = aGene;
         //     }
 
-        // inline SeqdbSeq(const std::string& aNucleotides, const std::string& aAminoAcids, const std::string& aGene)
+        // SeqdbSeq(const std::string& aNucleotides, const std::string& aAminoAcids, const std::string& aGene)
         //     : SeqdbSeq()
         //     {
         //         mNucleotides = aNucleotides;
@@ -77,7 +77,7 @@ namespace seqdb
         //             mGene = aGene;
         //     }
 
-        // inline SeqdbSeq(const std::string& aNucleotides, const std::string& aGene)
+        // SeqdbSeq(const std::string& aNucleotides, const std::string& aGene)
         //     : SeqdbSeq(aNucleotides, std::string(), aGene)
         //     {
         //     }
@@ -93,48 +93,48 @@ namespace seqdb
         void add_reassortant(const std::string& aReassortant);
         void add_lab_id(const std::string& aLab, const std::string& aLabId);
         const std::vector<std::string>& update_clades(const std::string& aVirusType, const std::string& aLineage);
-        inline const std::vector<std::string>& clades() const { return mClades; }
-        inline std::vector<std::string>& clades() { return mClades; }
-        inline bool has_clade(const std::string& aClade) const { return std::find(std::begin(mClades), std::end(mClades), aClade) != std::end(mClades); }
+        const std::vector<std::string>& clades() const { return mClades; }
+        std::vector<std::string>& clades() { return mClades; }
+        bool has_clade(const std::string& aClade) const { return std::find(std::begin(mClades), std::end(mClades), aClade) != std::end(mClades); }
 
-        inline bool is_short() const { return mAminoAcids.empty() ? mNucleotides.size() < (MINIMUM_SEQUENCE_AA_LENGTH * 3) : mAminoAcids.size() < MINIMUM_SEQUENCE_AA_LENGTH; }
-        inline bool translated() const { return !mAminoAcids.empty(); }
-        inline bool aligned() const { return mAminoAcidsShift.aligned(); }
-        inline bool matched() const { return !mHiNames.empty(); }
+        bool is_short() const { return mAminoAcids.empty() ? mNucleotides.size() < (MINIMUM_SEQUENCE_AA_LENGTH * 3) : mAminoAcids.size() < MINIMUM_SEQUENCE_AA_LENGTH; }
+        bool translated() const { return !mAminoAcids.empty(); }
+        bool aligned() const { return mAminoAcidsShift.aligned(); }
+        bool matched() const { return !mHiNames.empty(); }
 
-        inline bool has_lab(const std::string& aLab) const { return mLabIds.find(aLab) != mLabIds.end(); }
-        inline std::string lab() const { return mLabIds.empty() ? std::string{} : mLabIds.begin()->first; }
-        inline std::string lab_id() const { return mLabIds.empty() ? std::string{} : (mLabIds.begin()->second.empty() ? std::string{} : mLabIds.begin()->second[0]); }
-        inline const std::vector<std::string> cdcids() const { auto i = mLabIds.find("CDC"); return i == mLabIds.end() ? std::vector<std::string>{} : i->second; }
-        inline const std::vector<std::string> lab_ids_for_lab(const std::string& lab) const { auto i = mLabIds.find(lab); return i == mLabIds.end() ? std::vector<std::string>{} : i->second; }
-        inline const std::vector<std::string> lab_ids() const { std::vector<std::string> r; for (const auto& lid: mLabIds) { for (const auto& id: lid.second) { r.emplace_back(lid.first + "#" + id); } } return r; }
-        inline const LabIds& lab_ids_raw() const { return mLabIds; }
-        inline LabIds& lab_ids_raw() { return mLabIds; }
-        inline bool match_labid(const std::string& lab, const std::string& id) const { auto i = mLabIds.find(lab); return i != mLabIds.end() && std::find(i->second.begin(), i->second.end(), id) != i->second.end(); }
-        inline const auto& passages() const { return mPassages; }
-        inline auto& passages() { return mPassages; }
-        inline std::string passage() const { return mPassages.empty() ? std::string{} : mPassages[0]; }
-        inline bool passage_present(const std::string& aPassage) const { return mPassages.empty() ? aPassage.empty() : std::find(mPassages.begin(), mPassages.end(), aPassage) != mPassages.end(); }
-        inline const auto& reassortant() const { return mReassortant; }
-        inline auto& reassortant() { return mReassortant; }
-        inline bool reassortant_match(const std::string& aReassortant) const { return mReassortant.empty() ? aReassortant.empty() : std::find(mReassortant.begin(), mReassortant.end(), aReassortant) != mReassortant.end(); }
-        inline const std::string& gene() const { return mGene; }
-        inline void gene(const char* str, size_t length) { mGene.assign(str, length); }
+        bool has_lab(const std::string& aLab) const { return mLabIds.find(aLab) != mLabIds.end(); }
+        std::string lab() const { return mLabIds.empty() ? std::string{} : mLabIds.begin()->first; }
+        std::string lab_id() const { return mLabIds.empty() ? std::string{} : (mLabIds.begin()->second.empty() ? std::string{} : mLabIds.begin()->second[0]); }
+        const std::vector<std::string> cdcids() const { auto i = mLabIds.find("CDC"); return i == mLabIds.end() ? std::vector<std::string>{} : i->second; }
+        const std::vector<std::string> lab_ids_for_lab(const std::string& lab) const { auto i = mLabIds.find(lab); return i == mLabIds.end() ? std::vector<std::string>{} : i->second; }
+        const std::vector<std::string> lab_ids() const { std::vector<std::string> r; for (const auto& lid: mLabIds) { for (const auto& id: lid.second) { r.emplace_back(lid.first + "#" + id); } } return r; }
+        const LabIds& lab_ids_raw() const { return mLabIds; }
+        LabIds& lab_ids_raw() { return mLabIds; }
+        bool match_labid(const std::string& lab, const std::string& id) const { auto i = mLabIds.find(lab); return i != mLabIds.end() && std::find(i->second.begin(), i->second.end(), id) != i->second.end(); }
+        const auto& passages() const { return mPassages; }
+        auto& passages() { return mPassages; }
+        std::string passage() const { return mPassages.empty() ? std::string{} : mPassages[0]; }
+        bool passage_present(const std::string& aPassage) const { return mPassages.empty() ? aPassage.empty() : std::find(mPassages.begin(), mPassages.end(), aPassage) != mPassages.end(); }
+        const auto& reassortant() const { return mReassortant; }
+        auto& reassortant() { return mReassortant; }
+        bool reassortant_match(const std::string& aReassortant) const { return mReassortant.empty() ? aReassortant.empty() : std::find(mReassortant.begin(), mReassortant.end(), aReassortant) != mReassortant.end(); }
+        const std::string& gene() const { return mGene; }
+        void gene(const char* str, size_t length) { mGene.assign(str, length); }
 
-        inline const std::vector<std::string>& hi_names() const { return mHiNames; }
-        inline std::vector<std::string>& hi_names() { return mHiNames; }
-        inline void add_hi_name(const std::string& aHiName) { mHiNames.push_back(aHiName); }
-        inline bool hi_name_present(const std::string& aHiName) const { return std::find(mHiNames.begin(), mHiNames.end(), aHiName) != mHiNames.end(); }
+        const std::vector<std::string>& hi_names() const { return mHiNames; }
+        std::vector<std::string>& hi_names() { return mHiNames; }
+        void add_hi_name(const std::string& aHiName) { mHiNames.push_back(aHiName); }
+        bool hi_name_present(const std::string& aHiName) const { return std::find(mHiNames.begin(), mHiNames.end(), aHiName) != mHiNames.end(); }
 
           // if aAligned && aLeftPartSize > 0 - include signal peptide and other stuff to the left from the beginning of the aligned sequence
         std::string amino_acids(bool aAligned, size_t aLeftPartSize = 0) const;
         std::string nucleotides(bool aAligned, size_t aLeftPartSize = 0) const;
-        inline Shift amino_acids_shift() const { return mAminoAcidsShift; } // throws if sequence was not aligned
-        inline Shift nucleotides_shift() const { return mNucleotidesShift; }  // throws if sequence was not aligned
-        // inline int& amino_acids_shift_raw() { return mAminoAcidsShift.raw(); }
-        // inline int& nucleotides_shift_raw() { return mNucleotidesShift.raw(); }
-        inline void amino_acids_shift_raw(int shift) { mAminoAcidsShift.raw() = shift; }
-        inline void nucleotides_shift_raw(int shift) { mNucleotidesShift.raw() = shift; }
+        Shift amino_acids_shift() const { return mAminoAcidsShift; } // throws if sequence was not aligned
+        Shift nucleotides_shift() const { return mNucleotidesShift; }  // throws if sequence was not aligned
+        // int& amino_acids_shift_raw() { return mAminoAcidsShift.raw(); }
+        // int& nucleotides_shift_raw() { return mNucleotidesShift.raw(); }
+        void amino_acids_shift_raw(int shift) { mAminoAcidsShift.raw() = shift; }
+        void nucleotides_shift_raw(int shift) { mNucleotidesShift.raw() = shift; }
         char amino_acid_at(size_t aPos) const; // aPos counts from 1!
 
         void amino_acids(const char* str, size_t length) { mAminoAcids.assign(str, length); }
@@ -146,7 +146,7 @@ namespace seqdb
         void add_deletions(size_t amino_acid_pos, size_t num_amino_acid_deletions);
 
           //   // Empty passages must not be removed! this is just for testing purposes
-          // inline void remove_empty_passages()
+          // void remove_empty_passages()
           //     {
           //         mPassages.erase(std::remove(mPassages.begin(), mPassages.end(), std::string()), mPassages.end());
           //     }
@@ -184,42 +184,42 @@ namespace seqdb
     class SeqdbEntry
     {
      public:
-        inline SeqdbEntry() {}
-        inline SeqdbEntry(const std::string& aName) : mName(aName) {}
-        inline SeqdbEntry(const std::string& aName, const std::string& aVirusType, const std::string& aLineage) : mName(aName), mVirusType(aVirusType), mLineage(aLineage) {}
+        SeqdbEntry() {}
+        SeqdbEntry(const std::string& aName) : mName(aName) {}
+        SeqdbEntry(const std::string& aName, const std::string& aVirusType, const std::string& aLineage) : mName(aName), mVirusType(aVirusType), mLineage(aLineage) {}
 
-        inline const std::string& name() const { return mName; }
-        inline void name(const char* str, size_t length) { mName.assign(str, length); }
-        inline const std::string& country() const { return mCountry; }
-        inline void country(const std::string& aCountry) { mCountry = aCountry; }
-        inline void country(const char* str, size_t length) { mCountry.assign(str, length); }
-        inline const std::string& continent() const { return mContinent; }
-        inline void continent(const std::string& aContinent) { mContinent = aContinent; }
-        inline void continent(const char* str, size_t length) { mContinent.assign(str, length); }
-        inline bool empty() const { return mSeq.empty(); }
+        const std::string& name() const { return mName; }
+        void name(const char* str, size_t length) { mName.assign(str, length); }
+        const std::string& country() const { return mCountry; }
+        void country(const std::string& aCountry) { mCountry = aCountry; }
+        void country(const char* str, size_t length) { mCountry.assign(str, length); }
+        const std::string& continent() const { return mContinent; }
+        void continent(const std::string& aContinent) { mContinent = aContinent; }
+        void continent(const char* str, size_t length) { mContinent.assign(str, length); }
+        bool empty() const { return mSeq.empty(); }
 
-        inline const std::string& virus_type() const { return mVirusType; }
-        inline void virus_type(const std::string& aVirusType) { mVirusType = aVirusType; }
-        inline void virus_type(const char* str, size_t length) { mVirusType.assign(str, length); }
+        const std::string& virus_type() const { return mVirusType; }
+        void virus_type(const std::string& aVirusType) { mVirusType = aVirusType; }
+        void virus_type(const char* str, size_t length) { mVirusType.assign(str, length); }
         void add_date(const std::string& aDate);
-        inline const auto& dates() const { return mDates; }
-        inline auto& dates() { return mDates; }
-        inline std::string date() const { return mDates.empty() ? std::string() : mDates.back(); }
-        inline const std::string& lineage() const { return mLineage; }
-        inline void lineage(const std::string& aLineage) { mLineage = aLineage; }
-        inline void lineage(const char* str, size_t length) { mLineage.assign(str, length); }
+        const auto& dates() const { return mDates; }
+        auto& dates() { return mDates; }
+        std::string date() const { return mDates.empty() ? std::string() : mDates.back(); }
+        const std::string& lineage() const { return mLineage; }
+        void lineage(const std::string& aLineage) { mLineage = aLineage; }
+        void lineage(const char* str, size_t length) { mLineage.assign(str, length); }
         void update_lineage(const std::string& aLineage, Messages& aMessages);
         void update_subtype_name(const std::string& aSubtype, Messages& aMessages);
           // returns warning message or an empty string
           // std::string add_or_update_sequence(const std::string& aSequence, const std::string& aPassage, const std::string& aReassortant, const std::string& aLab, const std::string& aLabId, const std::string& aGene);
 
-        inline bool date_within_range(const std::string& aBegin, const std::string& aEnd) const
+        bool date_within_range(const std::string& aBegin, const std::string& aEnd) const
             {
                 const std::string date = mDates.size() > 0 ? mDates.back() : "0000-00-00";
                 return (aBegin.empty() || date >= aBegin) && (aEnd.empty() || date < aEnd);
             }
 
-        inline void remove_short_sequences()
+        void remove_short_sequences()
             {
                 auto short_seq = [this](auto& seq) {
                     if (seq.is_short())
@@ -229,7 +229,7 @@ namespace seqdb
                 mSeq.erase(std::remove_if(mSeq.begin(), mSeq.end(), short_seq), mSeq.end());
             }
 
-        inline void remove_not_translated_sequences()
+        void remove_not_translated_sequences()
             {
                 auto not_translated = [this](auto& seq) {
                     if (!seq.translated())
@@ -239,7 +239,7 @@ namespace seqdb
                 mSeq.erase(std::remove_if(mSeq.begin(), mSeq.end(), not_translated), mSeq.end());
             }
 
-        inline std::vector<std::string> cdcids() const
+        std::vector<std::string> cdcids() const
             {
                 std::vector<std::string> r;
                 std::for_each(mSeq.begin(), mSeq.end(), [&r](auto const & seq) {auto seq_cdcids = seq.cdcids(); r.insert(r.end(), std::make_move_iterator(seq_cdcids.begin()), std::make_move_iterator(seq_cdcids.end())); });
@@ -248,7 +248,7 @@ namespace seqdb
                 return r;
             }
 
-        inline std::vector<std::string> lab_ids() const
+        std::vector<std::string> lab_ids() const
             {
                 std::vector<std::string> r;
                 std::for_each(mSeq.begin(), mSeq.end(), [&r](auto const & seq) {auto seq_lab_ids = seq.lab_ids(); r.insert(r.end(), std::make_move_iterator(seq_lab_ids.begin()), std::make_move_iterator(seq_lab_ids.end())); });
@@ -260,18 +260,18 @@ namespace seqdb
         std::vector<std::string> make_all_names() const;
         std::vector<std::string> make_all_variants() const;
 
-        inline const auto& seqs() const { return mSeq; }
-        inline auto& seqs() { return mSeq; }
-        inline auto begin_seq() { return mSeq.begin(); }
-        inline auto end_seq() { return mSeq.end(); }
-        inline auto begin_seq() const { return mSeq.begin(); }
-        inline auto end_seq() const { return mSeq.end(); }
-        inline size_t number_of_seqs() const { return seqs().size(); }
+        const auto& seqs() const { return mSeq; }
+        auto& seqs() { return mSeq; }
+        auto begin_seq() { return mSeq.begin(); }
+        auto end_seq() { return mSeq.end(); }
+        auto begin_seq() const { return mSeq.begin(); }
+        auto end_seq() const { return mSeq.end(); }
+        size_t number_of_seqs() const { return seqs().size(); }
 
         const SeqdbSeq* find_by_hi_name(const std::string& aHiName) const;
 
           //   // Empty passages must not be removed! this is just for testing purposes
-          // inline void remove_empty_passages()
+          // void remove_empty_passages()
           //     {
           //         std::for_each(mSeq.begin(), mSeq.end(), std::mem_fn(&SeqdbSeq::remove_empty_passages));
           //     }
@@ -297,31 +297,31 @@ namespace seqdb
     class SeqdbEntrySeq
     {
      public:
-        inline SeqdbEntrySeq() : mEntry(nullptr), mSeq(nullptr) {}
-        inline SeqdbEntrySeq(SeqdbEntry& aEntry, SeqdbSeq& aSeq) : mEntry(&aEntry), mSeq(&aSeq) {}
-        inline SeqdbEntrySeq(const SeqdbEntry& aEntry, const SeqdbSeq& aSeq) : mEntry(const_cast<SeqdbEntry*>(&aEntry)), mSeq(const_cast<SeqdbSeq*>(&aSeq)) {}
+        SeqdbEntrySeq() : mEntry(nullptr), mSeq(nullptr) {}
+        SeqdbEntrySeq(SeqdbEntry& aEntry, SeqdbSeq& aSeq) : mEntry(&aEntry), mSeq(&aSeq) {}
+        SeqdbEntrySeq(const SeqdbEntry& aEntry, const SeqdbSeq& aSeq) : mEntry(const_cast<SeqdbEntry*>(&aEntry)), mSeq(const_cast<SeqdbSeq*>(&aSeq)) {}
 
-        inline void assign(SeqdbEntrySeq&& aEntrySeq) { mEntry = aEntrySeq.mEntry; mSeq = aEntrySeq.mSeq; }
-        inline void assign(SeqdbEntry& aEntry, SeqdbSeq& aSeq) { mEntry = &aEntry; mSeq = &aSeq; }
-        inline void assign(const SeqdbEntry& aEntry, const SeqdbSeq& aSeq) { mEntry = const_cast<SeqdbEntry*>(&aEntry); mSeq = const_cast<SeqdbSeq*>(&aSeq); }
-        inline void assign(SeqdbEntry* aEntry, SeqdbSeq* aSeq) { mEntry = aEntry; mSeq = aSeq; }
-        inline void assign(const SeqdbEntry* aEntry, const SeqdbSeq* aSeq) { mEntry = const_cast<SeqdbEntry*>(aEntry); mSeq = const_cast<SeqdbSeq*>(aSeq); }
+        void assign(SeqdbEntrySeq&& aEntrySeq) { mEntry = aEntrySeq.mEntry; mSeq = aEntrySeq.mSeq; }
+        void assign(SeqdbEntry& aEntry, SeqdbSeq& aSeq) { mEntry = &aEntry; mSeq = &aSeq; }
+        void assign(const SeqdbEntry& aEntry, const SeqdbSeq& aSeq) { mEntry = const_cast<SeqdbEntry*>(&aEntry); mSeq = const_cast<SeqdbSeq*>(&aSeq); }
+        void assign(SeqdbEntry* aEntry, SeqdbSeq* aSeq) { mEntry = aEntry; mSeq = aSeq; }
+        void assign(const SeqdbEntry* aEntry, const SeqdbSeq* aSeq) { mEntry = const_cast<SeqdbEntry*>(aEntry); mSeq = const_cast<SeqdbSeq*>(aSeq); }
 
-        inline operator bool() const { return mEntry != nullptr && mSeq != nullptr; }
+        operator bool() const { return mEntry != nullptr && mSeq != nullptr; }
 
-        inline SeqdbEntry& entry() { return *mEntry; }
-        inline SeqdbSeq& seq() { return *mSeq; }
-        inline const SeqdbEntry& entry() const { return *mEntry; }
-        inline const SeqdbSeq& seq() const { return *mSeq; }
+        SeqdbEntry& entry() { return *mEntry; }
+        SeqdbSeq& seq() { return *mSeq; }
+        const SeqdbEntry& entry() const { return *mEntry; }
+        const SeqdbSeq& seq() const { return *mSeq; }
 
-        inline std::string make_name(const std::string& aPassageSeparator = " ") const
+        std::string make_name(const std::string& aPassageSeparator = " ") const
             {
                 return mEntry && mSeq ? (mSeq->hi_names().empty() ? string::strip(mEntry->name() + aPassageSeparator + mSeq->passage()) : mSeq->hi_names()[0]) : "*NOT-FOUND*";
             }
 
         enum class encoded_t { no, yes };
           // seq_id is concatenation of sequence name and passage separeted by __
-        inline std::string seq_id(encoded_t encoded) const
+        std::string seq_id(encoded_t encoded) const
             {
                 std::string r = (mEntry && mSeq) ? (string::strip(mEntry->name() + "__" + mSeq->passage())) : "*NOT-FOUND*";
                 if (encoded == encoded_t::yes)
@@ -340,41 +340,41 @@ namespace seqdb
     class SeqdbIteratorBase : public std::iterator<std::input_iterator_tag, SeqdbEntrySeq>
     {
      public:
-        inline SeqdbIteratorBase(const SeqdbIteratorBase& a) = default;
-        inline SeqdbIteratorBase(SeqdbIteratorBase&& a) = default;
-        inline virtual ~SeqdbIteratorBase() {}
+        SeqdbIteratorBase(const SeqdbIteratorBase& a) = default;
+        SeqdbIteratorBase(SeqdbIteratorBase&& a) = default;
+        virtual ~SeqdbIteratorBase() {}
 
-        inline virtual bool operator==(const SeqdbIteratorBase& aNother) const { return mEntryNo == aNother.mEntryNo && mSeqNo == aNother.mSeqNo; }
-        inline virtual bool operator!=(const SeqdbIteratorBase& aNother) const { return ! operator==(aNother); }
+        virtual bool operator==(const SeqdbIteratorBase& aNother) const { return mEntryNo == aNother.mEntryNo && mSeqNo == aNother.mSeqNo; }
+        virtual bool operator!=(const SeqdbIteratorBase& aNother) const { return ! operator==(aNother); }
 
-        inline SeqdbIteratorBase& filter_lab(const std::string& aLab) { mLab = aLab; filter_added(); return *this; }
-        inline SeqdbIteratorBase& filter_labid(const std::string& aLab, const std::string& aId) { mLabId = std::make_pair(aLab, aId); filter_added(); return *this; }
-        inline SeqdbIteratorBase& filter_subtype(const std::string& aSubtype) { mSubtype = aSubtype; filter_added(); return *this; }
-        inline SeqdbIteratorBase& filter_lineage(const std::string& aLineage) { mLineage = aLineage; filter_added(); return *this; }
-        inline SeqdbIteratorBase& filter_aligned(bool aAligned) { mAligned = aAligned; filter_added(); return *this; }
-        inline SeqdbIteratorBase& filter_gene(const std::string& aGene) { mGene = aGene; filter_added(); return *this; }
-        inline SeqdbIteratorBase& filter_date_range(const std::string& aBegin, const std::string& aEnd) { mBegin = aBegin; mEnd = aEnd; filter_added(); return *this; }
-        inline SeqdbIteratorBase& filter_hi_name(bool aHasHiName) { mHasHiName = aHasHiName; filter_added(); return *this; }
-        inline SeqdbIteratorBase& filter_name_regex(const std::string& aNameRegex) { mNameMatcher.assign(aNameRegex, std::regex::icase); mNameMatcherSet = true; filter_added(); return *this; }
+        SeqdbIteratorBase& filter_lab(const std::string& aLab) { mLab = aLab; filter_added(); return *this; }
+        SeqdbIteratorBase& filter_labid(const std::string& aLab, const std::string& aId) { mLabId = std::make_pair(aLab, aId); filter_added(); return *this; }
+        SeqdbIteratorBase& filter_subtype(const std::string& aSubtype) { mSubtype = aSubtype; filter_added(); return *this; }
+        SeqdbIteratorBase& filter_lineage(const std::string& aLineage) { mLineage = aLineage; filter_added(); return *this; }
+        SeqdbIteratorBase& filter_aligned(bool aAligned) { mAligned = aAligned; filter_added(); return *this; }
+        SeqdbIteratorBase& filter_gene(const std::string& aGene) { mGene = aGene; filter_added(); return *this; }
+        SeqdbIteratorBase& filter_date_range(const std::string& aBegin, const std::string& aEnd) { mBegin = aBegin; mEnd = aEnd; filter_added(); return *this; }
+        SeqdbIteratorBase& filter_hi_name(bool aHasHiName) { mHasHiName = aHasHiName; filter_added(); return *this; }
+        SeqdbIteratorBase& filter_name_regex(const std::string& aNameRegex) { mNameMatcher.assign(aNameRegex, std::regex::icase); mNameMatcherSet = true; filter_added(); return *this; }
 
         virtual const Seqdb& seqdb() const = 0;
         virtual std::string make_name(const std::string& aPassageSeparator = " ") const = 0;
 
-        inline SeqdbIteratorBase& operator ++ ();
+        SeqdbIteratorBase& operator ++ ();
 
-        inline void validate() const;
+        void validate() const;
 
      protected:
-        inline SeqdbIteratorBase() : mNameMatcherSet(false) { end(); }
-        inline SeqdbIteratorBase(size_t aEntryNo, size_t aSeqNo) : mEntryNo(aEntryNo), mSeqNo(aSeqNo), mAligned(false), mHasHiName(false), mNameMatcherSet(false) /*, mNameMatcher(".")*/ {}
+        SeqdbIteratorBase() : mNameMatcherSet(false) { end(); }
+        SeqdbIteratorBase(size_t aEntryNo, size_t aSeqNo) : mEntryNo(aEntryNo), mSeqNo(aSeqNo), mAligned(false), mHasHiName(false), mNameMatcherSet(false) /*, mNameMatcher(".")*/ {}
 
-        inline bool suitable_entry() const;
-        inline bool suitable_seq() const;
-        inline bool next_seq();
-        inline void next_entry();
+        bool suitable_entry() const;
+        bool suitable_seq() const;
+        bool next_seq();
+        void next_entry();
 
-        inline size_t entry_no() const { return mEntryNo; }
-        inline size_t seq_no() const { return mSeqNo; }
+        size_t entry_no() const { return mEntryNo; }
+        size_t seq_no() const { return mSeqNo; }
 
      private:
         size_t mEntryNo;
@@ -393,8 +393,8 @@ namespace seqdb
         std::regex mNameMatcher;
         std::pair<std::string, std::string> mLabId;
 
-        inline void end() { mEntryNo = mSeqNo = std::numeric_limits<size_t>::max(); }
-        inline void filter_added() { if (!suitable_entry() || !suitable_seq()) operator ++(); }
+        void end() { mEntryNo = mSeqNo = std::numeric_limits<size_t>::max(); }
+        void filter_added() { if (!suitable_entry() || !suitable_seq()) operator ++(); }
 
     }; // class SeqdbIteratorBase
 
@@ -403,20 +403,20 @@ namespace seqdb
     class SeqdbIterator : public SeqdbIteratorBase
     {
      public:
-        inline SeqdbIterator(const SeqdbIterator& a) = default;
-        inline SeqdbIterator(SeqdbIterator&& a) = default;
-        inline virtual ~SeqdbIterator() {}
+        SeqdbIterator(const SeqdbIterator& a) = default;
+        SeqdbIterator(SeqdbIterator&& a) = default;
+        virtual ~SeqdbIterator() {}
 
-        inline bool operator==(const SeqdbIterator& aNother) const { return &mSeqdb == &aNother.mSeqdb && SeqdbIteratorBase::operator==(aNother); }
+        bool operator==(const SeqdbIterator& aNother) const { return &mSeqdb == &aNother.mSeqdb && SeqdbIteratorBase::operator==(aNother); }
 
-        inline SeqdbEntrySeq operator*();
+        SeqdbEntrySeq operator*();
 
-        inline virtual const Seqdb& seqdb() const { return mSeqdb; }
-        inline virtual std::string make_name(const std::string& aPassageSeparator = " ") const { return const_cast<SeqdbIterator*>(this)->operator*().make_name(aPassageSeparator); }
+        virtual const Seqdb& seqdb() const { return mSeqdb; }
+        virtual std::string make_name(const std::string& aPassageSeparator = " ") const { return const_cast<SeqdbIterator*>(this)->operator*().make_name(aPassageSeparator); }
 
      private:
-        inline SeqdbIterator(Seqdb& aSeqdb) : SeqdbIteratorBase(), mSeqdb(aSeqdb) {}
-        inline SeqdbIterator(Seqdb& aSeqdb, size_t aEntryNo, size_t aSeqNo) : SeqdbIteratorBase(aEntryNo, aSeqNo), mSeqdb(aSeqdb) {}
+        SeqdbIterator(Seqdb& aSeqdb) : SeqdbIteratorBase(), mSeqdb(aSeqdb) {}
+        SeqdbIterator(Seqdb& aSeqdb, size_t aEntryNo, size_t aSeqNo) : SeqdbIteratorBase(aEntryNo, aSeqNo), mSeqdb(aSeqdb) {}
 
         Seqdb& mSeqdb;
 
@@ -427,20 +427,20 @@ namespace seqdb
     class ConstSeqdbIterator : public SeqdbIteratorBase
     {
      public:
-        inline ConstSeqdbIterator(const ConstSeqdbIterator& a) = default;
-        inline ConstSeqdbIterator(ConstSeqdbIterator&& a) = default;
-        inline virtual ~ConstSeqdbIterator() {}
+        ConstSeqdbIterator(const ConstSeqdbIterator& a) = default;
+        ConstSeqdbIterator(ConstSeqdbIterator&& a) = default;
+        virtual ~ConstSeqdbIterator() {}
 
-        inline bool operator==(const ConstSeqdbIterator& aNother) const { return &mSeqdb == &aNother.mSeqdb && SeqdbIteratorBase::operator==(aNother); }
+        bool operator==(const ConstSeqdbIterator& aNother) const { return &mSeqdb == &aNother.mSeqdb && SeqdbIteratorBase::operator==(aNother); }
 
-        inline const SeqdbEntrySeq operator*() const;
+        const SeqdbEntrySeq operator*() const;
 
-        inline virtual const Seqdb& seqdb() const { return mSeqdb; }
-        inline virtual std::string make_name(const std::string& aPassageSeparator = " ") const { return operator*().make_name(aPassageSeparator); }
+        virtual const Seqdb& seqdb() const { return mSeqdb; }
+        virtual std::string make_name(const std::string& aPassageSeparator = " ") const { return operator*().make_name(aPassageSeparator); }
 
      private:
-        inline ConstSeqdbIterator(const Seqdb& aSeqdb) : SeqdbIteratorBase(), mSeqdb(aSeqdb) {}
-        inline ConstSeqdbIterator(const Seqdb& aSeqdb, size_t aEntryNo, size_t aSeqNo) : SeqdbIteratorBase(aEntryNo, aSeqNo), mSeqdb(aSeqdb) {}
+        ConstSeqdbIterator(const Seqdb& aSeqdb) : SeqdbIteratorBase(), mSeqdb(aSeqdb) {}
+        ConstSeqdbIterator(const Seqdb& aSeqdb, size_t aEntryNo, size_t aSeqNo) : SeqdbIteratorBase(aEntryNo, aSeqNo), mSeqdb(aSeqdb) {}
 
         const Seqdb& mSeqdb;
 
@@ -453,15 +453,15 @@ namespace seqdb
     class Seqdb
     {
      public:
-        // inline Seqdb() = default;
+        // Seqdb() = default;
 
         void load(const std::string& filename);
         void save(const std::string& filename = std::string{}, size_t indent = 0) const;
 
-        inline size_t number_of_entries() const { return mEntries.size(); }
-        inline size_t number_of_seqs() const { return std::accumulate(mEntries.begin(), mEntries.end(), 0U, [](size_t acc, const auto& e) { return acc + e.seqs().size(); }); }
+        size_t number_of_entries() const { return mEntries.size(); }
+        size_t number_of_seqs() const { return std::accumulate(mEntries.begin(), mEntries.end(), 0U, [](size_t acc, const auto& e) { return acc + e.seqs().size(); }); }
 
-        inline SeqdbEntry* find_by_name(const std::string& aName)
+        SeqdbEntry* find_by_name(const std::string& aName)
             {
                 auto const first = find_insertion_place(aName);
                 // if (first != mEntries.end() && aName != first->name())
@@ -469,7 +469,7 @@ namespace seqdb
                 return (first != mEntries.end() && aName == first->name()) ? &(*first) : nullptr;
             }
 
-        inline const SeqdbEntry* find_by_name(const std::string& aName) const
+        const SeqdbEntry* find_by_name(const std::string& aName) const
             {
                 auto const first = find_insertion_place(aName);
                 return (first != mEntries.end() && aName == first->name()) ? &(*first) : nullptr;
@@ -499,14 +499,14 @@ namespace seqdb
         std::vector<std::string> match_hidb(bool aVerbose, bool aGreedy = true); // seqdb-hidb.cc  returns list of not found location names
 
           // iterating over sequences with filtering
-        inline SeqdbIterator begin() { return SeqdbIterator(*this, 0, 0); }
-        inline SeqdbIterator end() { return SeqdbIterator(*this); }
-        inline ConstSeqdbIterator begin() const { return ConstSeqdbIterator(*this, 0, 0); }
-        inline ConstSeqdbIterator end() const { return ConstSeqdbIterator(*this); }
-        inline const auto& entries() const { return mEntries; }
-        inline auto& entries() { return mEntries; }
-        inline auto begin_entry() { return mEntries.begin(); }
-        inline auto end_entry() { return mEntries.end(); }
+        SeqdbIterator begin() { return SeqdbIterator(*this, 0, 0); }
+        SeqdbIterator end() { return SeqdbIterator(*this); }
+        ConstSeqdbIterator begin() const { return ConstSeqdbIterator(*this, 0, 0); }
+        ConstSeqdbIterator end() const { return ConstSeqdbIterator(*this); }
+        const auto& entries() const { return mEntries; }
+        auto& entries() { return mEntries; }
+        auto begin_entry() { return mEntries.begin(); }
+        auto end_entry() { return mEntries.end(); }
 
         template <typename Value> std::deque<std::vector<SeqdbEntrySeq>> find_identical_sequences(Value value) const;
 
@@ -520,7 +520,7 @@ namespace seqdb
 
           // Matches antigens of a chart against seqdb, for each matched antigen extract AA at the passed positions
         void aa_at_positions_for_antigens(const acmacs::chart::Antigens& aAntigens, const std::vector<size_t>& aPositions, std::map<std::string, std::vector<size_t>>& aa_indices, bool aVerbose) const;
-        inline std::map<std::string, std::vector<size_t>> aa_at_positions_for_antigens(const acmacs::chart::Antigens& aAntigens, const std::vector<size_t>& aPositions, bool aVerbose) const
+        std::map<std::string, std::vector<size_t>> aa_at_positions_for_antigens(const acmacs::chart::Antigens& aAntigens, const std::vector<size_t>& aPositions, bool aVerbose) const
             {
                 std::map<std::string, std::vector<size_t>> result;
                 aa_at_positions_for_antigens(aAntigens, aPositions, result, aVerbose);
@@ -535,12 +535,12 @@ namespace seqdb
         HiNameIndex mHiNameIndex;
         std::string mLoadedFromFilename;
 
-        inline std::vector<SeqdbEntry>::iterator find_insertion_place(const std::string& aName)
+        std::vector<SeqdbEntry>::iterator find_insertion_place(const std::string& aName)
             {
                 return std::lower_bound(mEntries.begin(), mEntries.end(), aName, [](const SeqdbEntry& entry, const std::string& name) -> bool { return entry.name() < name; });
             }
 
-        inline std::vector<SeqdbEntry>::const_iterator find_insertion_place(const std::string& aName) const
+        std::vector<SeqdbEntry>::const_iterator find_insertion_place(const std::string& aName) const
             {
                 return std::lower_bound(mEntries.begin(), mEntries.end(), aName, [](const SeqdbEntry& entry, const std::string& name) -> bool { return entry.name() < name; });
             }

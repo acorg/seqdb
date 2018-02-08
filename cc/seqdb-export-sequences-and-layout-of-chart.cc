@@ -59,11 +59,17 @@ int main(int argc, char* const argv[])
             for (size_t dim = 0; dim < number_of_dimensions; ++dim)
                 writer.add_field(acmacs::to_string(layout->coordinate(ag_no, dim)));
             if (entry) {
-                ++have_sequences;
-                if (amino_acids)
-                    writer.add_field(entry.seq().amino_acids(aligned));
-                else
-                    writer.add_field(entry.seq().nucleotides(aligned));
+                try {
+                    if (amino_acids)
+                        writer.add_field(entry.seq().amino_acids(aligned));
+                    else
+                        writer.add_field(entry.seq().nucleotides(aligned));
+                    ++have_sequences;
+                }
+                catch (seqdb::SequenceNotAligned& err) {
+                    std::cerr << "WARNING: " << err.what() << ' ' << entry.entry().name() << '\n';
+                    writer.add_empty_field();
+                }
             }
             else {
                 writer.add_empty_field();
