@@ -106,8 +106,12 @@ void Comparer::report() const
     //     std::cout << std::setw(max_name_size + 2) << std::left << entry.name << entry.sequence << '\n';
 
     for (const auto [pos, entry_pos] : acmacs::enumerate(entries_pos_, 1)) {
-        if (entry_pos.aa_count.size() > 1)
-            std::cout << std::setw(3) << std::right << pos << ' ' << entry_pos.aa_count << '\n';
+        if (entry_pos.aa_count.size() > 1) {
+            const auto max_occur = std::accumulate(entry_pos.aa_count.begin(), entry_pos.aa_count.end(), 0UL, [](auto max_count, const auto& elt) { return std::max(max_count, elt.second); });
+            const auto max_occur_percent = max_occur * 100.0 / entries_.size();
+            if (max_occur_percent < 95.0)
+                std::cout << std::setw(3) << std::right << pos << ' ' << entry_pos.aa_count << ' ' << max_occur_percent << '\n';
+        }
     }
 
 } // Comparer::report
