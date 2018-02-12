@@ -15,7 +15,8 @@ TARGETS = \
 	$(DIST)/seqdb-report-not-found-in-hidb \
 	$(DIST)/seqdb-export-sequences-of-chart \
 	$(DIST)/seqdb-export-sequences-and-layout-of-chart \
-	$(DIST)/seqdb-update-clades
+	$(DIST)/seqdb-update-clades \
+	$(DIST)/seqdb-compare-sequences
 
 SEQDB_SOURCES = seqdb.cc seqdb-export.cc seqdb-import.cc seqdb-hidb.cc amino-acids.cc clades.cc insertions_deletions.cc
 SEQDB_PY_SOURCES = $(SEQDB_SOURCES) py.cc
