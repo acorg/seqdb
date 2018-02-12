@@ -110,7 +110,7 @@ void Comparer::report() const
             const auto max_occur = std::accumulate(entry_pos.aa_count.begin(), entry_pos.aa_count.end(), 0UL, [](auto max_count, const auto& elt) { return std::max(max_count, elt.second); });
             const auto max_occur_percent = max_occur * 100.0 / entries_.size();
             if (max_occur_percent < 95.0)
-                std::cout << std::setw(3) << std::right << pos << ' ' << entry_pos.aa_count << ' ' << max_occur_percent << '\n';
+                std::cout << std::setw(3) << std::right << pos << ' ' << entry_pos.aa_count << ' ' << std::setprecision(3) << max_occur_percent << "%\n";
         }
     }
 
