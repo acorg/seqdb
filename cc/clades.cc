@@ -87,46 +87,115 @@ std::vector<std::string> seqdb::clades_h1pdm(std::string aSequence, Shift aShift
 
 // ----------------------------------------------------------------------
 
+// gly: 160S or 160T
+// no-gly: not gly
+// 3C3: 158N 159F
+// 3C3a: 158N 159S
+// 3C3b: 62K 83R 158N 261Q
+// 3C2a: 158N 159Y
+// 3C2a1: 158N 159Y 171K 406V 484E
+// defintions below provided by Sarah on 2018-02-17 21:53 based on the CDC TC2 report
+// 3C2a1a: 158N 159Y 479E
+// 3C2a1b: 92R 158N 159Y 311Q
+// 3C2a2: 131K 142K 158N 159Y 261Q
+// 3C2a3: 135K 150K 158N 159Y 261Q
+// 3C2a4: 31S 53N 142G 144R 158N 159Y 171K 192T 197H
+
+struct PosAA
+{
+    int pos;
+    char aa;
+};
+
+struct CladeDesc
+{
+    const char* clade;
+    std::vector<PosAA> pos_aa;
+};
+
+#pragma GCC diagnostic push
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
+#pragma GCC diagnostic ignored "-Wglobal-constructors"
+#endif
+
+static const std::vector<CladeDesc> sClades =
+{
+    {"3C3", {{158, 'N'}, {159, 'F'}}},
+    {"3C3A", {{158, 'N'}, {159, 'S'}}},
+    {"3C3B", {/* {62, 'K'}, */ {83, 'R'}, {158, 'N'}, {261, 'Q'}}},
+    {"3C2A", {{158, 'N'}, {159, 'Y'}}},
+    {"3C2A1", {{158, 'N'}, {159, 'Y'}, {171, 'K'}, {406, 'V'}, {484, 'E'}}},
+    {"3C2A1A", {{158, 'N'}, {159, 'Y'}, {479, 'E'}}},
+    {"3C2A1B", {{92, 'R'}, {158, 'N'}, {159, 'Y'}, {311, 'Q'}}},
+    {"3C2A2", {{131, 'K'}, {142, 'K'}, {158, 'N'}, {159, 'Y'}, {261, 'Q'}}},
+    {"3C2A3", {{135, 'K'}, {150, 'K'}, {158, 'N'}, {159, 'Y'}, {261, 'Q'}}},
+    {"3C2A4", {{31, 'S'}, {53, 'N'}, {142, 'G'}, {144, 'R'}, {158, 'N'}, {159, 'Y'}, {171, 'K'}, {192, 'T'}, {197, 'H'}}},
+// {"GLY: 160S OR 160T
+// {"NO-GLY: NOT GLY
+};
+
+#pragma GCC diagnostic pop
+
 std::vector<std::string> seqdb::clades_h3n2(std::string aSequence, Shift aShift)
 {
-      // 158N, 159F -> 3C3, 159Y -> 3c2a, 159S -> 3c3a, 62K+83R+261Q -> 3C3b.
-    auto r = std::vector<std::string>();
-    if (aa_at(158, aSequence, aShift) == 'N') {
-        switch (aa_at(159, aSequence, aShift)) {
-          case 'F':
-              r.push_back("3C3");
-              break;
-          case 'Y':
-              r.push_back("3C2A");
-              if (aa_at(171, aSequence, aShift) == 'K' && aa_at(406, aSequence, aShift) == 'V' && aa_at(484, aSequence, aShift) == 'E') {
-                    // Derek's message of 2016-12-23 10:32 "clade 3c.2a1"
-                    // 3c.2a1 is a sub-clade of 3c2a
-                  r.push_back("3C2A1");
-              }
-              break;
-          case 'S':
-              r.push_back("3C3A");
-              break;
-          default:
-                // std::cerr << "@159: " << aSequence[pos159] << std::endl;
-              break;
-        }
-    }
+    auto has_aa = [aShift,&aSequence](const auto& pos_aa) -> bool { return aa_at(pos_aa.pos, aSequence, aShift) == pos_aa.aa; };
 
-    if (aa_at(159, aSequence, aShift) == 'F' && aa_at(83, aSequence, aShift) == 'R' && aa_at(261, aSequence, aShift) == 'Q') // && aa_at(62, aSequence, aShift) == 'K')
-        r.push_back("3C3B");
-      // if (aSequence.size()  > pos261 && aSequence[pos62] == 'K' && aSequence[pos83] == 'R' && aSequence[pos261] == 'Q')
-      //     r.push_back("3C3b?");
+    std::vector<std::string> r;
+    for (const auto& clade_desc : sClades) {
+        if (std::all_of(clade_desc.pos_aa.begin(), clade_desc.pos_aa.end(), has_aa))
+            r.emplace_back(clade_desc.clade);
+    }
 
       // 160S -> gly, 160T -> gly, 160x -> no gly
     if (aa_at(160, aSequence, aShift) == 'S' || aa_at(160, aSequence, aShift) == 'T')
-        r.push_back("GLY");
+        r.emplace_back("GLY");
     else
-        r.push_back("NO-GLY");
+        r.emplace_back("NO-GLY");
 
     return r;
 
 } // clades_h3n2
+
+// std::vector<std::string> seqdb::clades_h3n2(std::string aSequence, Shift aShift)
+// {
+//     auto r = std::vector<std::string>();
+//     if (aa_at(158, aSequence, aShift) == 'N') {
+//         switch (aa_at(159, aSequence, aShift)) {
+//           case 'F':
+//               r.push_back("3C3");
+//               break;
+//           case 'Y':
+//               r.push_back("3C2A");
+//               if (aa_at(171, aSequence, aShift) == 'K' && aa_at(406, aSequence, aShift) == 'V' && aa_at(484, aSequence, aShift) == 'E') {
+//                     // Derek's message of 2016-12-23 10:32 "clade 3c.2a1"
+//                     // 3c.2a1 is a sub-clade of 3c2a
+//                   r.push_back("3C2A1");
+//               }
+//               break;
+//           case 'S':
+//               r.push_back("3C3A");
+//               break;
+//           default:
+//                 // std::cerr << "@159: " << aSequence[pos159] << std::endl;
+//               break;
+//         }
+//     }
+
+//     if (aa_at(159, aSequence, aShift) == 'F' && aa_at(83, aSequence, aShift) == 'R' && aa_at(261, aSequence, aShift) == 'Q') // && aa_at(62, aSequence, aShift) == 'K')
+//         r.push_back("3C3B");
+//       // if (aSequence.size()  > pos261 && aSequence[pos62] == 'K' && aSequence[pos83] == 'R' && aSequence[pos261] == 'Q')
+//       //     r.push_back("3C3b?");
+
+//       // 160S -> gly, 160T -> gly, 160x -> no gly
+//     if (aa_at(160, aSequence, aShift) == 'S' || aa_at(160, aSequence, aShift) == 'T')
+//         r.push_back("GLY");
+//     else
+//         r.push_back("NO-GLY");
+
+//     return r;
+
+// } // clades_h3n2
 
 // ----------------------------------------------------------------------
 /// Local Variables:
