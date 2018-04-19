@@ -1,6 +1,6 @@
 #! /bin/bash
 
-TDIR=$(mktemp -d)
+TDIR=$(mktemp -d -t XXXXXXX)
 TESTDIR=$(dirname $0)
 
 # ======================================================================
