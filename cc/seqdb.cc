@@ -288,7 +288,7 @@ std::string SeqdbSeq::amino_acids(bool aAligned, size_t aLeftPartSize) const
 // ----------------------------------------------------------------------
 
 // aPos counts from 1!
-char SeqdbSeq::amino_acid_at(size_t aPos, bool return_dash_on_error) const
+char SeqdbSeq::amino_acid_at(size_t aPos, bool ignore_errors) const
 {
     try {
     if (!aligned())
@@ -299,9 +299,9 @@ char SeqdbSeq::amino_acid_at(size_t aPos, bool return_dash_on_error) const
     return mAminoAcids[static_cast<size_t>(offset)];
     }
     catch (std::exception& err) {
-        if (return_dash_on_error) {
+        if (ignore_errors) {
             std::cerr << "WARNING: " << err.what() << '\n';
-            return '-';
+            return '?';
         }
         else {
             throw;
