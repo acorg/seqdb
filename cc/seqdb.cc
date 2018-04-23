@@ -288,14 +288,25 @@ std::string SeqdbSeq::amino_acids(bool aAligned, size_t aLeftPartSize) const
 // ----------------------------------------------------------------------
 
 // aPos counts from 1!
-char SeqdbSeq::amino_acid_at(size_t aPos) const
+char SeqdbSeq::amino_acid_at(size_t aPos, bool return_dash_on_error) const
 {
+    try {
     if (!aligned())
         throw SequenceNotAligned("SeqdbSeq::amino_acid_at()");
     const int offset = static_cast<int>(aPos) - 1 - mAminoAcidsShift;
     if (offset < 0 || offset >= static_cast<int>(mAminoAcids.size()))
         throw std::runtime_error("SeqdbSeq::amino_acid_at(): Invalid pos");
     return mAminoAcids[static_cast<size_t>(offset)];
+    }
+    catch (std::exception& err) {
+        if (return_dash_on_error) {
+            std::cerr << "WARNING: " << err.what() << '\n';
+            return '-';
+        }
+        else {
+            throw;
+        }
+    }
 
 } // SeqdbSeq::amino_acid_at
 
@@ -879,7 +890,7 @@ void Seqdb::aa_at_positions_for_antigens(const acmacs::chart::Antigens& aAntigen
             entry = find_hi_name((*ag)->full_name_for_seqdb_matching());
         if (entry) {
             std::string aa(aPositions.size(), 'X');
-            std::transform(aPositions.begin(), aPositions.end(), aa.begin(), [&entry](size_t pos) { return entry->seq().amino_acid_at(pos); });
+            std::transform(aPositions.begin(), aPositions.end(), aa.begin(), [&entry](size_t pos) { return entry->seq().amino_acid_at(pos, true); });
             aa_indices[aa].push_back(ag.index());
             ++matched;
         }
