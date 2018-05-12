@@ -65,6 +65,7 @@ std::vector<std::string> seqdb::clades_b_victoria(std::string aSequence, Shift a
 std::vector<std::string> seqdb::clades_h1pdm(std::string aSequence, Shift aShift)
 {
       // 84N+162N+216T - 6B.1, 152T+173I+501E - 6B.2
+      // ? 156 (see A/PUERTO RICO/15/2018 of CDC:20180511)
     auto r = std::vector<std::string>();
     auto const pos84i = 83 - aShift;
     if (pos84i > 0) {
