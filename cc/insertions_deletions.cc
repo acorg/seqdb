@@ -65,11 +65,15 @@ void InsertionsDeletionsDetector::detect()
         size_t num_with_deletions = 0;
         for (auto& entry: mEntries) {
             if (!entry.pos_number.empty()) {
-                entry.apply_pos_number();
-                ++num_with_deletions;
+                try {
+                    entry.apply_pos_number();
+                    ++num_with_deletions;
                   // if (entry.pos_number.front().second > 1)
                   //     std::cerr << entry.entry_seq.make_name() << std::endl << entry.pos_number << ' ' << entry.amino_acids << std::endl;
                   // std::cerr << entry.amino_acids << '\n';
+                }
+                catch (InvalidShift&) {
+                }
             }
         }
         if (num_with_deletions)
