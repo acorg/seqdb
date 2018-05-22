@@ -20,7 +20,7 @@
 
 // ----------------------------------------------------------------------
 
-namespace acmacs::chart { class Antigens; }
+namespace acmacs::chart { class Antigens; class ChartModify; }
 
 namespace seqdb
 {
@@ -691,6 +691,8 @@ namespace seqdb
     } // Seqdb::find_identical_sequences
 
 // ----------------------------------------------------------------------
+
+    void add_clades(acmacs::chart::ChartModify& chart);
 
     void setup(const std::string& aFilename, bool aVerbose);
     void setup_dbs(const std::string& aDbDir, bool aVerbose);

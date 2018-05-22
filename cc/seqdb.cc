@@ -8,7 +8,7 @@
 #include "acmacs-base/string-split.hh"
 #include "acmacs-base/virus-name.hh"
 #include "locationdb/locdb.hh"
-#include "acmacs-chart-2/chart.hh"
+#include "acmacs-chart-2/chart-modify.hh"
 #include "seqdb/seqdb.hh"
 #include "clades.hh"
 #include "seqdb-export.hh"
@@ -975,6 +975,31 @@ void Seqdb::detect_b_lineage()
     detector.detect();
 
 } // Seqdb::detect_b_lineage
+
+// ----------------------------------------------------------------------
+
+void seqdb::add_clades(acmacs::chart::ChartModify& chart)
+{
+    const auto& seqdb = get(report_time::No);
+    auto antigens = chart.antigens_modify();
+    const auto per_antigen = seqdb.match(*antigens, chart.info()->virus_type(acmacs::chart::Info::Compute::Yes), false);
+    for (auto ag_no : acmacs::range(per_antigen.size())) {
+        if (const auto& entry_seq = per_antigen[ag_no]; entry_seq) {
+            auto& antigen = antigens->at(ag_no);
+            try {
+                for (const auto& clade : entry_seq.seq().clades())
+                    antigen.add_clade(clade);
+            }
+            catch (std::exception& err) {
+                std::cerr << "WARNING: cannot figure out clade for \"" << antigen.name() << "\": " << err.what() << '\n';
+            }
+            catch (...) {
+                std::cerr << "WARNING: cannot figure out clade for \"" << antigen.name() << "\": unknown exception\n";
+            }
+        }
+    }
+
+} // seqdb::add_clades
 
 // ----------------------------------------------------------------------
 /// Local Variables:
