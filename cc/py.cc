@@ -197,7 +197,7 @@ PYBIND11_MODULE(seqdb_backend, m)
 
     m.def("setup_dbs", &seqdb::setup_dbs, py::arg("db_dir"), py::arg("verbose") = false);
     m.def("seqdb_setup", &seqdb::setup, py::arg("filename"), py::arg("verbose") = false);
-    m.def("get_seqdb", [](bool aTimer) { return seqdb::get(aTimer ? report_time::Yes : report_time::No); }, py::arg("timer") = false, py::return_value_policy::reference);
+    m.def("get_seqdb", [](bool aTimer) { return seqdb::get(seqdb::ignore_errors::no, aTimer ? report_time::Yes : report_time::No); }, py::arg("timer") = false, py::return_value_policy::reference);
 
 
 }

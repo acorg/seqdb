@@ -37,7 +37,7 @@ int main(int argc, char* const argv[])
             throw std::runtime_error("Usage: "s + argv[0] + " seqdb.json.xz");
 
         seqdb::setup(argv[1], true);
-        const auto& seqdb = seqdb::get(report_time::Yes);
+        const auto& seqdb = seqdb::get(seqdb::ignore_errors::no, report_time::Yes);
 
         auto update = [](Info& target, const auto& entry) {
             ++target.entries;

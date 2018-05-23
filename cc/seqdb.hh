@@ -460,6 +460,8 @@ namespace seqdb
 
         size_t number_of_entries() const { return mEntries.size(); }
         size_t number_of_seqs() const { return std::accumulate(mEntries.begin(), mEntries.end(), 0U, [](size_t acc, const auto& e) { return acc + e.seqs().size(); }); }
+        bool empty() const { return mEntries.empty(); }
+        operator bool() const { return !empty(); }
 
         SeqdbEntry* find_by_name(const std::string& aName)
             {
@@ -692,11 +694,13 @@ namespace seqdb
 
 // ----------------------------------------------------------------------
 
-    void add_clades(acmacs::chart::ChartModify& chart);
+    enum class ignore_errors { no, yes };
+
+    void add_clades(acmacs::chart::ChartModify& chart, ignore_errors ignore_err);
 
     void setup(const std::string& aFilename, bool aVerbose);
     void setup_dbs(const std::string& aDbDir, bool aVerbose);
-    const Seqdb& get(report_time aTimeit = report_time::No);
+    const Seqdb& get(ignore_errors ignore_err = ignore_errors::no, report_time aTimeit = report_time::No);
     Seqdb& get_for_updating(report_time aTimeit = report_time::No);
 
 // ----------------------------------------------------------------------
