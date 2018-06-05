@@ -844,9 +844,20 @@ size_t Seqdb::match(const acmacs::chart::Antigens& aAntigens, std::vector<SeqdbE
     size_t matched = 0;
     aPerAntigen.clear();
     for (auto antigen: aAntigens) {
+        bool destroy_entry = false;
         const SeqdbEntrySeq* entry = find_hi_name(antigen->full_name());
         if (!entry)
             entry = find_hi_name(antigen->full_name_for_seqdb_matching());
+        if (!entry && antigen->passage().empty()) {
+            if (const auto* s_entry = find_by_name(antigen->name()); s_entry) {
+                for (const auto& seq : s_entry->seqs()) {
+                    if (seq.reassortant_match(antigen->reassortant())) {
+                        entry = new SeqdbEntrySeq(*s_entry, seq);
+                        destroy_entry = true;
+                    }
+                }
+            }
+        }
         if (entry) {
             if (!aChartVirusType.empty() && aChartVirusType != entry->entry().virus_type()) {
                 if (aReport == report::yes)
@@ -859,6 +870,8 @@ size_t Seqdb::match(const acmacs::chart::Antigens& aAntigens, std::vector<SeqdbE
                 aPerAntigen.push_back(*entry);
                 ++matched;
             }
+            if (destroy_entry)
+                delete entry;
         }
         else {
             aPerAntigen.emplace_back();
@@ -985,7 +998,7 @@ void seqdb::add_clades(acmacs::chart::ChartModify& chart, ignore_errors ignore_e
 {
     if (const auto& seqdb = get(ignore_err, report_time::No); seqdb) {
         auto antigens = chart.antigens_modify();
-        const auto per_antigen = seqdb.match(*antigens, chart.info()->virus_type(acmacs::chart::Info::Compute::Yes), seqdb::report::no);
+        const auto per_antigen = seqdb.match(*antigens, chart.info()->virus_type(acmacs::chart::Info::Compute::Yes), a_report);
         size_t sequenced = 0;
         for (auto ag_no : acmacs::range(per_antigen.size())) {
             if (const auto& entry_seq = per_antigen[ag_no]; entry_seq) {
