@@ -53,7 +53,7 @@ int main(int argc, char* const argv[])
             throw std::runtime_error("Usage: "s + args.program() + " [options] <name> ...\n" + args.usage_options());
         }
         const bool verbose = args["-v"] || args["--verbose"];
-        seqdb::setup_dbs(args["--db-dir"], verbose);
+        seqdb::setup_dbs(args["--db-dir"], verbose ? seqdb::report::yes : seqdb::report::no);
         Comparer comparer;
         for (auto arg_no : acmacs::range(args.number_of_arguments())) {
             if (const auto* entry_seq = seqdb::get().find_hi_name(args[arg_no]); entry_seq && entry_seq->seq().aligned()) {

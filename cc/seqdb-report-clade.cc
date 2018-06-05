@@ -25,7 +25,7 @@ int main(int argc, char* const argv[])
             throw std::runtime_error("Usage: "s + args.program() + sUsage + args.usage_options());
         }
         const bool verbose = args["-v"] || args["--verbose"];
-        seqdb::setup_dbs(args["--db-dir"], verbose);
+        seqdb::setup_dbs(args["--db-dir"], verbose ? seqdb::report::yes : seqdb::report::no);
         if (args[0] == "all"s) {
             for (const auto entry_seq: seqdb::get()) {
                 if ((!args["--lab"] || entry_seq.seq().has_lab(args["--lab"].str())) && (!args["--flu"] || entry_seq.entry().virus_type() == args["--flu"].str_view()))

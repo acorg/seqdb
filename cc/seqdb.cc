@@ -27,13 +27,13 @@ using namespace seqdb;
 
 static std::unique_ptr<Seqdb> sSeqdb;
 static std::string sSeqdbFilename = acmacs::acmacsd_root() + "/data/seqdb.json.xz";
-static bool sVerbose = false;
+static seqdb::report sReport = seqdb::report::no;
 
 #pragma GCC diagnostic pop
 
-void seqdb::setup(const std::string& aFilename, bool aVerbose)
+void seqdb::setup(const std::string& aFilename, seqdb::report aReport)
 {
-    sVerbose = aVerbose;
+    sReport = aReport;
     if (!aFilename.empty())
         sSeqdbFilename = aFilename;
 }
@@ -42,7 +42,7 @@ const Seqdb& seqdb::get(ignore_errors ignore_err, report_time aTimeit)
 {
     using namespace std::string_literals;
     if (!sSeqdb) {
-            Timeit ti_seqdb{"DEBUG: SeqDb loading from " + sSeqdbFilename + ": ", sVerbose ? report_time::Yes : aTimeit};
+        Timeit ti_seqdb{"DEBUG: SeqDb loading from " + sSeqdbFilename + ": ", sReport == report::yes ? report_time::Yes : aTimeit};
             sSeqdb = std::make_unique<Seqdb>();
             try {
                 sSeqdb->load(sSeqdbFilename);
@@ -65,17 +65,17 @@ Seqdb& seqdb::get_for_updating(report_time aTimeit)
 
 } // seqdb::get_for_updating
 
-void seqdb::setup_dbs(const std::string& aDbDir, bool aVerbose)
+void seqdb::setup_dbs(const std::string& aDbDir, seqdb::report aReport)
 {
     if (!aDbDir.empty()) {
-        setup(aDbDir + "/seqdb.json.xz", aVerbose);
-        locdb_setup(aDbDir + "/locationdb.json.xz", aVerbose);
+        setup(aDbDir + "/seqdb.json.xz", aReport);
+        locdb_setup(aDbDir + "/locationdb.json.xz", aReport == report::yes ? true : false);
     }
     else {
-        setup(std::string{}, aVerbose);
-        locdb_setup(std::string{}, aVerbose);
+        setup(std::string{}, aReport);
+        locdb_setup(std::string{}, aReport == report::yes ? true : false);
     }
-    hidb::setup(aDbDir, {}, aVerbose);
+    hidb::setup(aDbDir, {}, aReport == report::yes ? true : false);
 }
 
 // ----------------------------------------------------------------------
@@ -839,7 +839,7 @@ const SeqdbEntrySeq* Seqdb::find_hi_name(const std::string& aHiName) const
 
 // ----------------------------------------------------------------------
 
-size_t Seqdb::match(const acmacs::chart::Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerAntigen, const std::string& aChartVirusType, bool aVerbose) const
+size_t Seqdb::match(const acmacs::chart::Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerAntigen, const std::string& aChartVirusType, seqdb::report aReport) const
 {
     size_t matched = 0;
     aPerAntigen.clear();
@@ -849,7 +849,7 @@ size_t Seqdb::match(const acmacs::chart::Antigens& aAntigens, std::vector<SeqdbE
             entry = find_hi_name(antigen->full_name_for_seqdb_matching());
         if (entry) {
             if (!aChartVirusType.empty() && aChartVirusType != entry->entry().virus_type()) {
-                if (aVerbose)
+                if (aReport == report::yes)
                     std::cerr << "WARNING: Seqdb::match: virus type mismatch: chart:" << aChartVirusType << " seq:" << entry->entry().virus_type() << " name: " << antigen->full_name() << '\n';
             }
             else if (antigen->lineage() != acmacs::chart::BLineage::Unknown && static_cast<std::string>(antigen->lineage()) != entry->entry().lineage()) {
@@ -862,11 +862,11 @@ size_t Seqdb::match(const acmacs::chart::Antigens& aAntigens, std::vector<SeqdbE
         }
         else {
             aPerAntigen.emplace_back();
-            // if (aVerbose)
+            // if (aReport == report::yes)
             //     std::cerr << "WARNING: seqdb::match failed for \"" << antigen->full_name() << "\"" << '\n';
         }
     }
-    if (aVerbose)
+    if (aReport == report::yes)
         std::cerr << "INFO: " << matched << " antigens from chart have sequences in seqdb" << '\n';
     return matched;
 
@@ -874,17 +874,17 @@ size_t Seqdb::match(const acmacs::chart::Antigens& aAntigens, std::vector<SeqdbE
 
 // ----------------------------------------------------------------------
 
-std::vector<SeqdbEntrySeq> Seqdb::match(const acmacs::chart::Antigens& aAntigens, const std::string& aChartVirusType, bool aVerbose) const
+std::vector<SeqdbEntrySeq> Seqdb::match(const acmacs::chart::Antigens& aAntigens, const std::string& aChartVirusType, seqdb::report aReport) const
 {
     std::vector<SeqdbEntrySeq> per_antigen;
-    match(aAntigens, per_antigen, aChartVirusType, aVerbose);
+    match(aAntigens, per_antigen, aChartVirusType, aReport);
     return per_antigen;
 
 } // Seqdb::match
 
 // ----------------------------------------------------------------------
 
-void Seqdb::aa_at_positions_for_antigens(const acmacs::chart::Antigens& aAntigens, const std::vector<size_t>& aPositions, std::map<std::string, std::vector<size_t>>& aa_indices, bool aVerbose) const
+void Seqdb::aa_at_positions_for_antigens(const acmacs::chart::Antigens& aAntigens, const std::vector<size_t>& aPositions, std::map<std::string, std::vector<size_t>>& aa_indices, seqdb::report aReport) const
 {
     size_t matched = 0;
     for (auto ag = aAntigens.begin(); ag != aAntigens.end(); ++ag) {
@@ -898,7 +898,7 @@ void Seqdb::aa_at_positions_for_antigens(const acmacs::chart::Antigens& aAntigen
             ++matched;
         }
     }
-    if (aVerbose)
+    if (aReport == report::yes)
         std::cerr << "INFO: " << matched << " antigens from chart have sequences in seqdb" << '\n';
 
 } // Seqdb::aa_at_positions_for_antigens
@@ -957,7 +957,7 @@ void Seqdb::detect_insertions_deletions()
 
 // ----------------------------------------------------------------------
 
-void Seqdb::update_clades(bool aVerbose)
+void Seqdb::update_clades(seqdb::report aReport)
 {
     std::map<std::string, size_t> clade_count;
     for (auto entry_seq: *this) {
@@ -965,7 +965,7 @@ void Seqdb::update_clades(bool aVerbose)
         for (const auto& clade: clades)
             ++clade_count[clade];
     }
-    if (aVerbose)
+    if (aReport == report::yes)
         std::cerr << "INFO: clades: " << clade_count << '\n';
 
 } // Seqdb::update_clades
@@ -981,26 +981,35 @@ void Seqdb::detect_b_lineage()
 
 // ----------------------------------------------------------------------
 
-void seqdb::add_clades(acmacs::chart::ChartModify& chart, ignore_errors ignore_err)
+void seqdb::add_clades(acmacs::chart::ChartModify& chart, ignore_errors ignore_err, report a_report)
 {
     if (const auto& seqdb = get(ignore_err, report_time::No); seqdb) {
         auto antigens = chart.antigens_modify();
-        const auto per_antigen = seqdb.match(*antigens, chart.info()->virus_type(acmacs::chart::Info::Compute::Yes), false);
+        const auto per_antigen = seqdb.match(*antigens, chart.info()->virus_type(acmacs::chart::Info::Compute::Yes), seqdb::report::no);
+        size_t sequenced = 0;
         for (auto ag_no : acmacs::range(per_antigen.size())) {
             if (const auto& entry_seq = per_antigen[ag_no]; entry_seq) {
+                ++sequenced;
                 auto& antigen = antigens->at(ag_no);
-                try {
-                    for (const auto& clade : entry_seq.seq().clades())
-                        antigen.add_clade(clade);
+                if (const auto clades = entry_seq.seq().clades(); !clades.empty()) {
+                    try {
+                        for (const auto& clade : clades)
+                            antigen.add_clade(clade);
+                    }
+                    catch (std::exception& err) {
+                        std::cerr << "WARNING: cannot figure out clade for \"" << antigen.name() << "\": " << err.what() << '\n';
+                    }
+                    catch (...) {
+                        std::cerr << "WARNING: cannot figure out clade for \"" << antigen.name() << "\": unknown exception\n";
+                    }
                 }
-                catch (std::exception& err) {
-                    std::cerr << "WARNING: cannot figure out clade for \"" << antigen.name() << "\": " << err.what() << '\n';
-                }
-                catch (...) {
-                    std::cerr << "WARNING: cannot figure out clade for \"" << antigen.name() << "\": unknown exception\n";
+                else {
+                    antigen.add_clade("SEQUENCED");
                 }
             }
         }
+        if (a_report == report::yes)
+            std::cerr << "INFO: sequenced: " << sequenced << '\n';
     }
 
 } // seqdb::add_clades

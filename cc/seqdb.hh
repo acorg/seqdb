@@ -27,6 +27,8 @@ namespace seqdb
     class Seqdb;
     class SeqdbIterator;
 
+    enum class report { no, yes };
+
     class import_error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
 // ----------------------------------------------------------------------
@@ -486,7 +488,7 @@ namespace seqdb
         std::set<std::string> virus_types() const;
         void detect_insertions_deletions();
         void detect_b_lineage();
-        void update_clades(bool aVerbose);
+        void update_clades(report aReport);
 
           // removes short sequences, removes entries having no sequences. returns messages
         std::string cleanup(bool remove_short_sequences);
@@ -498,7 +500,7 @@ namespace seqdb
         std::vector<std::string> all_hi_names() const;
         std::vector<std::string> all_passages() const;
         void remove_hi_names();
-        std::vector<std::string> match_hidb(bool aVerbose, bool aGreedy = true); // seqdb-hidb.cc  returns list of not found location names
+        std::vector<std::string> match_hidb(enum report aReport, bool aGreedy = true); // seqdb-hidb.cc  returns list of not found location names
 
           // iterating over sequences with filtering
         SeqdbIterator begin() { return SeqdbIterator(*this, 0, 0); }
@@ -517,15 +519,15 @@ namespace seqdb
 
           // Matches antigens of a chart against seqdb, returns number of antigens matched.
           // Fills aPerAntigen with EntrySeq for each antigen.
-        size_t match(const acmacs::chart::Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerAntigen, const std::string& aChartVirusType, bool aVerbose = true) const;
-        std::vector<SeqdbEntrySeq> match(const acmacs::chart::Antigens& aAntigens, const std::string& aChartVirusType, bool aVerbose = true) const;
+        size_t match(const acmacs::chart::Antigens& aAntigens, std::vector<SeqdbEntrySeq>& aPerAntigen, const std::string& aChartVirusType, enum report aReport = report::yes) const;
+        std::vector<SeqdbEntrySeq> match(const acmacs::chart::Antigens& aAntigens, const std::string& aChartVirusType, enum report aReport = report::yes) const;
 
           // Matches antigens of a chart against seqdb, for each matched antigen extract AA at the passed positions
-        void aa_at_positions_for_antigens(const acmacs::chart::Antigens& aAntigens, const std::vector<size_t>& aPositions, std::map<std::string, std::vector<size_t>>& aa_indices, bool aVerbose) const;
-        std::map<std::string, std::vector<size_t>> aa_at_positions_for_antigens(const acmacs::chart::Antigens& aAntigens, const std::vector<size_t>& aPositions, bool aVerbose) const
+        void aa_at_positions_for_antigens(const acmacs::chart::Antigens& aAntigens, const std::vector<size_t>& aPositions, std::map<std::string, std::vector<size_t>>& aa_indices, enum report aReport) const;
+        std::map<std::string, std::vector<size_t>> aa_at_positions_for_antigens(const acmacs::chart::Antigens& aAntigens, const std::vector<size_t>& aPositions, enum report aReport) const
             {
                 std::map<std::string, std::vector<size_t>> result;
-                aa_at_positions_for_antigens(aAntigens, aPositions, result, aVerbose);
+                aa_at_positions_for_antigens(aAntigens, aPositions, result, aReport);
                 return result;
             }
 
@@ -696,10 +698,10 @@ namespace seqdb
 
     enum class ignore_errors { no, yes };
 
-    void add_clades(acmacs::chart::ChartModify& chart, ignore_errors ignore_err);
+    void add_clades(acmacs::chart::ChartModify& chart, ignore_errors ignore_err, report a_report);
 
-    void setup(const std::string& aFilename, bool aVerbose);
-    void setup_dbs(const std::string& aDbDir, bool aVerbose);
+    void setup(const std::string& aFilename, report aReport);
+    void setup_dbs(const std::string& aDbDir, report aReport);
     const Seqdb& get(ignore_errors ignore_err = ignore_errors::no, report_time aTimeit = report_time::No);
     Seqdb& get_for_updating(report_time aTimeit = report_time::No);
 

@@ -190,13 +190,13 @@ PYBIND11_MODULE(seqdb_backend, m)
             .def("build_hi_name_index", &Seqdb::build_hi_name_index)
             .def("find_hi_name", &Seqdb::find_hi_name, py::arg("name"), py::return_value_policy::reference, py::doc("returns entry_seq found by hi name or None"))
             .def("aa_at_positions_for_antigens", [](const seqdb::Seqdb& aSeqdb, const acmacs::chart::Antigens& aAntigens, const std::vector<size_t>& aPositions, bool aVerbose) {
-                    std::map<std::string, std::vector<size_t>> r; aSeqdb.aa_at_positions_for_antigens(aAntigens, aPositions, r, aVerbose); return r; }, py::arg("antigens"), py::arg("positions"), py::arg("verbose"))
+                                                     std::map<std::string, std::vector<size_t>> r; aSeqdb.aa_at_positions_for_antigens(aAntigens, aPositions, r, aVerbose ? seqdb::report::yes : seqdb::report::no); return r; }, py::arg("antigens"), py::arg("positions"), py::arg("verbose"))
             .def("match_antigens", [](const seqdb::Seqdb& aSeqdb, const acmacs::chart::Antigens& aAntigens, std::string aChartVirusType, bool aVerbose) {
-                                       std::vector<seqdb::SeqdbEntrySeq> r; aSeqdb.match(aAntigens, r, aChartVirusType, aVerbose); return r; }, py::arg("antigens"), py::arg("virus_type") = std::string{}, py::arg("verbose") = true)
+                                       std::vector<seqdb::SeqdbEntrySeq> r; aSeqdb.match(aAntigens, r, aChartVirusType, aVerbose ? seqdb::report::yes : seqdb::report::no); return r; }, py::arg("antigens"), py::arg("virus_type") = std::string{}, py::arg("verbose") = true)
             ;
 
-    m.def("setup_dbs", &seqdb::setup_dbs, py::arg("db_dir"), py::arg("verbose") = false);
-    m.def("seqdb_setup", &seqdb::setup, py::arg("filename"), py::arg("verbose") = false);
+    m.def("setup_dbs", [](std::string db_dir, bool aVerbose) { seqdb::setup_dbs(db_dir, aVerbose ? seqdb::report::yes : seqdb::report::no); }, py::arg("db_dir"), py::arg("verbose") = false);
+    m.def("seqdb_setup", [](std::string filename, bool aVerbose) { seqdb::setup(filename, aVerbose ? seqdb::report::yes : seqdb::report::no); }, py::arg("filename"), py::arg("verbose") = false);
     m.def("get_seqdb", [](bool aTimer) { return seqdb::get(seqdb::ignore_errors::no, aTimer ? report_time::Yes : report_time::No); }, py::arg("timer") = false, py::return_value_policy::reference);
 
 
