@@ -89,6 +89,23 @@ std::vector<std::string> seqdb::clades_h1pdm(std::string aSequence, Shift aShift
 
 // ----------------------------------------------------------------------
 
+// HK68 TY155
+// EN72 Transition QK189
+// VI75 Transition GE158+DN193
+// TX77 Transition KE156
+// BK79 Transition SY159 (within cluster)+YH155+KR189
+// SI87 Transition NK145 to BE89
+// SI87 Transition EK156 + SD133(for direction) to BE92
+// BE92 Transition NK145 to WU95
+// WU95 Transition KQ156+EK158 to SY97
+// SY97 Transition HT155+QH156 to FU02
+
+// Fu02-> Cal04 most likely KN145
+// CA04 - WI05: K145N
+// WI05 - PE09: S193F + K158N 
+// PE09 - SW13: F159S
+// PE09 - HK14: F159Y
+
 // gly: 160S or 160T
 // no-gly: not gly
 // 3C3: 158N 159F
