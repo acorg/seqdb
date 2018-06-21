@@ -7,6 +7,8 @@
 #include "acmacs-base/timeit.hh"
 #include "acmacs-base/string-split.hh"
 #include "acmacs-base/virus-name.hh"
+#include "acmacs-base/to-json.hh"
+#include "acmacs-base/enumerate.hh"
 #include "locationdb/locdb.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 #include "seqdb/seqdb.hh"
@@ -1026,6 +1028,31 @@ void seqdb::add_clades(acmacs::chart::ChartModify& chart, ignore_errors ignore_e
     }
 
 } // seqdb::add_clades
+
+// ----------------------------------------------------------------------
+
+std::string seqdb::sequences_of_chart_for_ace_view_1(acmacs::chart::Chart& chart)
+{
+    const auto matches = get().match(*chart.antigens(), chart.info()->virus_type());
+    constexpr size_t max_num_pos = 1000;
+    std::vector<std::map<char, size_t>> stat_per_pos(max_num_pos);
+    auto json_antigens = to_json::object();
+    for (auto [ag_no, entry_seq] : acmacs::enumerate(matches)) {
+        if (entry_seq) {
+            const auto sequence = entry_seq.seq().amino_acids(true);
+            json_antigens = to_json::object_append(json_antigens, ag_no, sequence);
+            for (auto [pos, aa] : acmacs::enumerate(sequence, 1))
+                ++stat_per_pos[pos][aa];
+        }
+    }
+    auto json_per_pos = to_json::object();
+    for (auto [pos, entry] : acmacs::enumerate(stat_per_pos)) {
+        // if (entry.size() > 1) // && (entry.find('X') == entry.end() || entry.size() > 2))
+        json_per_pos = to_json::object_append(json_per_pos, pos, to_json::raw(to_json::object(entry)));
+    }
+    return to_json::object("sequences", to_json::raw(to_json::object("antigens", to_json::raw(json_antigens), "per_pos", to_json::raw(json_per_pos))));
+
+} // seqdb::sequences_of_chart_for_ace_view_1
 
 // ----------------------------------------------------------------------
 /// Local Variables:

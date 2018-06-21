@@ -705,6 +705,9 @@ namespace seqdb
     const Seqdb& get(ignore_errors ignore_err = ignore_errors::no, report_time aTimeit = report_time::No);
     Seqdb& get_for_updating(report_time aTimeit = report_time::No);
 
+      // returns json with data for ace-view-1 sequences_of_chart command
+    std::string sequences_of_chart_for_ace_view_1(acmacs::chart::Chart& chart);
+
 // ----------------------------------------------------------------------
 
 } // namespace seqdb
