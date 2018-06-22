@@ -1031,24 +1031,39 @@ void seqdb::add_clades(acmacs::chart::ChartModify& chart, ignore_errors ignore_e
 
 // ----------------------------------------------------------------------
 
+struct StatPerPos
+{
+    ssize_t shannon_index = 0;  // https://en.wikipedia.org/wiki/Diversity_index
+    std::map<char, size_t> aa_count;
+};
+
 std::string seqdb::sequences_of_chart_for_ace_view_1(acmacs::chart::Chart& chart)
 {
     const auto matches = get().match(*chart.antigens(), chart.info()->virus_type());
     constexpr size_t max_num_pos = 1000;
-    std::vector<std::map<char, size_t>> stat_per_pos(max_num_pos);
+    std::vector<StatPerPos> stat_per_pos(max_num_pos);
     auto json_antigens = to_json::object();
     for (auto [ag_no, entry_seq] : acmacs::enumerate(matches)) {
         if (entry_seq) {
             const auto sequence = entry_seq.seq().amino_acids(true);
             json_antigens = to_json::object_append(json_antigens, ag_no, sequence);
             for (auto [pos, aa] : acmacs::enumerate(sequence, 1))
-                ++stat_per_pos[pos][aa];
+                ++stat_per_pos[pos].aa_count[aa];
         }
+    }
+    for (auto& per_pos : stat_per_pos) {
+        const auto sum = std::accumulate(per_pos.aa_count.begin(), per_pos.aa_count.end(), 0UL, [](auto accum, const auto& entry) { return accum + entry.second; });
+        const auto shannon_index = - std::accumulate(per_pos.aa_count.begin(), per_pos.aa_count.end(), 0.0,
+                                                [sum=double(sum)](auto accum, const auto& entry) {
+                                                    const double p = entry.second / sum;
+                                                    return accum + p * std::log(p);
+                                                });
+        per_pos.shannon_index = std::lround(shannon_index * 100);
     }
     auto json_per_pos = to_json::object();
     for (auto [pos, entry] : acmacs::enumerate(stat_per_pos)) {
         // if (entry.size() > 1) // && (entry.find('X') == entry.end() || entry.size() > 2))
-        json_per_pos = to_json::object_append(json_per_pos, pos, to_json::raw(to_json::object(entry)));
+        json_per_pos = to_json::object_append(json_per_pos, pos, to_json::raw(to_json::object("shannon", entry.shannon_index, "aa_count", to_json::raw(to_json::object(entry.aa_count)))));
     }
     return to_json::object("sequences", to_json::raw(to_json::object("antigens", to_json::raw(json_antigens), "per_pos", to_json::raw(json_per_pos))));
 
