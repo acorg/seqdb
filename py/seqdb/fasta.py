@@ -32,7 +32,11 @@ def export_from_seqdb(seqdb, filename, output_format, amino_acids, lab, virus_ty
         return r
 
     def get_sequence(e, left_part_size):
-        e["s"] = e["e"].seq.amino_acids(aligned=aligned, left_part_size=left_part_size) if amino_acids else e["e"].seq.nucleotides(aligned=aligned, left_part_size=left_part_size)
+        try:
+            e["s"] = e["e"].seq.amino_acids(aligned=aligned, left_part_size=left_part_size) if amino_acids else e["e"].seq.nucleotides(aligned=aligned, left_part_size=left_part_size)
+        except Exception as err:
+            module_logger.warning("Cannot get sequence for {}: {}".format(e["n"], err))
+            e["s"] = None
         return e
 
     def left_part(e):
