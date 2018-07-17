@@ -707,6 +707,8 @@ namespace seqdb
 
       // returns json with data for ace-view/2018 sequences_of_chart command
     std::string sequences_of_chart_for_ace_view_1(acmacs::chart::Chart& chart);
+      // returns sequences in the fasta format
+    std::string sequences_of_chart_as_fasta(acmacs::chart::Chart& chart);
 
 // ----------------------------------------------------------------------
 

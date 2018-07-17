@@ -1070,6 +1070,22 @@ std::string seqdb::sequences_of_chart_for_ace_view_1(acmacs::chart::Chart& chart
 } // seqdb::sequences_of_chart_for_ace_view_1
 
 // ----------------------------------------------------------------------
+
+std::string seqdb::sequences_of_chart_as_fasta(acmacs::chart::Chart& chart)
+{
+    auto antigens = chart.antigens();
+    const auto matches = get().match(*antigens, chart.info()->virus_type());
+    std::string fasta;
+    for (auto [ag_no, entry_seq] : acmacs::enumerate(matches)) {
+        if (entry_seq) {
+            fasta += ">" + antigens->at(ag_no)->full_name() + '\n' + entry_seq.seq().nucleotides(true) + '\n';
+        }
+    }
+    return fasta;
+
+} // seqdb::sequences_of_chart_as_fasta
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:
