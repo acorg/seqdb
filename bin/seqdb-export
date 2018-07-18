@@ -38,6 +38,7 @@ def main(args):
         lineage=args.lineage,
         gene=args.gene,
         start_date=args.start_date, end_date=args.end_date,
+        random=args.random,
         recent=args.recent,
         base_seq=args.base_seq,
         name_format=args.name_format,
@@ -71,6 +72,7 @@ with timeit(sys.argv[0]):
         parser.add_argument('--no-truncate-left', action='store_false', dest='truncate_left', default=True, help='Do not truncate left part of the sequence (e.g. signal peptide).')
         parser.add_argument('--start-date', action='store', dest='start_date', default=None, help='Export sequences for antigens isolated on or after that date (YYYYMMDD).')
         parser.add_argument('--end-date', action='store', dest='end_date', default=None, help='Export sequences for antigens isolated before that date (YYYYMMDD).')
+        parser.add_argument('--random', action='store', type=int, dest='random', default=None, help='Export N sequences from the date range specified chosen at random.')
         parser.add_argument('--recent', action='store', type=int, dest='recent', default=None, help='Export N recent sequences.')
         parser.add_argument('--with-hi-name', action='store_true', dest='with_hi_name', default=False, help='Export sequences having hi_name only (i.e. matched with HI data).')
 

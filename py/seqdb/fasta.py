@@ -6,7 +6,7 @@
 Functions for reading and generating fasta files.
 """
 
-import os, re, collections, operator
+import os, re, collections, operator, random as random_m
 import logging; module_logger = logging.getLogger(__name__)
 from acmacs_base.files import read_text, write_binary
 from acmacs_base.encode_name import encode
@@ -19,7 +19,7 @@ class FastaReaderError (Exception):
 
 # ======================================================================
 
-def export_from_seqdb(seqdb, filename, output_format, amino_acids, lab, virus_type, lineage, gene, start_date, end_date, recent, base_seq, name_format, aligned, truncate_left, encode_name, wrap, truncate_to_most_common_length, hamming_distance_threshold, hamming_distance_report, sort_by, with_hi_name, name_match):
+def export_from_seqdb(seqdb, filename, output_format, amino_acids, lab, virus_type, lineage, gene, start_date, end_date, random, recent, base_seq, name_format, aligned, truncate_left, encode_name, wrap, truncate_to_most_common_length, hamming_distance_threshold, hamming_distance_report, sort_by, with_hi_name, name_match):
 
     def make_entry(e):
         r = {
@@ -103,6 +103,14 @@ def export_from_seqdb(seqdb, filename, output_format, amino_acids, lab, virus_ty
         sequences.sort(key=operator.itemgetter("d"))
         sorted_by = "date"
         sequences = sequences[len(sequences) - recent:]
+
+    if random is not None and len(sequences) > random:
+        module_logger.info("choosing {} from {} at random".format(random, len(sequences)))
+        random_m.seed()
+        chosen = set()
+        while len(chosen) < random:
+            chosen.add(random_m.randrange(len(sequences)))
+        sequences = [sequences[num] for num in chosen]
 
     if sort_by and sort_by != sorted_by:
         if sort_by == "date":
