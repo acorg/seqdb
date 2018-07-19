@@ -500,12 +500,12 @@ class PhylipExporter (ExporterBase):
     def do_write(self):
         max_s_len = max(len(s) for s in self.sequences)
         max_n_len = max(len(n) for n in self.names)
-        self.output += "{} {}\n".format(len(sequences), max_s_len)
+        self.output += "{} {}\n".format(len(self.sequences), max_s_len)
         if self.wrap:
             raise NotImplementedError("phylip with wrapping")   # http://www.molecularevolution.org/resources/fileformats/phylip_dna
         else:
             for no, (n, s) in enumerate(zip(self.names, self.sequences)):
-                self.output += "{:<{}s}  {}{}\n".format(names[no], max_n_len, s, "-" * (max_s_len - len(s)))
+                self.output += "{:<{}s}  {}{}\n".format(self.names[no], max_n_len, s, "-" * (max_s_len - len(s)))
 
 # ======================================================================
 ### Local Variables:
