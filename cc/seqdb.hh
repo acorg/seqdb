@@ -259,6 +259,11 @@ namespace seqdb
                 return r;
             }
 
+        bool has_lab(const std::string& aLab) const
+            {
+                return std::any_of(mSeq.begin(), mSeq.end(), [&aLab](auto const & seq) { return seq.has_lab(aLab); });
+            }
+
         std::vector<std::string> make_all_names() const;
         std::vector<std::string> make_all_variants() const;
 
