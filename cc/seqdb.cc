@@ -776,8 +776,9 @@ SeqdbEntrySeq Seqdb::find_by_seq_id(const std::string& aSeqId) const
         if (const auto entry = find_by_name(std::string(seq_id, 0, passage_separator)); entry != nullptr) {
             const auto passage_distinct = acmacs::string::split(string::string_view(seq_id, passage_separator + 2), "__", acmacs::string::Split::KeepEmpty);
             auto index = passage_distinct.size() == 1 ? 0 : std::stoi(std::string(passage_distinct[1]));
-            for (const auto& seq: entry->seqs()) {
-                if (seq.passage() == passage_distinct[0]) {
+            for (const auto& seq : entry->seqs()) {
+                if (seq.passages().empty() ? passage_distinct[0].empty() : std::find(seq.passages().begin(), seq.passages().end(), passage_distinct[0]) != seq.passages().end()) {
+                      // passage matched
                     if (index == 0) {
                         result.assign(*entry, seq);
                         break;
@@ -788,7 +789,7 @@ SeqdbEntrySeq Seqdb::find_by_seq_id(const std::string& aSeqId) const
             }
         }
         else {
-            std::cerr << "Error: no entry for \"" << std::string(seq_id, 0, passage_separator) << "\" in seqdb [" << __FILE__ << ":" << __LINE__ << ']' << '\n';
+            std::cerr << "ERROR: no entry for \"" << std::string(seq_id, 0, passage_separator) << "\" in seqdb [" << __FILE__ << ":" << __LINE__ << ']' << '\n';
         }
     }
     else {
@@ -808,7 +809,7 @@ SeqdbEntrySeq Seqdb::find_by_seq_id(const std::string& aSeqId) const
     }
 
     if (!result) {
-        std::cerr << "Error: \"" << seq_id << "\" not in seqdb" << '\n';
+        std::cerr << "ERROR: \"" << seq_id << "\" not in seqdb" << '\n';
     }
     return result;
 
