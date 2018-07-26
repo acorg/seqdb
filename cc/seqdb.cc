@@ -644,9 +644,10 @@ std::string Seqdb::report_not_aligned(size_t prefix_size) const
     const auto p_end = std::unique(prefixes.begin(), prefixes.end());
 
     std::ostringstream os;
-    os << "Prefixes of not aligned sequences of length " << prefix_size << ": " << p_end - prefixes.begin() << '\n';
-    std::copy(prefixes.begin(), p_end, std::ostream_iterator<std::string>(os, "\n"));
-
+    if (p_end - prefixes.begin()) {
+        os << "WARNING: Prefixes of not aligned sequences of length " << prefix_size << ": " << p_end - prefixes.begin() << '\n';
+        std::copy(prefixes.begin(), p_end, std::ostream_iterator<std::string>(os, "\n"));
+    }
     return os.str();
 
 } // Seqdb::report_not_aligned

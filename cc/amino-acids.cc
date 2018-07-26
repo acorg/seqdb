@@ -133,14 +133,14 @@ static AlignEntry ALIGN_RAW_DATA[] = {
     {"A(H3N2)", "", "NA",  0,        std::regex("MNP[NS]QKI[IM]TIGS[IVX]SL[IT][ILV]"),      20, false, "h3-NA-1"}, // Kim, http://www.ncbi.nlm.nih.gov/nuccore/DQ415347.1
 
 
-    {"A(H1N1)", "",         "HA", Shift(), std::regex("MKVK[LY]LVLLCTFTATYA"),                           20,  true, "h1-MKV-1"},
-    {"A(H1N1)", "SEASONAL", "HA", Shift(), std::regex("MKVKLLVLLCTFSATYA"),                              20,  true, "h1-MKV-2"},
-    {"A(H1N1)", "2009PDM",  "HA", Shift(), std::regex("M[EK]AIL[VX][VX][LM]L[CHY]T[FL][AT]T[AT][NS]A"),  20,  true, "h1-MKA-2"},
-    {"A(H1N1)", "",         "HA",       0, std::regex("DT[IL]CI[GX][HY]H[AT][DNTX][DN]"),               100, false, "h1-DTL-1"},
-    {"A(H1N1)", "",         "HA",       5, std::regex("GYHANNS[AT]DTV"),                                100, false, "h1-GYH"},
-    {"A(H1N1)", "",         "HA",      96, std::regex("[DN]YEELREQL"),                                  120, false, "h1-DYE"},
+    {"A(H1N1)", "",         "HA", Shift(), std::regex("MKVK[LY]LVLLCTFTATYA"),                             20,  true, "h1-MKV-1"},
+    {"A(H1N1)", "SEASONAL", "HA", Shift(), std::regex("MKVKLLVLLCTFSATYA"),                                20,  true, "h1-MKV-2"},
+    {"A(H1N1)", "2009PDM",  "HA", Shift(), std::regex("M[EK]AIL[VX][VX][LM]L[CHY][TA][FL][AT]T[AT][NS]A"), 30,  true, "h1-MKA-2"},
+    {"A(H1N1)", "",         "HA",       0, std::regex("DT[IL]CI[GX][HY]H[AT][DNTX][DN]"),                  100, false, "h1-DTL-1"},
+    {"A(H1N1)", "",         "HA",       5, std::regex("GYHANNS[AT]DTV"),                                   100, false, "h1-GYH"},
+    {"A(H1N1)", "",         "HA",      96, std::regex("[DN]YEELREQL"),                                     120, false, "h1-DYE"},
       // leads to wrong alignment due to insertion before the regex {"A(H1N1)", "",         "HA",     162, std::regex("[KQ]SY[AI]N[ND]K[EG]KEVLVLWG[IV]HHP"),           220, false, "h1-KSY"},
-    {"A(H1N1)", "",         "HA",     105, std::regex("SSISSFER"),                                      200, false, "h1-SSI"},
+    {"A(H1N1)", "",         "HA",     105, std::regex("SSISSFER"),                                         200, false, "h1-SSI"},
 
     {"A(H1N1)", "",         "NA",       0, std::regex("MNPNQKIITIG[SW][VI]CMTI"),                        20, false, "h1-NA-1"},
     {"A(H1N1)", "",         "NA",      73, std::regex("FAAGQSVVSVKLAGNSSLCPVSGWAIYSK"),                 200, false, "h1-NA-2"},
