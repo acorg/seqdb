@@ -16,6 +16,7 @@ TARGETS = \
 	$(DIST)/seqdb-export-sequences-of-chart \
 	$(DIST)/seqdb-export-sequences-and-layout-of-chart \
 	$(DIST)/seqdb-update-clades \
+	$(DIST)/seqdb-list-strains-in-the-clade \
 	$(DIST)/seqdb-compare-sequences
 
 SEQDB_SOURCES = seqdb.cc seqdb-export.cc seqdb-import.cc seqdb-hidb.cc amino-acids.cc clades.cc insertions_deletions.cc
