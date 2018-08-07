@@ -25,7 +25,7 @@ int main(int argc, char* const argv[])
         const bool verbose = args["-v"] || args["--verbose"];
         const std::string clade = args[0];
         seqdb::setup_dbs(args["--db-dir"], verbose ? seqdb::report::yes : seqdb::report::no);
-        const auto& seqdb = seqdb::get_for_updating();
+        const auto& seqdb = seqdb::get();
         for (const auto entry_seq : seqdb) {
             if (entry_seq.seq().has_clade(clade)) {
                 std::cout << entry_seq.make_name() << '\n';
