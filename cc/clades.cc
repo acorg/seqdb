@@ -137,6 +137,7 @@ std::vector<std::string> seqdb::clades_h1pdm(std::string aSequence, Shift aShift
 // Clades defined by Sarah on 2018-08-09 for TC1 based on the tree made for TC1 and based on the older definitions above
 // 3C.3    158N 159F
 // 3C.3a   158N 159S
+// 3C.3b   62K 83R 158N 261Q
 // 3C.2a   158N 159Y
 // 2a1     3I 158N 159Y 171K 406V 484E   (3C2a1)
 // 2a1a    158N 159Y 479E (3C2a1a)
@@ -167,6 +168,7 @@ static const std::vector<CladeDesc> sClades =
 {
     {"3C.3", {{158, 'N'}, {159, 'F'}}},
     {"3C.3A", {{158, 'N'}, {159, 'S'}}},
+    {"3C.3B", {{62, 'K'}, {83, 'R'}, {158, 'N'}, {261, 'Q'}}},
     {"3C.2A", {{158, 'N'}, {159, 'Y'}}},
     {"2A1", {{3, 'I'}, {158, 'N'}, {159, 'Y'}, {171, 'K'}, {406, 'V'}, {484, 'E'}}},
     {"2A1A", {{158, 'N'}, {159, 'Y'}, {479, 'E'}}},
