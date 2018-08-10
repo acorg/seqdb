@@ -140,7 +140,7 @@ std::vector<std::string> seqdb::clades_h1pdm(std::string aSequence, Shift aShift
 // 3C.3b   62K 83R 158N 261Q
 // 3C.2a   158N 159Y
 // 2a1     3I 158N 159Y 171K 406V 484E   (3C2a1)
-// 2a1a    158N 159Y 479E (3C2a1a)
+// 2a1a    92K 158N 159Y 479E (3C2a1a)  (92K added by Sarah later: to eliminate the extra 2a1a label in the tree for TC1 2018-08-09)
 // 2a1b    92R 158N 159Y 311Q (3C2a1b)
 // 2a2     131K 142K 158N 159Y 261Q (3C2a2)
 // 2a3     3I 121K 144K (former 3C2a3)
@@ -171,7 +171,7 @@ static const std::vector<CladeDesc> sClades =
     {"3C.3B", {{62, 'K'}, {83, 'R'}, {158, 'N'}, {261, 'Q'}}},
     {"3C.2A", {{158, 'N'}, {159, 'Y'}}},
     {"2A1", {{3, 'I'}, {158, 'N'}, {159, 'Y'}, {171, 'K'}, {406, 'V'}, {484, 'E'}}},
-    {"2A1A", {{158, 'N'}, {159, 'Y'}, {479, 'E'}}},
+    {"2A1A", {{92, 'K'}, {158, 'N'}, {159, 'Y'}, {479, 'E'}}},
     {"2A1B", {{92, 'R'}, {158, 'N'}, {159, 'Y'}, {311, 'Q'}}},
     {"2A2", {{131, 'K'}, {142, 'K'}, {158, 'N'}, {159, 'Y'}, {261, 'Q'}}},
     {"2A3", {{3, 'I'}, {121, 'K'}, {144, 'K'}}},
