@@ -2,6 +2,7 @@
 #include <fstream>
 
 #include "acmacs-base/argc-argv.hh"
+#include "acmacs-base/enumerate.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/read-file.hh"
 #include "acmacs-chart-2/factory-import.hh"
@@ -22,6 +23,7 @@ int main(int argc, char* const argv[])
                 {"--amino-acids", false},
                 {"--aligned", false},
                 {"--replace-spaces-in-names", false},
+                {"--name-from-chart", false},
                 {"--time", false, "report time of loading chart"},
                 {"-v", false},
                 {"--verbose", false},
@@ -35,13 +37,18 @@ int main(int argc, char* const argv[])
         seqdb::setup_dbs(args["--db-dir"], verbose ? seqdb::report::yes : seqdb::report::no);
         const auto& seqdb = seqdb::get();
         auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, args["--time"] ? report_time::Yes : report_time::No);
-        const auto per_antigen = seqdb.match(*chart->antigens(), chart->info()->virus_type());
+        auto antigens = chart->antigens();
+        const auto per_antigen = seqdb.match(*antigens, chart->info()->virus_type());
         std::string output;
-        for (const auto& entry: per_antigen) {
+        for (auto [ag_no, entry] : acmacs::enumerate(per_antigen)) {
             if (entry) {
+                if (!entry.seq().hi_name_present(antigens->at(ag_no)->full_name()))
+                    throw std::runtime_error("ERROR: internal: matched sequence " + entry.entry().name() + " has no matched HI name for " + antigens->at(ag_no)->full_name());
                 auto name = entry.make_name();
                 if (args["--replace-spaces-in-names"])
                     name = string::replace(name, " ", "_");
+                if (args["--name-from-chart"])
+                    name = antigens->at(ag_no)->full_name() + " ==> " + name;
                 output += ">" + name + "\n";
                 if (args["--amino-acids"])
                     output += entry.seq().amino_acids(args["--aligned"]);

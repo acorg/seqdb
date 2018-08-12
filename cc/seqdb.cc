@@ -849,6 +849,7 @@ size_t Seqdb::match(const acmacs::chart::Antigens& aAntigens, std::vector<SeqdbE
     aPerAntigen.clear();
     for (auto antigen: aAntigens) {
         bool destroy_entry = false;
+        bool found = false;
         const SeqdbEntrySeq* entry = find_hi_name(antigen->full_name());
         if (!entry)
             entry = find_hi_name(antigen->full_name_for_seqdb_matching());
@@ -872,12 +873,13 @@ size_t Seqdb::match(const acmacs::chart::Antigens& aAntigens, std::vector<SeqdbE
             }
             else {
                 aPerAntigen.push_back(*entry);
+                found = true;
                 ++matched;
             }
             if (destroy_entry)
                 delete entry;
         }
-        else {
+        if (!found) {
             aPerAntigen.emplace_back();
             // if (aReport == report::yes)
             //     std::cerr << "WARNING: seqdb::match failed for \"" << antigen->full_name() << "\"" << '\n';
