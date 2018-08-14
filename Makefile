@@ -17,6 +17,7 @@ TARGETS = \
   $(DIST)/seqdb-clades-for-sera-in-chart \
   $(DIST)/seqdb-export-sequences-and-layout-of-chart \
   $(DIST)/seqdb-sequenced-antigens-in-chart \
+  $(DIST)/seqdb-strains-of-chart-in-clade \
   $(DIST)/seqdb-update-clades \
   $(DIST)/seqdb-list-strains-in-the-clade \
   $(DIST)/seqdb-list-strains-having-aa-at \
