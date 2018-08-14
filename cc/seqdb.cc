@@ -1049,19 +1049,23 @@ std::string seqdb::sequences_of_chart_for_ace_view_1(acmacs::chart::Chart& chart
     auto json_antigens = to_json::object();
     for (auto [ag_no, entry_seq] : acmacs::enumerate(matches)) {
         if (entry_seq) {
-            const auto sequence = entry_seq.seq().amino_acids(true);
-            json_antigens = to_json::object_append(json_antigens, ag_no, sequence);
-            for (auto [pos, aa] : acmacs::enumerate(sequence, 1))
-                ++stat_per_pos[pos].aa_count[aa];
+            try {
+                const auto sequence = entry_seq.seq().amino_acids(true);
+                json_antigens = to_json::object_append(json_antigens, ag_no, sequence);
+                for (auto [pos, aa] : acmacs::enumerate(sequence, 1))
+                    ++stat_per_pos[pos].aa_count[aa];
+            }
+            catch (seqdb::SequenceNotAligned& err) {
+                std::cerr << "WARNING: " << err.what() << ' ' << entry_seq.entry().name() << '\n';
+            }
         }
     }
     for (auto& per_pos : stat_per_pos) {
         const auto sum = std::accumulate(per_pos.aa_count.begin(), per_pos.aa_count.end(), 0UL, [](auto accum, const auto& entry) { return accum + entry.second; });
-        const auto shannon_index = - std::accumulate(per_pos.aa_count.begin(), per_pos.aa_count.end(), 0.0,
-                                                [sum=double(sum)](auto accum, const auto& entry) {
-                                                    const double p = entry.second / sum;
-                                                    return accum + p * std::log(p);
-                                                });
+        const auto shannon_index = -std::accumulate(per_pos.aa_count.begin(), per_pos.aa_count.end(), 0.0, [sum = double(sum)](auto accum, const auto& entry) {
+            const double p = entry.second / sum;
+            return accum + p * std::log(p);
+        });
         per_pos.shannon_index = std::lround(shannon_index * 100);
     }
     auto json_per_pos = to_json::object();
@@ -1082,7 +1086,13 @@ std::string seqdb::sequences_of_chart_as_fasta(acmacs::chart::Chart& chart)
     std::string fasta;
     for (auto [ag_no, entry_seq] : acmacs::enumerate(matches)) {
         if (entry_seq) {
-            fasta += ">" + antigens->at(ag_no)->full_name() + '\n' + entry_seq.seq().nucleotides(true) + '\n';
+            try {
+                const auto seq = entry_seq.seq().nucleotides(true);
+                fasta += ">" + antigens->at(ag_no)->full_name() + '\n' + seq + '\n';
+            }
+            catch (seqdb::SequenceNotAligned& err) {
+                std::cerr << "WARNING: " << err.what() << ' ' << entry_seq.entry().name() << '\n';
+            }
         }
     }
     return fasta;

@@ -18,18 +18,19 @@ constexpr const char* sUsage = " [options] <chart> <output.fasta>\n";
 int main(int argc, char* const argv[])
 {
     try {
-        argc_argv args(argc, argv, {
-                {"--db-dir", ""},
-                {"--amino-acids", false},
-                {"--aligned", false},
-                {"--replace-spaces-in-names", false},
-                {"--name-from-chart", false},
-                {"--time", false, "report time of loading chart"},
-                {"-v", false},
-                {"--verbose", false},
-                {"-h", false},
-                {"--help", false},
-            });
+        argc_argv args(argc, argv,
+                       {
+                           {"--db-dir", ""},
+                           {"--amino-acids", false},
+                           {"--aligned", false},
+                           {"--replace-spaces-in-names", false},
+                           {"--name-from-chart", false},
+                           {"--time", false, "report time of loading chart"},
+                           {"-v", false},
+                           {"--verbose", false},
+                           {"-h", false},
+                           {"--help", false},
+                       });
         if (args["-h"] || args["--help"] || args.number_of_arguments() != 2) {
             throw std::runtime_error("Usage: "s + args.program() + sUsage + args.usage_options());
         }
@@ -50,10 +51,15 @@ int main(int argc, char* const argv[])
                 if (args["--name-from-chart"])
                     name = antigens->at(ag_no)->full_name() + " ==> " + name;
                 output += ">" + name + "\n";
-                if (args["--amino-acids"])
-                    output += entry.seq().amino_acids(args["--aligned"]);
-                else
-                    output += entry.seq().nucleotides(args["--aligned"]);
+                try {
+                    if (args["--amino-acids"])
+                        output += entry.seq().amino_acids(args["--aligned"]);
+                    else
+                        output += entry.seq().nucleotides(args["--aligned"]);
+                }
+                catch (seqdb::SequenceNotAligned& err) {
+                    std::cerr << "WARNING: " << err.what() << ' ' << entry.entry().name() << '\n';
+                }
                 output += "\n";
             }
         }
