@@ -35,7 +35,7 @@ int main(int argc, char* const argv[])
             if (entry && entry.seq().has_clade(clade)) {
                 if (!entry.seq().hi_name_present(antigens->at(ag_no)->full_name()))
                     throw std::runtime_error("ERROR: internal: matched sequence " + entry.entry().name() + " has no matched HI name for " + antigens->at(ag_no)->full_name());
-                std::cout << std::setw(5) << ag_no << ' ' << antigens->at(ag_no)->full_name() << ' ' << entry.seq().clades() << '\n';
+                std::cout << std::setw(5) << ag_no << ' ' << antigens->at(ag_no)->full_name() << ' ' << entry.seq().clades() << (antigens->at(ag_no)->reference() ? " REF" : "") << '\n';
             }
         }
         return 0;
