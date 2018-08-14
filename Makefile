@@ -7,19 +7,20 @@ MAKEFLAGS = -w
 # ----------------------------------------------------------------------
 
 TARGETS = \
-	$(SEQDB_LIB) \
-	$(SEQDB_PY_LIB) \
-	$(DIST)/seqdb-info \
-	$(DIST)/seqdb-report-clade \
-	$(DIST)/seqdb-report-dates \
-	$(DIST)/seqdb-report-not-found-in-hidb \
-	$(DIST)/seqdb-export-sequences-of-chart \
-	$(DIST)/seqdb-clades-for-sera-in-chart \
-	$(DIST)/seqdb-export-sequences-and-layout-of-chart \
-	$(DIST)/seqdb-update-clades \
-	$(DIST)/seqdb-list-strains-in-the-clade \
-	$(DIST)/seqdb-list-strains-having-aa-at \
-	$(DIST)/seqdb-compare-sequences
+  $(SEQDB_LIB) \
+  $(SEQDB_PY_LIB) \
+  $(DIST)/seqdb-info \
+  $(DIST)/seqdb-report-clade \
+  $(DIST)/seqdb-report-dates \
+  $(DIST)/seqdb-report-not-found-in-hidb \
+  $(DIST)/seqdb-export-sequences-of-chart \
+  $(DIST)/seqdb-clades-for-sera-in-chart \
+  $(DIST)/seqdb-export-sequences-and-layout-of-chart \
+  $(DIST)/seqdb-sequenced-antigens-in-chart \
+  $(DIST)/seqdb-update-clades \
+  $(DIST)/seqdb-list-strains-in-the-clade \
+  $(DIST)/seqdb-list-strains-having-aa-at \
+  $(DIST)/seqdb-compare-sequences
 
 SEQDB_SOURCES = seqdb.cc seqdb-export.cc seqdb-import.cc seqdb-hidb.cc amino-acids.cc clades.cc insertions_deletions.cc
 SEQDB_PY_SOURCES = $(SEQDB_SOURCES) py.cc
