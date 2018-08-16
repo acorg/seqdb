@@ -17,7 +17,7 @@ class Comparer
 
     void add(const seqdb::SeqdbEntrySeq& entry_seq) { entries_.push_back(entry_seq); }
     void analyse();
-    void report(std::ostream& output) const;
+    void report(std::ostream& output, bool all_pos) const;
     void report_old() const;
 
  private:
@@ -43,6 +43,7 @@ int main(int argc, char* const argv[])
 {
     try {
         argc_argv args(argc, argv, {
+                {"--all-pos", false, "show all positions"},
                 {"--old", false, "report in the old style"},
 
                 {"--db-dir", ""},
@@ -82,7 +83,7 @@ int main(int argc, char* const argv[])
         if (args["--old"])
             comparer.report_old();
         else
-            comparer.report(std::cout);
+            comparer.report(std::cout, args["--all-pos"]);
         return 0;
     }
     catch (std::exception& err) {
@@ -100,7 +101,7 @@ void Comparer::analyse()
 
 // ----------------------------------------------------------------------
 
-void Comparer::report(std::ostream& output) const
+void Comparer::report(std::ostream& output, bool all_pos) const
 {
     std::vector<std::string> aas(entries_.size()), nucs(entries_.size());
     size_t max_aa = 0;
@@ -118,30 +119,30 @@ void Comparer::report(std::ostream& output) const
     output << '\n';
 
     for (size_t pos = 0; pos < max_aa; ++pos) {
-        output << std::setw(3) << std::right << pos + 1 << "  ";
         std::map<char, size_t> aa_count;
         std::map<std::string, size_t> nuc_count;
         for (size_t no = 0; no < entries_.size(); ++no) {
             if (pos < aas[no].size()) {
-                output << aas[no][pos] << ' ';
-                if (const std::string nucs_at = nucs[no].substr(pos * 3, 3); !nucs_at.empty()) {
-                    output << nucs_at;
+                if (const std::string nucs_at = nucs[no].substr(pos * 3, 3); !nucs_at.empty())
                     ++nuc_count[nucs_at];
-                }
-                else
-                    output << "   ";
                 ++aa_count[aas[no][pos]];
             }
-            else {
-                output << "     ";
-            }
-            output << "  ";
         }
-        if (aa_count.size() > 1)
-            output << aa_count;
-        if (nuc_count.size() > 1)
-            output << ' ' << nuc_count;
-        output << '\n';
+        if (all_pos || nuc_count.size() > 1) {
+            output << std::setw(3) << std::right << pos + 1 << "  ";
+            for (size_t no = 0; no < entries_.size(); ++no) {
+                if (pos < aas[no].size())
+                    output << aas[no][pos] << ' ' << std::setw(3) << nucs[no].substr(pos * 3, 3);
+                else
+                    output << "     ";
+                output << "  ";
+            }
+            if (aa_count.size() > 1)
+                output << aa_count << ' ';
+            if (nuc_count.size() > 1)
+                output << nuc_count;
+            output << '\n';
+        }
     }
 
 } // Comparer::report
