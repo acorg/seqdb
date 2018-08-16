@@ -1,6 +1,10 @@
-#include "seqdb-export.hh"
+#include "acmacs-base/date.hh"
+
+#include "seqdb/seqdb-export.hh"
 #include "seqdb/seqdb.hh"
-#include "json-keys.hh"
+#include "seqdb/json-keys.hh"
+
+// ----------------------------------------------------------------------
 
 namespace json_writer
 {
@@ -76,6 +80,7 @@ template <typename RW> jsw::writer<RW>& operator <<(jsw::writer<RW>& writer, con
 {
     return writer << jsw::start_object
                   << jsw::key("  version") << SEQDB_JSON_DUMP_VERSION
+                  << jsw::key("  date") << current_date_time()
                   << jsw::key("data") << seqdb.entries()
                   << jsw::end_object;
 }
