@@ -106,7 +106,7 @@ void Comparer::report(std::ostream& output, bool all_pos) const
     std::vector<std::string> aas(entries_.size()), nucs(entries_.size());
     size_t max_aa = 0;
     for (const auto [no, entry] : acmacs::enumerate(entries_)) {
-        output << std::setw(2) << std::right << no << ' ' << entry.make_name() << ' ' << entry.entry().lineage() << ' ' << entry.seq().clades() << '\n';
+        output << std::setw(2) << std::right << no + 1 << ' ' << entry.make_name() << ' ' << entry.entry().lineage() << ' ' << entry.seq().clades() << '\n';
         aas[no] = entry.seq().amino_acids(true);
         nucs[no] = entry.seq().nucleotides(true);
         max_aa = std::max(max_aa, aas[no].size());
@@ -132,7 +132,7 @@ void Comparer::report(std::ostream& output, bool all_pos) const
             output << std::setw(3) << std::right << pos + 1 << "  ";
             for (size_t no = 0; no < entries_.size(); ++no) {
                 if (pos < aas[no].size())
-                    output << aas[no][pos] << ' ' << std::setw(3) << nucs[no].substr(pos * 3, 3);
+                    output << aas[no][pos] << ' ' << std::setw(3) << std::left << nucs[no].substr(pos * 3, 3);
                 else
                     output << "     ";
                 output << "  ";
