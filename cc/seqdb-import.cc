@@ -32,6 +32,10 @@ namespace seqdb
                     throw std::runtime_error("Unsupported seqdb version: \"" + version + "\"");
             }
 
+        inline void date(const char* /*str*/, size_t /*length*/)
+            {
+            }
+
         inline std::vector<SeqdbEntry>& seqdb() { return mSeqdb.entries(); }
 
      private:
@@ -127,6 +131,7 @@ namespace seqdb
         jsi::data<SeqdbDataFile> seqdb_data = {
             {"_", jsi::field(&SeqdbDataFile::indentation)},
             {"  version", jsi::field(&SeqdbDataFile::version)},
+            {"  date", jsi::field(&SeqdbDataFile::date)},
             {"data", jsi::field(&SeqdbDataFile::seqdb, entry_data)},
         };
 
