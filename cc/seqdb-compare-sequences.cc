@@ -3,6 +3,7 @@
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-base/range.hh"
 #include "acmacs-base/enumerate.hh"
+#include "acmacs-base/stream.hh"
 #include "seqdb.hh"
 
 using namespace std::string_literals;
@@ -14,24 +15,25 @@ class Comparer
  public:
     Comparer() = default;
 
-    void add(const seqdb::SeqdbEntrySeq& entry_seq);
+    void add(const seqdb::SeqdbEntrySeq& entry_seq) { entries_.push_back(entry_seq); }
     void analyse();
-    void report() const;
+    void report(std::ostream& output) const;
+    void report_old() const;
 
  private:
-    struct Entry
-    {
-        std::string name;
-        std::string sequence;
-    };
+    // struct Entry
+    // {
+    //     std::string name;
+    //     std::string aa;
+    //     std::string nuc;
+    // };
 
     struct EntryPos
     {
         std::map<char, size_t> aa_count;
     };
 
-    std::vector<Entry> entries_;
-    std::vector<EntryPos> entries_pos_{600};
+    std::vector<seqdb::SeqdbEntrySeq> entries_;
 
 }; //  class Comparer
 
@@ -41,6 +43,8 @@ int main(int argc, char* const argv[])
 {
     try {
         argc_argv args(argc, argv, {
+                {"--old", false, "report in the old style"},
+
                 {"--db-dir", ""},
                 // {"--lab", ""},
                 // {"--flu", "", "A(H1N1), A(H3N2), B"},
@@ -55,17 +59,30 @@ int main(int argc, char* const argv[])
         const bool verbose = args["-v"] || args["--verbose"];
         seqdb::setup_dbs(args["--db-dir"], verbose ? seqdb::report::yes : seqdb::report::no);
         Comparer comparer;
+        const auto& seqdb = seqdb::get();
         for (auto arg_no : acmacs::range(args.number_of_arguments())) {
-            if (const auto* entry_seq = seqdb::get().find_hi_name(args[arg_no]); entry_seq && entry_seq->seq().aligned()) {
-                comparer.add(*entry_seq);
-                // std::cout << std::setw(60) << std::left << entry_seq->make_name() << entry_seq->seq().amino_acids(true) << '\n';
+            if (const auto* entry_seq_1 = seqdb.find_hi_name(args[arg_no]); entry_seq_1 && entry_seq_1->seq().aligned()) {
+                comparer.add(*entry_seq_1);
+                // std::cout << std::setw(60) << std::left << entry_seq_1->make_name() << entry_seq_1->seq().amino_acids(true) << '\n';
+            }
+            else if (const auto entry_seq_2 = seqdb.find_by_seq_id(args[arg_no]); entry_seq_2 && entry_seq_2.seq().aligned()) {
+                comparer.add(entry_seq_2);
+            }
+            else if (const auto* entry = seqdb.find_by_name(args[arg_no]); entry) {
+                for (const auto& seq : entry->seqs()) {
+                    if (seq.aligned())
+                        comparer.add({*entry, seq});
+                }
             }
             else {
                 std::cerr << "WARNING: no found or not aligned: " << args[arg_no] << '\n';
             }
         }
         comparer.analyse();
-        comparer.report();
+        if (args["--old"])
+            comparer.report_old();
+        else
+            comparer.report(std::cout);
         return 0;
     }
     catch (std::exception& err) {
@@ -76,19 +93,6 @@ int main(int argc, char* const argv[])
 
 // ----------------------------------------------------------------------
 
-void Comparer::add(const seqdb::SeqdbEntrySeq& entry_seq)
-{
-    const Entry entry{entry_seq.make_name(), entry_seq.seq().amino_acids(true)};
-    entries_.push_back(entry);
-    for (const auto [pos, aa] : acmacs::enumerate(entry.sequence)) {
-        if (aa != 'X')
-            ++entries_pos_[pos].aa_count[aa];
-    }
-
-} // Comparer::add
-
-// ----------------------------------------------------------------------
-
 void Comparer::analyse()
 {
 
@@ -96,7 +100,48 @@ void Comparer::analyse()
 
 // ----------------------------------------------------------------------
 
-void Comparer::report() const
+void Comparer::report(std::ostream& output) const
+{
+    std::vector<std::string> aas(entries_.size()), nucs(entries_.size());
+    size_t max_aa = 0;
+    for (const auto [no, entry] : acmacs::enumerate(entries_)) {
+        output << std::setw(2) << std::right << no << ' ' << entry.make_name() << ' ' << entry.entry().lineage() << ' ' << entry.seq().clades() << '\n';
+        aas[no] = entry.seq().amino_acids(true);
+        nucs[no] = entry.seq().nucleotides(true);
+        max_aa = std::max(max_aa, aas[no].size());
+    }
+    output << '\n';
+
+    output << "pos  ";
+    for (size_t no = 1; no <= entries_.size(); ++no)
+        output << ' ' << std::setw(2) << std::right << no << "    ";
+    output << '\n';
+
+    for (size_t pos = 0; pos < max_aa; ++pos) {
+        output << std::setw(3) << std::right << pos + 1 << "  ";
+        for (size_t no = 0; no < entries_.size(); ++no) {
+            if (pos < aas[no].size()) {
+                output << aas[no][pos] << ' ';
+                for (size_t nuc_off = 0; nuc_off < 3; ++nuc_off) {
+                    if (const size_t nuc_pos = pos * 3 + nuc_off; nuc_pos < nucs[no].size())
+                        output << nucs[no][nuc_pos];
+                    else
+                        output << ' ';
+                }
+            }
+            else {
+                output << "     ";
+            }
+            output << "  ";
+        }
+        output << '\n';
+    }
+
+} // Comparer::report
+
+// ----------------------------------------------------------------------
+
+void Comparer::report_old() const
 {
     // const auto max_seq_size = std::accumulate(entries_.begin(), entries_.end(), 0, [](auto mns, const auto& entry) { return std::max(mns, static_cast<decltype(mns)>(entry.sequence.size())); });
     // std::cout << "max_seq_size " << max_seq_size << '\n';
@@ -105,7 +150,15 @@ void Comparer::report() const
     // for (const auto& entry : entries_)
     //     std::cout << std::setw(max_name_size + 2) << std::left << entry.name << entry.sequence << '\n';
 
-    for (const auto [pos, entry_pos] : acmacs::enumerate(entries_pos_, 1)) {
+    std::vector<EntryPos> entries_pos{600};
+    for (const auto& entry : entries_) {
+        for (const auto [pos, aa] : acmacs::enumerate(entry.seq().amino_acids(true))) {
+            if (aa != 'X')
+                ++entries_pos[pos].aa_count[aa];
+        }
+    }
+
+    for (const auto [pos, entry_pos] : acmacs::enumerate(entries_pos, 1)) {
         if (entry_pos.aa_count.size() > 1) {
             const auto max_occur = std::accumulate(entry_pos.aa_count.begin(), entry_pos.aa_count.end(), 0UL, [](auto max_count, const auto& elt) { return std::max(max_count, elt.second); });
             const auto max_occur_percent = max_occur * 100.0 / entries_.size();
@@ -114,7 +167,7 @@ void Comparer::report() const
         }
     }
 
-} // Comparer::report
+} // Comparer::report_old
 
 // ----------------------------------------------------------------------
 
