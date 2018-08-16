@@ -119,21 +119,28 @@ void Comparer::report(std::ostream& output) const
 
     for (size_t pos = 0; pos < max_aa; ++pos) {
         output << std::setw(3) << std::right << pos + 1 << "  ";
+        std::map<char, size_t> aa_count;
+        std::map<std::string, size_t> nuc_count;
         for (size_t no = 0; no < entries_.size(); ++no) {
             if (pos < aas[no].size()) {
                 output << aas[no][pos] << ' ';
-                for (size_t nuc_off = 0; nuc_off < 3; ++nuc_off) {
-                    if (const size_t nuc_pos = pos * 3 + nuc_off; nuc_pos < nucs[no].size())
-                        output << nucs[no][nuc_pos];
-                    else
-                        output << ' ';
+                if (const std::string nucs_at = nucs[no].substr(pos * 3, 3); !nucs_at.empty()) {
+                    output << nucs_at;
+                    ++nuc_count[nucs_at];
                 }
+                else
+                    output << "   ";
+                ++aa_count[aas[no][pos]];
             }
             else {
                 output << "     ";
             }
             output << "  ";
         }
+        if (aa_count.size() > 1)
+            output << aa_count;
+        if (nuc_count.size() > 1)
+            output << ' ' << nuc_count;
         output << '\n';
     }
 
