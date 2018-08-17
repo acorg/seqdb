@@ -17,7 +17,7 @@ class Comparer
 
     void add(const seqdb::SeqdbEntrySeq& entry_seq) { entries_.push_back(entry_seq); }
     void analyse();
-    void report(std::ostream& output, bool all_pos) const;
+    void report(std::ostream& output, bool all_pos, bool vertical) const;
     void report_old() const;
 
  private:
@@ -44,6 +44,7 @@ int main(int argc, char* const argv[])
     try {
         argc_argv args(argc, argv, {
                 {"--all-pos", false, "show all positions"},
+                {"--vertical", false, "show nucs vertically"},
                 {"--old", false, "report in the old style"},
 
                 {"--db-dir", ""},
@@ -83,7 +84,7 @@ int main(int argc, char* const argv[])
         if (args["--old"])
             comparer.report_old();
         else
-            comparer.report(std::cout, args["--all-pos"]);
+            comparer.report(std::cout, args["--all-pos"], args["--vertical"]);
         return 0;
     }
     catch (std::exception& err) {
@@ -101,7 +102,7 @@ void Comparer::analyse()
 
 // ----------------------------------------------------------------------
 
-void Comparer::report(std::ostream& output, bool all_pos) const
+void Comparer::report(std::ostream& output, bool all_pos, bool vertical) const
 {
     std::vector<std::string> aas(entries_.size()), nucs(entries_.size());
     size_t max_aa = 0;
@@ -113,10 +114,62 @@ void Comparer::report(std::ostream& output, bool all_pos) const
     }
     output << '\n';
 
-    output << "pos  ";
-    for (size_t no = 1; no <= entries_.size(); ++no)
-        output << ' ' << std::setw(2) << std::right << no << "    ";
+    if (vertical) {
+        output << "pos ";
+        for (size_t no = 1; no <= entries_.size(); ++no)
+            output << ' ' << std::setw(2) << std::right << no << ' ';
+    }
+    else {
+        output << "pos  ";
+        for (size_t no = 1; no <= entries_.size(); ++no)
+            output << ' ' << std::setw(2) << std::right << no << "    ";
+    }
     output << '\n';
+
+    auto nucs_horizontal = [&output, &aas, &nucs, this](size_t pos, const auto& aa_count, const auto& nuc_count) {
+        output << std::setw(3) << std::right << pos + 1 << "  ";
+        for (size_t no = 0; no < this->entries_.size(); ++no) {
+            if (pos < aas[no].size())
+                output << aas[no][pos] << ' ' << std::setw(3) << std::left << nucs[no].substr(pos * 3, 3);
+            else
+                output << "     ";
+            output << "  ";
+        }
+        if (nuc_count.size() > 1)
+            output << nuc_count;
+        if (aa_count.size() > 1)
+            output << ' ' << aa_count;
+        output << '\n';
+    };
+
+    auto nucs_vertical = [&output, &aas, &nucs, this](size_t pos, const auto& aa_count, const auto& nuc_count) {
+        output << std::setw(3) << std::right << pos + 1 << "  ";
+        std::vector<std::string> nucs_at(this->entries_.size());
+        for (size_t no = 0; no < this->entries_.size(); ++no) {
+            nucs_at[no] = nucs[no].substr(pos * 3, 3);
+            if (pos < aas[no].size())
+                output << aas[no][pos] << nucs_at[no][0];
+            else
+                output << "  ";
+            output << "  ";
+        }
+        if (nuc_count.size() > 1)
+            output << nuc_count;
+        if (aa_count.size() > 1)
+            output << ' ' << aa_count;
+        for (size_t nn = 1; nn < 3; ++nn) {
+            output << "\n     ";
+            for (size_t no = 0; no < this->entries_.size(); ++no) {
+                output << ' ';
+                if (nucs_at[no].size() > nn)
+                    output << nucs_at[no][nn];
+                else
+                    output << ' ';
+                output << "  ";
+            }
+        }
+        output << '\n';
+    };
 
     for (size_t pos = 0; pos < max_aa; ++pos) {
         std::map<char, size_t> aa_count;
@@ -129,19 +182,10 @@ void Comparer::report(std::ostream& output, bool all_pos) const
             }
         }
         if (all_pos || nuc_count.size() > 1) {
-            output << std::setw(3) << std::right << pos + 1 << "  ";
-            for (size_t no = 0; no < entries_.size(); ++no) {
-                if (pos < aas[no].size())
-                    output << aas[no][pos] << ' ' << std::setw(3) << std::left << nucs[no].substr(pos * 3, 3);
-                else
-                    output << "     ";
-                output << "  ";
-            }
-            if (aa_count.size() > 1)
-                output << aa_count << ' ';
-            if (nuc_count.size() > 1)
-                output << nuc_count;
-            output << '\n';
+            if (vertical)
+                nucs_vertical(pos, aa_count, nuc_count);
+            else
+                nucs_horizontal(pos, aa_count, nuc_count);
         }
     }
 
