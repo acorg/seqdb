@@ -30,7 +30,7 @@ def main(args):
     seq_db = seqdb.get_seqdb(True)
     r = fasta_m.export_from_seqdb(
         seqdb=seq_db,
-        filename=Path(args.output),
+        filename="-" if args.output == "-" else Path(args.output),
         output_format=args.output_format,
         amino_acids=args.amino_acids,
         lab=args.lab,
