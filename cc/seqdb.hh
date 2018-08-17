@@ -94,7 +94,7 @@ namespace seqdb
         void update_gene(const std::string& aGene, Messages& aMessages, bool replace_ha = false);
         void add_reassortant(const std::string& aReassortant);
         void add_lab_id(const std::string& aLab, const std::string& aLabId);
-        const std::vector<std::string>& update_clades(const std::string& aVirusType, const std::string& aLineage);
+        const std::vector<std::string>& update_clades(std::string aVirusType, std::string aLineage, std::string aName);
         const std::vector<std::string>& clades() const { return mClades; }
         std::vector<std::string>& clades() { return mClades; }
         bool has_clade(const std::string& aClade) const { return std::find(std::begin(mClades), std::end(mClades), aClade) != std::end(mClades); }

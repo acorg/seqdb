@@ -236,22 +236,22 @@ AlignAminoAcidsData SeqdbSeq::align(bool aForce, Messages& aMessages)
 
 // ----------------------------------------------------------------------
 
-const std::vector<std::string>& SeqdbSeq::update_clades(const std::string& aVirusType, const std::string& aLineage)
+const std::vector<std::string>& SeqdbSeq::update_clades(std::string aVirusType, std::string aLineage, std::string aName)
 {
     if (aligned()) {
         if (aVirusType == "B") {
             if (aLineage == "YAMAGATA") {
-                mClades = clades_b_yamagata(mAminoAcids, mAminoAcidsShift);
+                mClades = clades_b_yamagata(mAminoAcids, mAminoAcidsShift, aName);
             }
             else if (aLineage == "VICTORIA") {
-                mClades = clades_b_victoria(mAminoAcids, mAminoAcidsShift);
+                mClades = clades_b_victoria(mAminoAcids, mAminoAcidsShift, aName);
             }
         }
         else if (aVirusType == "A(H1N1)") {
-            mClades = clades_h1pdm(mAminoAcids, mAminoAcidsShift);
+            mClades = clades_h1pdm(mAminoAcids, mAminoAcidsShift, aName);
         }
         else if (aVirusType == "A(H3N2)") {
-            mClades = clades_h3n2(mAminoAcids, mAminoAcidsShift);
+            mClades = clades_h3n2(mAminoAcids, mAminoAcidsShift, aName);
         }
         // else {
         //     std::cerr << "Cannot update clades for virus type " << aVirusType << '\n';
@@ -980,7 +980,7 @@ void Seqdb::update_clades(seqdb::report aReport)
 {
     std::map<std::string, size_t> clade_count;
     for (auto entry_seq: *this) {
-        const auto& clades = entry_seq.seq().update_clades(entry_seq.entry().virus_type(), entry_seq.entry().lineage());
+        const auto& clades = entry_seq.seq().update_clades(entry_seq.entry().virus_type(), entry_seq.entry().lineage(), entry_seq.make_name());
         for (const auto& clade: clades)
             ++clade_count[clade];
     }

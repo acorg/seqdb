@@ -7,7 +7,7 @@ using namespace seqdb;
 
 // ----------------------------------------------------------------------
 
-std::vector<std::string> seqdb::clades_b_yamagata(std::string aSequence, Shift aShift)
+std::vector<std::string> seqdb::clades_b_yamagata(std::string aSequence, Shift aShift, std::string /*aName*/)
 {
       // 165N -> Y2, 165Y -> Y3 (yamagata numeration, 163 is not -)
       // 166N -> Y2, 166Y -> Y3 (victoria numeration, 163 is -)
@@ -31,7 +31,7 @@ std::vector<std::string> seqdb::clades_b_yamagata(std::string aSequence, Shift a
 
 // ----------------------------------------------------------------------
 
-std::vector<std::string> seqdb::clades_b_victoria(std::string aSequence, Shift aShift)
+std::vector<std::string> seqdb::clades_b_victoria(std::string aSequence, Shift aShift, std::string aName)
 {
       // mark clade 1A (all strains if empty clade removed, otherwise clade 1B defined by L58P, clade 1 defined by N75K, N165K, S172P)
 
@@ -41,9 +41,10 @@ std::vector<std::string> seqdb::clades_b_victoria(std::string aSequence, Shift a
             pos75 = static_cast<size_t>(74 - aShift),
             pos162 = static_cast<size_t>(161 - aShift),
             pos163 = static_cast<size_t>(162 - aShift),
+            pos164 = static_cast<size_t>(163 - aShift),
             pos165 = static_cast<size_t>(164 - aShift),
-            pos166 = static_cast<size_t>(165 - aShift),
-            pos167 = static_cast<size_t>(166 - aShift),
+            // pos166 = static_cast<size_t>(165 - aShift),
+            // pos167 = static_cast<size_t>(166 - aShift),
             pos172 = static_cast<size_t>(171 - aShift);
     if (aSequence.size() > pos172 && aSequence[pos75] == 'K' && aSequence[pos165] == 'K' && aSequence[pos172] == 'P' && aSequence[pos58] != 'P')
         r.push_back("1A");
@@ -51,18 +52,20 @@ std::vector<std::string> seqdb::clades_b_victoria(std::string aSequence, Shift a
         r.push_back("1B");
     else
         r.push_back("1");
-      // B/Vic always has '-' at pos163
-    if (aSequence.size() > pos163 && aSequence[pos162] == '-' && aSequence[pos163] == '-')
+
+    if (aSequence.size() > pos164 && aSequence[pos162] == '-' && aSequence[pos163] == '-' && aSequence[pos164] == '-')
+        r.push_back("TRIPLEDEL2017"); // B/Vic triple deletion mutant 2017 162,163,164 by convention
+    else if (aSequence.size() > pos163 && aSequence[pos162] == '-' && aSequence[pos163] == '-')
         r.push_back("DEL2017"); // B/Vic deletion mutant 2017
-    else if (aSequence.size() > pos167 && aSequence[pos163] == '-' && aSequence[pos166] == '-' && aSequence[pos167] == '-')
-        r.push_back("TRIPLEDEL2017"); // B/Vic triple deletion mutant 2017
+    else if (aSequence.size() > pos164 && (aSequence[pos162] == '-' || aSequence[pos163] == '-' || aSequence[pos164] == '-'))
+        std::cerr << "WARNING: [" << aName << "]: strange B/Vic deletion mutant\n";
     return r;
 
 } // clades_b_yamagata
 
 // ----------------------------------------------------------------------
 
-std::vector<std::string> seqdb::clades_h1pdm(std::string aSequence, Shift aShift)
+std::vector<std::string> seqdb::clades_h1pdm(std::string aSequence, Shift aShift, std::string /*aName*/)
 {
       // 84N+162N+216T - 6B.1, 152T+173I+501E - 6B.2
       // ? 156 (see A/PUERTO RICO/15/2018 of CDC:20180511)
@@ -180,7 +183,7 @@ static const std::vector<CladeDesc> sClades =
 
 #pragma GCC diagnostic pop
 
-std::vector<std::string> seqdb::clades_h3n2(std::string aSequence, Shift aShift)
+std::vector<std::string> seqdb::clades_h3n2(std::string aSequence, Shift aShift, std::string /*aName*/)
 {
     auto has_aa = [aShift,&aSequence](const auto& pos_aa) -> bool { return aa_at(pos_aa.pos, aSequence, aShift) == pos_aa.aa; };
 
