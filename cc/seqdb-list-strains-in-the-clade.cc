@@ -7,7 +7,7 @@ using namespace std::string_literals;
 
 // ----------------------------------------------------------------------
 
-constexpr const char* sUsage = "<clade> [options]\n";
+constexpr const char* sUsage = " <clade> [options]\n";
 
 int main(int argc, char* const argv[])
 {
