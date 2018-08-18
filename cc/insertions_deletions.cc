@@ -212,66 +212,66 @@ static inline void update(DeletionPosSet& pos_set, std::string master, std::stri
 
 std::vector<std::pair<size_t, size_t>> InsertionsDeletionsDetector::Entry::align_to(const std::string master, std::string& to_align, const SeqdbEntrySeq& entry_seq)
 {
-    acmacs::debug dbg(false);
+    // acmacs::debug dbg(false);
 
     constexpr const bool yamagata_163_hack = true;
     constexpr const bool victoria_tripledel2017_hack = true;
-    dbg << '\n' << entry_seq.make_name() << '\n' << "align: " << to_align << '\n' << "maste: " << master << '\n';
+    // dbg << '\n' << entry_seq.make_name() << '\n' << "align: " << to_align << '\n' << "maste: " << master << '\n';
     std::vector<std::pair<size_t, size_t>> pos_number;
     size_t start = 0;
     size_t best_common = number_of_common(master, to_align);
     const std::string to_align_orig = to_align;
     while (start < to_align.size()) {
         const size_t current_common = number_of_common(master, to_align);
-          // try {
+        // try {
         DeletionPosSet pos_set;
         adjust_pos pos = adjust_pos::begin(to_align, master, start), pos_end = adjust_pos::end(to_align, master);
         start = to_align.size();
         for (; pos != pos_end; ++pos) {
             update(pos_set, master, to_align, *pos, number_of_common_before(master, to_align, *pos));
         }
-        dbg << "pos_set: " << pos_set << '\n';
+        // dbg << "pos_set: " << pos_set << '\n';
         if (!pos_set.empty()) {
             auto& del_pos = *std::min_element(pos_set.begin(), pos_set.end());
-              // dbg << "del_pos: " << del_pos << '\n';
+            // dbg << "del_pos: " << del_pos << '\n';
             if (del_pos.num_common > current_common) {
                 if (yamagata_163_hack && entry_seq.entry().virus_type() == "B" && del_pos.num_deletions == 1 && del_pos.pos > (163 - 1) && del_pos.pos <= (166 - 1)) {
                     std::cout << "INFO: yamagata_163_hack applied for " << entry_seq.make_name() << '\n';
-                      // yamagata deletion must be at 163
-                      // David Burke 2017-08-17: deletions ( and insertions) of amino acids usually occur in regions of the protein structure where it changes direction ( loops ).
-                      // In the case of HA, this is after VPK and before NKTAT/YKNAT.
+                    // yamagata deletion must be at 163
+                    // David Burke 2017-08-17: deletions ( and insertions) of amino acids usually occur in regions of the protein structure where it changes direction ( loops ).
+                    // In the case of HA, this is after VPK and before NKTAT/YKNAT.
                     to_align.insert(163 - 1, 1, '-');
                     del_pos.fix(163 - 1, 1, number_of_common(master, to_align)); // -1 because we count from zero here
                 }
                 else if (victoria_tripledel2017_hack && entry_seq.entry().virus_type() == "B" && del_pos.num_deletions == 3 && del_pos.pos == (164 - 1)) {
-                      // The triple deletion is 162, 163 and 164 (pos 1 based). this is the convention that has been chosen (Sarah 2018-08-16 08:31)
+                    // The triple deletion is 162, 163 and 164 (pos 1 based). this is the convention that has been chosen (Sarah 2018-08-16 08:31)
                     to_align.insert(162 - 1, del_pos.num_deletions, '-');
                     del_pos.fix(162 - 1, del_pos.num_deletions, number_of_common(master, to_align)); // -1 because we count from zero here
                 }
                 else {
                     to_align.insert(del_pos.pos, del_pos.num_deletions, '-');
                 }
-                dbg << "del_pos: " << del_pos << '\n';
+                // dbg << "del_pos: " << del_pos << '\n';
                 start = del_pos.pos + del_pos.num_deletions + 1;
                 pos_number.emplace_back(del_pos.pos, del_pos.num_deletions);
                 if (best_common < del_pos.num_common)
                     best_common = del_pos.num_common;
             }
         }
-          // }
-          // catch (NoAdjustPos&) {
-          //       // std::cerr << "NoAdjustPos: NC " << number_of_common(to_align, master) << '\n';
-          //     throw SwitchMaster{};
-          // }
+        // }
+        // catch (NoAdjustPos&) {
+        //       // std::cerr << "NoAdjustPos: NC " << number_of_common(to_align, master) << '\n';
+        //     throw SwitchMaster{};
+        // }
     }
-    if (!pos_number.empty()) // && pos_number.front().second > 1)
-        dbg << pos_number << " best-common:" << best_common << '\n' << "align: " << to_align << '\n' << "maste: " << master << '\n';
+    // if (!pos_number.empty()) // && pos_number.front().second > 1)
+    //     dbg << pos_number << " best-common:" << best_common << '\n' << "align: " << to_align << '\n' << "maste: " << master << '\n';
     if (best_common < static_cast<size_t>(master.size() * 0.7)) {
-        dbg << "Too bad matching (common:" << best_common << " threshold:" << (master.size() * 0.7) << "), should we switch master?" << '\n';
+        // dbg << "Too bad matching (common:" << best_common << " threshold:" << (master.size() * 0.7) << "), should we switch master?" << '\n';
         to_align = to_align_orig;
         throw SwitchMaster{};
     }
-      // dbg << to_align << '\n';
+    // dbg << to_align << '\n';
     return pos_number;
 
 } // InsertionsDeletionsDetector::Entry::align_to
