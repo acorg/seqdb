@@ -49,27 +49,31 @@ int main(int argc, char* const argv[])
         const auto [virus_type, lineage] = parse_flu(args["--flu"]);
         // const size_t recent = args["--recent"];
         // const size_t hamming_distance_threshold = args["--hamming-distance-threshold"];
-        const std::string output_aa = args["--output-aa"];
-        const std::string output_nucs = args["--output-nucs"];
-        const std::string output_names = args["--output-names"];
         seqdb::setup_dbs(args["--db-dir"], verbose ? seqdb::report::yes : seqdb::report::no);
 
         const auto base_seq = find_base_seq(virus_type, lineage, args["--base-seq"]);
         const auto all_sequences_sorted_by_date = collect(virus_type, lineage, base_seq);
         auto [aa_common_length, to_export] = pick(all_sequences_sorted_by_date, base_seq, args["--recent"], args["--hamming-distance-threshold"]);
-          // add base_seq
+        // add base_seq
         to_export.insert(to_export.begin(), base_seq);
 
-          // write
-        if (args["--output-nucs"]) {
-            acmacs::file::ofstream output(args["--output-nucs"]);
-            for (const auto& seq : to_export)
-                output.stream() << '>' << seq.seq_id(seqdb::SeqdbEntrySeq::encoded_t::yes) << '\n' << seq.seq().nucleotides(true, 0, aa_common_length * 3) << '\n';
-        }
-        if (args["--output-aa"]) {
-            acmacs::file::ofstream output(args["--output-aa"]);
-            for (const auto& seq : to_export)
-                output.stream() << '>' << seq.seq_id(seqdb::SeqdbEntrySeq::encoded_t::yes) << '\n' << seq.seq().amino_acids(true, 0, aa_common_length) << '\n';
+        // write
+        const std::string base_seq_nucs = base_seq.seq().nucleotides(true, 0, aa_common_length * 3);
+        acmacs::file::ofstream output_nucs(args["--output-nucs"]);
+        acmacs::file::ofstream output_aa(args["--output-aa"] ? args["--output-aa"].str() : "/dev/null"s);
+        for (const auto& seq : to_export) {
+            std::string nucs = seq.seq().nucleotides(true, 0, aa_common_length * 3);
+            std::string aa = seq.seq().amino_acids(true, 0, aa_common_length);
+            if (const auto hamming_distance_last_21 = string::hamming_distance(base_seq_nucs.substr(base_seq_nucs.size() - 21), nucs.substr(nucs.size() - 21)); hamming_distance_last_21 >= 7) {
+                // found in B/Vic before SSM TC1 2018-08-14, messy sequence end, perhaps sequencing failure, replace end with '-'
+                nucs.resize(aa_common_length * 3 - 21);
+                nucs.resize(aa_common_length * 3, '-');
+                aa.resize(aa_common_length - 7);
+                aa.resize(aa_common_length, 'X');
+                std::cerr << "INFO: " << seq.seq_id(seqdb::SeqdbEntrySeq::encoded_t::yes) << " last 21 nucs replaced with -, sequencing failure at the end suspected\n";
+            }
+            output_nucs.stream() << '>' << seq.seq_id(seqdb::SeqdbEntrySeq::encoded_t::yes) << '\n' << nucs << '\n';
+            output_aa.stream() << '>' << seq.seq_id(seqdb::SeqdbEntrySeq::encoded_t::yes) << '\n' << aa << '\n';
         }
         if (args["--output-names"]) {
             acmacs::file::ofstream output(args["--output-names"]);
@@ -152,19 +156,23 @@ std::pair<size_t, std::vector<seqdb::SeqdbEntrySeq>> pick(const std::vector<seqd
     const size_t aa_common_length = common_length(sequences.begin(), sequences.size() > number_to_pick ? sequences.begin() + static_cast<std::vector<seqdb::SeqdbEntrySeq>::difference_type>(number_to_pick) : sequences.end());
       // std::cerr << "DEBUG: common_length: " << aa_common_length << '\n';
     const std::string base_seq_nucs = base_seq.seq().nucleotides(true, 0, aa_common_length * 3);
+    const std::string base_seq_nucs_last_21 = base_seq_nucs.substr(aa_common_length * 3 - 21);
     std::vector<seqdb::SeqdbEntrySeq> result;
-    acmacs::Counter<size_t> counter;
+    // acmacs::Counter<size_t> counter;
     for (auto seqp = sequences.begin(); seqp != sequences.end() && result.size() < number_to_pick; ++seqp) {
         const std::string nucs = seqp->seq().nucleotides(true, 0, aa_common_length * 3);
         const auto hamming_distance_with_base = string::hamming_distance(base_seq_nucs, nucs);
-        counter.add(hamming_distance_with_base);
-          //if (hamming_distance_with_base > 34)
-           std::cerr << "DEBUG: " << seqp->seq_id(seqdb::SeqdbEntrySeq::encoded_t::no) << " HD:" << hamming_distance_with_base << '\n';
         if (hamming_distance_with_base < hamming_distance_threshold) {
             result.push_back(*seqp);
         }
+
+        // const std::string last_21 = nucs.substr(aa_common_length * 3 - 21);
+        // const auto hamming_distance_last_21 = string::hamming_distance(base_seq_nucs_last_21, last_21);
+        // counter.add(hamming_distance_last_21);
+        // if (hamming_distance_last_21 > 6)
+        //     std::cerr << "DEBUG: " << seqp->seq_id(seqdb::SeqdbEntrySeq::encoded_t::no) << " HD:" << hamming_distance_last_21 << '\n';
     }
-    std::cerr << "DEBUG: humming: " << counter << '\n';
+    // std::cerr << "DEBUG: humming_at_last_21: " << counter << '\n';
 
     return {aa_common_length, result};
 
