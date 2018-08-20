@@ -9,6 +9,7 @@ MAKEFLAGS = -w
 TARGETS = \
   $(SEQDB_LIB) \
   $(SEQDB_PY_LIB) \
+  $(DIST)/seqdb-export-for-tree-maker \
   $(DIST)/seqdb-info \
   $(DIST)/seqdb-report-clade \
   $(DIST)/seqdb-report-dates \

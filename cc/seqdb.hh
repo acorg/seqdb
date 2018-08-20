@@ -315,6 +315,8 @@ namespace seqdb
         void assign(const SeqdbEntry* aEntry, const SeqdbSeq* aSeq) { mEntry = const_cast<SeqdbEntry*>(aEntry); mSeq = const_cast<SeqdbSeq*>(aSeq); }
 
         operator bool() const { return mEntry != nullptr && mSeq != nullptr; }
+        constexpr bool operator==(const SeqdbEntrySeq& rh) const { return mEntry == rh.mEntry && mSeq == rh.mSeq; }
+        constexpr bool operator!=(const SeqdbEntrySeq& rh) const { return !operator==(rh); }
 
         SeqdbEntry& entry() { return *mEntry; }
         SeqdbSeq& seq() { return *mSeq; }
