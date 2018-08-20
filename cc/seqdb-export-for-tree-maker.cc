@@ -149,12 +149,12 @@ std::vector<seqdb::SeqdbEntrySeq> collect(std::string virus_type, std::string li
 std::pair<size_t, std::vector<seqdb::SeqdbEntrySeq>> pick(const std::vector<seqdb::SeqdbEntrySeq>& sequences, const seqdb::SeqdbEntrySeq& base_seq, size_t number_to_pick, size_t hamming_distance_threshold)
 {
     const size_t aa_common_length = common_length(sequences.begin(), sequences.size() > number_to_pick ? sequences.begin() + static_cast<std::vector<seqdb::SeqdbEntrySeq>::difference_type>(number_to_pick) : sequences.end());
-    const std::string base_seq_aa = base_seq.seq().amino_acids(true, 0, aa_common_length);
+    const std::string base_seq_nucs = base_seq.seq().nucleotides(true, 0, aa_common_length * 3);
     std::vector<seqdb::SeqdbEntrySeq> result;
     for (auto seqp = sequences.begin(); seqp != sequences.end() && result.size() < number_to_pick; ++seqp) {
-        const std::string aa = seqp->seq().amino_acids(true, 0, aa_common_length);
-        const auto hamming_distance_with_base = string::hamming_distance(base_seq_aa, aa);
-        if (hamming_distance_with_base > 10)
+        const std::string nucs = seqp->seq().nucleotides(true, 0, aa_common_length * 3);
+        const auto hamming_distance_with_base = string::hamming_distance(base_seq_nucs, nucs);
+        // if (hamming_distance_with_base > 10)
             std::cerr << "DEBUG: " << seqp->seq_id(seqdb::SeqdbEntrySeq::encoded_t::no) << " HD:" << hamming_distance_with_base << '\n';
         if (hamming_distance_with_base < hamming_distance_threshold) {
             result.push_back(*seqp);
