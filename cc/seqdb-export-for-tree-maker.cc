@@ -4,6 +4,7 @@
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/stream.hh"
+#include "acmacs-base/counter.hh"
 #include "acmacs-base/read-file.hh"
 #include "seqdb/seqdb.hh"
 
@@ -149,17 +150,21 @@ std::vector<seqdb::SeqdbEntrySeq> collect(std::string virus_type, std::string li
 std::pair<size_t, std::vector<seqdb::SeqdbEntrySeq>> pick(const std::vector<seqdb::SeqdbEntrySeq>& sequences, const seqdb::SeqdbEntrySeq& base_seq, size_t number_to_pick, size_t hamming_distance_threshold)
 {
     const size_t aa_common_length = common_length(sequences.begin(), sequences.size() > number_to_pick ? sequences.begin() + static_cast<std::vector<seqdb::SeqdbEntrySeq>::difference_type>(number_to_pick) : sequences.end());
+      // std::cerr << "DEBUG: common_length: " << aa_common_length << '\n';
     const std::string base_seq_nucs = base_seq.seq().nucleotides(true, 0, aa_common_length * 3);
     std::vector<seqdb::SeqdbEntrySeq> result;
+    acmacs::Counter<size_t> counter;
     for (auto seqp = sequences.begin(); seqp != sequences.end() && result.size() < number_to_pick; ++seqp) {
         const std::string nucs = seqp->seq().nucleotides(true, 0, aa_common_length * 3);
         const auto hamming_distance_with_base = string::hamming_distance(base_seq_nucs, nucs);
+        counter.add(hamming_distance_with_base);
         // if (hamming_distance_with_base > 10)
-            std::cerr << "DEBUG: " << seqp->seq_id(seqdb::SeqdbEntrySeq::encoded_t::no) << " HD:" << hamming_distance_with_base << '\n';
+        //    std::cerr << "DEBUG: " << seqp->seq_id(seqdb::SeqdbEntrySeq::encoded_t::no) << " HD:" << hamming_distance_with_base << '\n';
         if (hamming_distance_with_base < hamming_distance_threshold) {
             result.push_back(*seqp);
         }
     }
+    std::cerr << "DEBUG: humming: " << counter << '\n';
     return {aa_common_length, result};
 
 } // pick
@@ -168,12 +173,7 @@ std::pair<size_t, std::vector<seqdb::SeqdbEntrySeq>> pick(const std::vector<seqd
 
 static size_t common_length(entry_seq_iter_t first, entry_seq_iter_t last)
 {
-    std::map<size_t, size_t> counter;
-    for (auto iter = first; iter != last; ++iter)
-        ++counter[iter->seq().amino_acids(true).size()];
-    const auto cl = std::max_element(counter.begin(), counter.end(), [](const auto& e1, const auto& e2) { return e1.second < e2.second; })->first;
-      // std::cerr << "DEBUG: common_length: " << cl << '\n';
-    return cl;
+    return acmacs::Counter(first, last, [](const auto& es) { return es.seq().amino_acids(true).size(); }).max().first;
 
 } // common_length
 
