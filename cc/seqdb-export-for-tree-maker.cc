@@ -17,6 +17,7 @@ static seqdb::SeqdbEntrySeq find_base_seq(std::string virus_type, std::string li
 static std::vector<seqdb::SeqdbEntrySeq> collect(std::string virus_type, std::string lineage, const seqdb::SeqdbEntrySeq& base_seq);
 static std::pair<size_t, std::vector<seqdb::SeqdbEntrySeq>> pick(const std::vector<seqdb::SeqdbEntrySeq>& sequences, const seqdb::SeqdbEntrySeq& base_seq, size_t number_to_pick, size_t hamming_distance_threshold);
 static size_t common_length(entry_seq_iter_t first, entry_seq_iter_t last);
+static void destroy_failed_sequence_end(std::string seq_id, std::string& aa, std::string& nucs, std::string base_seq_aa, std::string base_seq_nucs);
 
 // ----------------------------------------------------------------------
 
@@ -59,19 +60,13 @@ int main(int argc, char* const argv[])
 
         // write
         const std::string base_seq_nucs = base_seq.seq().nucleotides(true, 0, aa_common_length * 3);
+        const std::string base_seq_aa = base_seq.seq().amino_acids(true, 0, aa_common_length);
         acmacs::file::ofstream output_nucs(args["--output-nucs"]);
         acmacs::file::ofstream output_aa(args["--output-aa"] ? args["--output-aa"].str() : "/dev/null"s);
         for (const auto& seq : to_export) {
             std::string nucs = seq.seq().nucleotides(true, 0, aa_common_length * 3);
             std::string aa = seq.seq().amino_acids(true, 0, aa_common_length);
-            if (const auto hamming_distance_last_21 = string::hamming_distance(base_seq_nucs.substr(base_seq_nucs.size() - 21), nucs.substr(nucs.size() - 21)); hamming_distance_last_21 >= 7) {
-                // found in B/Vic before SSM TC1 2018-08-14, messy sequence end, perhaps sequencing failure, replace end with '-'
-                nucs.resize(aa_common_length * 3 - 21);
-                nucs.resize(aa_common_length * 3, '-');
-                aa.resize(aa_common_length - 7);
-                aa.resize(aa_common_length, 'X');
-                std::cerr << "INFO: " << seq.seq_id(seqdb::SeqdbEntrySeq::encoded_t::yes) << " last 21 nucs replaced with -, sequencing failure at the end suspected\n";
-            }
+            destroy_failed_sequence_end(seq.seq_id(seqdb::SeqdbEntrySeq::encoded_t::yes), aa, nucs, base_seq_aa, base_seq_nucs);
             output_nucs.stream() << '>' << seq.seq_id(seqdb::SeqdbEntrySeq::encoded_t::yes) << '\n' << nucs << '\n';
             output_aa.stream() << '>' << seq.seq_id(seqdb::SeqdbEntrySeq::encoded_t::yes) << '\n' << aa << '\n';
         }
@@ -185,6 +180,27 @@ static size_t common_length(entry_seq_iter_t first, entry_seq_iter_t last)
     return acmacs::Counter(first, last, [](const auto& es) { return es.seq().amino_acids(true).size(); }).max().first;
 
 } // common_length
+
+// ----------------------------------------------------------------------
+
+void destroy_failed_sequence_end(std::string seq_id, std::string& aa, std::string& nucs, std::string /*base_seq_aa*/, std::string base_seq_nucs)
+{
+    constexpr size_t last_nucs_to_check = 21;
+    const auto nucs_size = nucs.size();
+    const auto aa_size = aa.size();
+    for (size_t last_nucs = last_nucs_to_check; last_nucs > 3; last_nucs -= 3) { // failure at the last AA pos not considered
+        if (const auto hamming_distance_last = string::hamming_distance(base_seq_nucs.substr(nucs_size - last_nucs), nucs.substr(nucs_size - last_nucs)); hamming_distance_last >= (last_nucs / 3)) {
+              // found in B/Vic before SSM TC1 2018-08-14, messy sequence end, perhaps sequencing failure, replace end with '-'
+            nucs.resize(nucs_size - last_nucs);
+            nucs.resize(nucs_size, '-');
+            aa.resize(aa_size - last_nucs / 3);
+            aa.resize(aa_size, 'X');
+            std::cerr << "INFO: " << seq_id << " last " << last_nucs << " nucs replaced with -, sequencing failure at the end suspected\n";
+            break;
+        }
+    }
+
+} // destroy_failed_sequence_end
 
 // ----------------------------------------------------------------------
 
