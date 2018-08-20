@@ -16,6 +16,15 @@ class Comparer
     Comparer() = default;
 
     void add(const seqdb::SeqdbEntrySeq& entry_seq) { entries_.push_back(entry_seq); }
+    void second_group()
+        {
+            if (second_group_ > 0)
+                throw std::runtime_error("second group already defined");
+            else if (entries_.empty())
+                throw std::runtime_error("no first group");
+            second_group_ = entries_.size();
+        }
+
     void analyse();
     void report(std::ostream& output, bool all_pos, bool vertical) const;
     void report_old() const;
@@ -34,6 +43,8 @@ class Comparer
     };
 
     std::vector<seqdb::SeqdbEntrySeq> entries_;
+    size_t second_group_ = 0;
+    std::vector<size_t> positions_separating_groups_;
 
 }; //  class Comparer
 
@@ -56,14 +67,16 @@ int main(int argc, char* const argv[])
                 {"--help", false},
             });
         if (args["-h"] || args["--help"] || args.number_of_arguments() < 2) {
-            throw std::runtime_error("Usage: "s + args.program() + " [options] <name> ...\n" + args.usage_options());
+            throw std::runtime_error("Usage: "s + args.program() + " [options] <name> ... [/ <name> ...]\n" + args.usage_options());
         }
         const bool verbose = args["-v"] || args["--verbose"];
         seqdb::setup_dbs(args["--db-dir"], verbose ? seqdb::report::yes : seqdb::report::no);
         Comparer comparer;
         const auto& seqdb = seqdb::get();
         for (auto arg_no : acmacs::range(args.number_of_arguments())) {
-            if (const auto* entry_seq_1 = seqdb.find_hi_name(args[arg_no]); entry_seq_1 && entry_seq_1->seq().aligned()) {
+            if (args[arg_no] == "/"s)
+                comparer.second_group();
+            else if (const auto* entry_seq_1 = seqdb.find_hi_name(args[arg_no]); entry_seq_1 && entry_seq_1->seq().aligned()) {
                 comparer.add(*entry_seq_1);
                 // std::cout << std::setw(60) << std::left << entry_seq_1->make_name() << entry_seq_1->seq().amino_acids(true) << '\n';
             }
@@ -97,6 +110,31 @@ int main(int argc, char* const argv[])
 
 void Comparer::analyse()
 {
+    if (second_group_) {
+          // find positions at which first and second group (by second_group_) are clearly separated by nucs triplet
+        std::vector<std::pair<std::set<std::string>, std::set<std::string>>> group;
+        for (const auto [no, entry] : acmacs::enumerate(entries_)) {
+            const std::string nucs = entry.seq().nucleotides(true);
+            const auto max_pos = nucs.size() / 3;
+            if (group.size() < max_pos) {
+                  // std::cerr << "DEBUG: max_pos " << max_pos << ' ' << entry.seq_id(seqdb::SeqdbEntrySeq::encoded_t::yes) << '\n';
+                group.resize(max_pos);
+            }
+            for (size_t pos = 0; pos < max_pos; ++pos) {
+                const auto nucs_pos = nucs.substr(pos * 3, 3);
+                if (no < second_group_)
+                    group[pos].first.insert(nucs_pos);
+                else
+                    group[pos].second.insert(nucs_pos);
+            }
+        }
+        for (auto [pos, groups] : acmacs::enumerate(group)) {
+            std::set<std::string> intersection;
+            std::set_intersection(groups.first.begin(), groups.first.end(), groups.second.begin(), groups.second.end(), std::inserter(intersection, intersection.begin()));
+            if (intersection.empty())
+                positions_separating_groups_.push_back(pos);
+        }
+    }
 
 } // Comparer::analyse
 
@@ -104,10 +142,14 @@ void Comparer::analyse()
 
 void Comparer::report(std::ostream& output, bool all_pos, bool vertical) const
 {
+      // std::cerr << "DEBUG: positions_separating_groups_ " << positions_separating_groups_ << '\n';
+
     std::vector<std::string> aas(entries_.size()), nucs(entries_.size());
     size_t max_aa = 0;
     for (const auto [no, entry] : acmacs::enumerate(entries_)) {
-        output << std::setw(2) << std::right << no + 1 << ' ' << entry.make_name() << ' ' << entry.entry().lineage() << ' ' << entry.seq().clades() << '\n';
+        if (second_group_ && no == second_group_)
+            output << "--\n";
+        output << std::setw(2) << std::right << no + 1 << ' ' << entry.seq_id(seqdb::SeqdbEntrySeq::encoded_t::yes) << ' ' << entry.entry().lineage() << ' ' << entry.seq().clades() << '\n';
         aas[no] = entry.seq().amino_acids(true);
         nucs[no] = entry.seq().nucleotides(true);
         max_aa = std::max(max_aa, aas[no].size());
@@ -116,19 +158,31 @@ void Comparer::report(std::ostream& output, bool all_pos, bool vertical) const
 
     if (vertical) {
         output << "pos ";
-        for (size_t no = 1; no <= entries_.size(); ++no)
-            output << ' ' << std::setw(2) << std::right << no << ' ';
+        for (size_t no = 0; no < entries_.size(); ++no) {
+            if (second_group_ && no == second_group_)
+                output << "sep";
+            output << ' ' << std::setw(2) << std::right << no+1 << ' ';
+        }
     }
     else {
         output << "pos  ";
-        for (size_t no = 1; no <= entries_.size(); ++no)
-            output << ' ' << std::setw(2) << std::right << no << "    ";
+        for (size_t no = 0; no < entries_.size(); ++no) {
+            if (second_group_ && no == second_group_)
+                output << "sep";
+            output << ' ' << std::setw(2) << std::right << no+1 << "    ";
+        }
     }
     output << '\n';
 
     auto nucs_horizontal = [&output, &aas, &nucs, this](size_t pos, const auto& aa_count, const auto& nuc_count) {
         output << std::setw(3) << std::right << pos + 1 << "  ";
         for (size_t no = 0; no < this->entries_.size(); ++no) {
+            if (second_group_ && no == second_group_) {
+                if (std::find(positions_separating_groups_.begin(), positions_separating_groups_.end(), pos) != positions_separating_groups_.end())
+                    output << "+  ";
+                else
+                    output << "   ";
+            }
             if (pos < aas[no].size())
                 output << aas[no][pos] << ' ' << std::setw(3) << std::left << nucs[no].substr(pos * 3, 3);
             else
@@ -136,7 +190,7 @@ void Comparer::report(std::ostream& output, bool all_pos, bool vertical) const
             output << "  ";
         }
         if (nuc_count.size() > 1)
-            output << nuc_count;
+            output << "   " << nuc_count;
         if (aa_count.size() > 1)
             output << ' ' << aa_count;
         output << '\n';
@@ -146,6 +200,12 @@ void Comparer::report(std::ostream& output, bool all_pos, bool vertical) const
         output << std::setw(3) << std::right << pos + 1 << "  ";
         std::vector<std::string> nucs_at(this->entries_.size());
         for (size_t no = 0; no < this->entries_.size(); ++no) {
+            if (second_group_ && no == second_group_) {
+                if (std::find(positions_separating_groups_.begin(), positions_separating_groups_.end(), pos) != positions_separating_groups_.end())
+                    output << "+  ";
+                else
+                    output << "   ";
+            }
             nucs_at[no] = nucs[no].substr(pos * 3, 3);
             if (pos < aas[no].size())
                 output << aas[no][pos] << nucs_at[no][0];
@@ -154,12 +214,14 @@ void Comparer::report(std::ostream& output, bool all_pos, bool vertical) const
             output << "  ";
         }
         if (nuc_count.size() > 1)
-            output << nuc_count;
+            output << "   " << nuc_count;
         if (aa_count.size() > 1)
             output << ' ' << aa_count;
         for (size_t nn = 1; nn < 3; ++nn) {
             output << "\n     ";
             for (size_t no = 0; no < this->entries_.size(); ++no) {
+                if (second_group_ && no == second_group_)
+                    output << "   ";
                 output << ' ';
                 if (nucs_at[no].size() > nn)
                     output << nucs_at[no][nn];
