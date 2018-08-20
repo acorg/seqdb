@@ -158,13 +158,14 @@ std::pair<size_t, std::vector<seqdb::SeqdbEntrySeq>> pick(const std::vector<seqd
         const std::string nucs = seqp->seq().nucleotides(true, 0, aa_common_length * 3);
         const auto hamming_distance_with_base = string::hamming_distance(base_seq_nucs, nucs);
         counter.add(hamming_distance_with_base);
-        // if (hamming_distance_with_base > 10)
-        //    std::cerr << "DEBUG: " << seqp->seq_id(seqdb::SeqdbEntrySeq::encoded_t::no) << " HD:" << hamming_distance_with_base << '\n';
+          //if (hamming_distance_with_base > 34)
+           std::cerr << "DEBUG: " << seqp->seq_id(seqdb::SeqdbEntrySeq::encoded_t::no) << " HD:" << hamming_distance_with_base << '\n';
         if (hamming_distance_with_base < hamming_distance_threshold) {
             result.push_back(*seqp);
         }
     }
     std::cerr << "DEBUG: humming: " << counter << '\n';
+
     return {aa_common_length, result};
 
 } // pick
