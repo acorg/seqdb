@@ -129,8 +129,9 @@ namespace seqdb
         bool hi_name_present(const std::string& aHiName) const { return std::find(mHiNames.begin(), mHiNames.end(), aHiName) != mHiNames.end(); }
 
           // if aAligned && aLeftPartSize > 0 - include signal peptide and other stuff to the left from the beginning of the aligned sequence
-        std::string amino_acids(bool aAligned, size_t aLeftPartSize = 0) const;
-        std::string nucleotides(bool aAligned, size_t aLeftPartSize = 0) const;
+          // if aResize != 0, resize result by either truncating or appending X or -
+        std::string amino_acids(bool aAligned, size_t aLeftPartSize = 0, size_t aResize = 0) const;
+        std::string nucleotides(bool aAligned, size_t aLeftPartSize = 0, size_t aResize = 0) const;
         Shift amino_acids_shift() const { return mAminoAcidsShift; } // throws if sequence was not aligned
         Shift nucleotides_shift() const { return mNucleotidesShift; }  // throws if sequence was not aligned
         // int& amino_acids_shift_raw() { return mAminoAcidsShift.raw(); }

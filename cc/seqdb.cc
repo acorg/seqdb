@@ -263,7 +263,7 @@ const std::vector<std::string>& SeqdbSeq::update_clades(std::string aVirusType, 
 
 // ----------------------------------------------------------------------
 
-std::string SeqdbSeq::amino_acids(bool aAligned, size_t aLeftPartSize) const
+std::string SeqdbSeq::amino_acids(bool aAligned, size_t aLeftPartSize, size_t aResize) const
 {
     std::string r = mAminoAcids;
     if (aAligned) {
@@ -285,6 +285,9 @@ std::string SeqdbSeq::amino_acids(bool aAligned, size_t aLeftPartSize) const
         }
         r.replace(0, longest_part_start, longest_part_start, 'X');
         r.resize(longest_part_start + longest_part_len, 'X');
+
+        if (aResize > 0)
+            r.resize(aResize, 'X');
     }
     return r;
 
@@ -317,13 +320,15 @@ char SeqdbSeq::amino_acid_at(size_t aPos, bool ignore_errors) const
 
 // ----------------------------------------------------------------------
 
-std::string SeqdbSeq::nucleotides(bool aAligned, size_t aLeftPartSize) const
+std::string SeqdbSeq::nucleotides(bool aAligned, size_t aLeftPartSize, size_t aResize) const
 {
     std::string r = mNucleotides;
     if (aAligned) {
         if (!aligned())
             throw SequenceNotAligned("nucleotides()");
         r = shift(r, mNucleotidesShift + static_cast<int>(aLeftPartSize), '-');
+        if (aResize > 0)
+            r.resize(aResize, '-');
     }
     return r;
 

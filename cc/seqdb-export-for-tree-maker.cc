@@ -14,7 +14,7 @@ using entry_seq_iter_t = std::vector<seqdb::SeqdbEntrySeq>::const_iterator;
 static std::pair<std::string, std::string> parse_flu(std::string flu);
 static seqdb::SeqdbEntrySeq find_base_seq(std::string virus_type, std::string lineage, std::string base_seq_regex);
 static std::vector<seqdb::SeqdbEntrySeq> collect(std::string virus_type, std::string lineage, const seqdb::SeqdbEntrySeq& base_seq);
-static std::pair<size_t, std::vector<seqdb::SeqdbEntrySeq>> pick(const std::vector<seqdb::SeqdbEntrySeq>& sequences, size_t number_to_pick, size_t hamming_distance_threshold);
+static std::pair<size_t, std::vector<seqdb::SeqdbEntrySeq>> pick(const std::vector<seqdb::SeqdbEntrySeq>& sequences, const seqdb::SeqdbEntrySeq& base_seq, size_t number_to_pick, size_t hamming_distance_threshold);
 static size_t common_length(entry_seq_iter_t first, entry_seq_iter_t last);
 
 // ----------------------------------------------------------------------
@@ -55,26 +55,20 @@ int main(int argc, char* const argv[])
 
         const auto base_seq = find_base_seq(virus_type, lineage, args["--base-seq"]);
         const auto all_sequences_sorted_by_date = collect(virus_type, lineage, base_seq);
-        auto [aa_common_length, to_export] = pick(all_sequences_sorted_by_date, args["--recent"], args["--hamming-distance-threshold"]);
+        auto [aa_common_length, to_export] = pick(all_sequences_sorted_by_date, base_seq, args["--recent"], args["--hamming-distance-threshold"]);
           // add base_seq
         to_export.insert(to_export.begin(), base_seq);
 
           // write
         if (args["--output-nucs"]) {
             acmacs::file::ofstream output(args["--output-nucs"]);
-            for (const auto& seq : to_export) {
-                std::string nucs = seq.seq().nucleotides(true);
-                nucs.resize(aa_common_length * 3, '-');
-                output.stream() << '>' << seq.seq_id(seqdb::SeqdbEntrySeq::encoded_t::yes) << '\n' << nucs << '\n';
-            }
+            for (const auto& seq : to_export)
+                output.stream() << '>' << seq.seq_id(seqdb::SeqdbEntrySeq::encoded_t::yes) << '\n' << seq.seq().nucleotides(true, 0, aa_common_length * 3) << '\n';
         }
         if (args["--output-aa"]) {
             acmacs::file::ofstream output(args["--output-aa"]);
-            for (const auto& seq : to_export) {
-                std::string aa = seq.seq().amino_acids(true);
-                aa.resize(aa_common_length, 'X');
-                output.stream() << '>' << seq.seq_id(seqdb::SeqdbEntrySeq::encoded_t::yes) << '\n' << aa << '\n';
-            }
+            for (const auto& seq : to_export)
+                output.stream() << '>' << seq.seq_id(seqdb::SeqdbEntrySeq::encoded_t::yes) << '\n' << seq.seq().amino_acids(true, 0, aa_common_length) << '\n';
         }
         if (args["--output-names"]) {
             acmacs::file::ofstream output(args["--output-names"]);
@@ -152,15 +146,19 @@ std::vector<seqdb::SeqdbEntrySeq> collect(std::string virus_type, std::string li
 
 // ----------------------------------------------------------------------
 
-std::pair<size_t, std::vector<seqdb::SeqdbEntrySeq>> pick(const std::vector<seqdb::SeqdbEntrySeq>& sequences, size_t number_to_pick, size_t hamming_distance_threshold)
+std::pair<size_t, std::vector<seqdb::SeqdbEntrySeq>> pick(const std::vector<seqdb::SeqdbEntrySeq>& sequences, const seqdb::SeqdbEntrySeq& base_seq, size_t number_to_pick, size_t hamming_distance_threshold)
 {
-    size_t aa_common_length = common_length(sequences.begin(), sequences.size() > number_to_pick ? sequences.begin() + static_cast<std::vector<seqdb::SeqdbEntrySeq>::difference_type>(number_to_pick) : sequences.end());
+    const size_t aa_common_length = common_length(sequences.begin(), sequences.size() > number_to_pick ? sequences.begin() + static_cast<std::vector<seqdb::SeqdbEntrySeq>::difference_type>(number_to_pick) : sequences.end());
+    const std::string base_seq_aa = base_seq.seq().amino_acids(true, 0, aa_common_length);
     std::vector<seqdb::SeqdbEntrySeq> result;
     for (auto seqp = sequences.begin(); seqp != sequences.end() && result.size() < number_to_pick; ++seqp) {
-          // exclude too short
-          // convert to most common length BEFORE excluding by hamming distance threshold
-          // exclude by hamming_distance_threshold
-        result.push_back(*seqp);
+        const std::string aa = seqp->seq().amino_acids(true, 0, aa_common_length);
+        const auto hamming_distance_with_base = string::hamming_distance(base_seq_aa, aa);
+        if (hamming_distance_with_base > 10)
+            std::cerr << "DEBUG: " << seqp->seq_id(seqdb::SeqdbEntrySeq::encoded_t::no) << " HD:" << hamming_distance_with_base << '\n';
+        if (hamming_distance_with_base < hamming_distance_threshold) {
+            result.push_back(*seqp);
+        }
     }
     return {aa_common_length, result};
 
