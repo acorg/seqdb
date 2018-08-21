@@ -36,6 +36,7 @@ namespace seqdb
         void align_to_master();
 
         void revert() { std::for_each(mEntries.begin(), mEntries.end(), [](auto& entry) { entry.revert(); }); }
+        void choose_master();
 
     }; // class InsertionsDeletionsDetector
 

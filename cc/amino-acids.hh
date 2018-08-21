@@ -11,7 +11,11 @@
 namespace seqdb
 {
 
-    constexpr size_t MINIMUM_SEQUENCE_AA_LENGTH = 200; // actually H3 3C3b clade requires 261Q
+    constexpr size_t NORMAL_SEQUENCE_AA_LENGTH_H1 = 549;
+    constexpr size_t NORMAL_SEQUENCE_AA_LENGTH_H3 = 550;
+    constexpr size_t NORMAL_SEQUENCE_AA_LENGTH_B = 570;
+
+    constexpr size_t MINIMUM_SEQUENCE_AA_LENGTH = 400; // throw away everything shorter
 
 // ----------------------------------------------------------------------
 

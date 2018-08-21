@@ -224,9 +224,9 @@ namespace seqdb
 
         void remove_short_sequences()
             {
-                auto short_seq = [this](auto& seq) {
-                    if (seq.is_short())
-                        std::cerr << "Warning: removing too short sequence in " << mName << std::endl;
+                auto short_seq = [&](auto& seq) {
+                    // if (seq.is_short())
+                    //     std::cerr << "WARNING: removing too short sequence in " << mName << std::endl;
                     return seq.is_short();
                 };
                 mSeq.erase(std::remove_if(mSeq.begin(), mSeq.end(), short_seq), mSeq.end());

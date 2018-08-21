@@ -2,7 +2,9 @@
 #include <array>
 
 #include "acmacs-base/debug.hh"
+#include "acmacs-base/counter.hh"
 #include "seqdb/insertions_deletions.hh"
+#include "seqdb/amino-acids.hh"
 
 using namespace seqdb;
 
@@ -44,18 +46,56 @@ InsertionsDeletionsDetector::InsertionsDeletionsDetector(Seqdb& aSeqdb, std::str
         catch (SequenceNotAligned&) {
         }
     }
-    if (!mEntries.empty()) {
-        mMaster = mEntries.front().amino_acids;
-        std::cerr << mVirusType << ": master  " << mEntries.front().entry_seq.entry().virus_type() << ' ' << mEntries.front().entry_seq.make_name() << "\n" << mMaster << std::endl;
-    }
+    choose_master();
 
 } // InsertionsDeletionsDetector::InsertionsDeletionsDetector
+
+// ----------------------------------------------------------------------
+
+void InsertionsDeletionsDetector::choose_master()
+{
+    if (!mEntries.empty()) {
+        size_t master_number_aa = 0;
+        if (mVirusType == "A(H1N1)")
+            master_number_aa = NORMAL_SEQUENCE_AA_LENGTH_H1;
+        else if (mVirusType == "A(H3N2)")
+            master_number_aa = NORMAL_SEQUENCE_AA_LENGTH_H3;
+        else if (mVirusType == "B")
+            master_number_aa = NORMAL_SEQUENCE_AA_LENGTH_B;
+        else
+            std::cerr << "WARNING: unknown normal sequence size for " << mVirusType << '\n';
+
+        std::string master_name{"???"};
+        if (master_number_aa > 0) {
+            for (auto& entry : mEntries) {
+                if (entry.amino_acids.size() == master_number_aa) {
+                    mMaster = entry.amino_acids;
+                    master_name = entry.entry_seq.make_name();
+                    break;
+                }
+            }
+        }
+        else {
+            mMaster = mEntries.front().amino_acids;
+            master_name = mEntries.front().entry_seq.make_name();
+        }
+        std::cout << "INFO: " << mVirusType << ": master: " << master_name << "\n                 " << mMaster << std::endl;
+    }
+    // else
+    //     std::cerr << "ERROR: InsertionsDeletionsDetector::choose_master: no entries\n";
+
+} // InsertionsDeletionsDetector::choose_master
 
 // ----------------------------------------------------------------------
 
 void InsertionsDeletionsDetector::detect()
 {
     if (!mEntries.empty() /* && mVirusType == "B" */) {
+        std::cout << "INFO: detecting insertions/deletions in " << mVirusType << '\n';
+
+        // acmacs::Counter counter(mEntries.begin(), mEntries.end(), [](const auto& entry) { return entry.amino_acids.size(); });
+        // std::cerr << "DEBUG: seq-lengths: " << counter << '\n';
+
         align_to_master();
 
         AAsPerPos aas_per_pos;
@@ -71,7 +111,8 @@ void InsertionsDeletionsDetector::detect()
                     ++num_with_deletions;
                   // if (entry.pos_number.front().second > 1)
                   //     std::cerr << entry.entry_seq.make_name() << std::endl << entry.pos_number << ' ' << entry.amino_acids << std::endl;
-                  // std::cerr << entry.amino_acids << '\n';
+                    if (entry.pos_number.size() > 1)
+                        std::cerr << entry.entry_seq.make_name() << ' ' << entry.pos_number << ' ' << entry.amino_acids << '\n';
                 }
                 catch (InvalidShift&) {
                 }
@@ -87,29 +128,38 @@ void InsertionsDeletionsDetector::detect()
 
 void InsertionsDeletionsDetector::align_to_master()
 {
-      // const size_t min_common = static_cast<size_t>(std::floor(mMaster.size() * 0.8));
-      // std::cerr << mVirusType << ": min_common: " << min_common << std::endl;
+    // const size_t min_common = static_cast<size_t>(std::floor(mMaster.size() * 0.8));
+    // std::cerr << mVirusType << ": min_common: " << min_common << std::endl;
     bool restart = true;
     while (restart) {
         restart = false;
-        for (auto& entry: mEntries) {
+        for (auto& entry : mEntries) {
             try {
                 entry.pos_number = entry.align_to(mMaster, entry.amino_acids, entry.entry_seq);
             }
             catch (SwitchMaster&) {
-                try {
-                      // perhaps master has deletions
-                    entry.align_to(entry.amino_acids, mMaster, entry.entry_seq);
-                      // yes, change master to current and restart
-                    mMaster = entry.amino_acids;
-                    std::cout << "INFO: " << mVirusType << ": master changed to " << entry.entry_seq.make_name() << '\n' << mMaster << '\n';
-                    restart = true;
-                    revert();
-                    break;
+                if (mVirusType == "A(H1N1)" || mVirusType == "A(H3N2)" || mVirusType == "B") {
+                      // switching master is not allowed for known flu types
+                      // there are sequences with insertions, e.g. B/PERTH/58/2012 MDCK?/MDCK1
                 }
-                catch (SwitchMaster&) {
-                      // std::cerr << mVirusType << ": cannot find deletions in " << entry.entry_seq.make_name() << std::endl;
+                else if (entry.amino_acids.size() > std::lround(mMaster.size() * 0.9)) { // do not switch master, if new sequence is too short
+                    try {
+                        // perhaps master has deletions
+                        entry.align_to(entry.amino_acids, mMaster, entry.entry_seq);
+                        // yes, change master to current and restart
+                        mMaster = entry.amino_acids;
+                        std::cout << "INFO: " << mVirusType << ": master changed to " << entry.entry_seq.make_name() << '\n' << mMaster << '\n';
+                        restart = true;
+                        revert();
+                        break;
+                    }
+                    catch (SwitchMaster&) {
+                        // std::cerr << mVirusType << ": cannot find deletions in " << entry.entry_seq.make_name() << std::endl;
+                    }
                 }
+                // else {
+                //     std::cout << "INFO: " << mVirusType << ": master NOT changed to " << entry.entry_seq.make_name() << ": too short: " << entry.amino_acids.size() << " amino-acids\n";
+                // }
             }
         }
     }

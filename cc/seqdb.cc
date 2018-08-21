@@ -214,7 +214,7 @@ AlignAminoAcidsData SeqdbSeq::align(bool aForce, Messages& aMessages)
               }
           }
           else {
-              aMessages.warning() << "Nucs not translated/aligned" /* << mNucleotides */ << '\n';
+              aMessages.warning() << "Nucs not translated/aligned\n    AA:      " << mAminoAcids << '\n';
           }
           break;
       case aling_amino_acids:
@@ -385,7 +385,7 @@ void SeqdbEntry::update_lineage(const std::string& aLineage, Messages& aMessages
         if (mLineage.empty())
             mLineage = aLineage;
         else if (aLineage != mLineage)
-            aMessages.warning() << "Different lineages " << mLineage << " (stored) vs. " << aLineage << " (ignored)" << '\n';
+            aMessages.warning() << mName << ": different lineages " << mLineage << " (stored) vs. " << aLineage << " (ignored)" << '\n';
     }
 
 } // SeqdbEntry::update_lineage
@@ -407,7 +407,7 @@ void SeqdbEntry::update_subtype_name(const std::string& aSubtype, Messages& aMes
                     mName[5] = '2';
             }
             else {
-                aMessages.warning() << "Different subtypes " << mVirusType << " (stored) vs. " << aSubtype << " (ignored)" << '\n';
+                aMessages.warning() << mName << ": different subtypes " << mVirusType << " (stored) vs. " << aSubtype << " (ignored)" << '\n';
             }
         }
           // fix subtype in the name too
