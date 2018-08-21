@@ -185,17 +185,28 @@ static size_t common_length(entry_seq_iter_t first, entry_seq_iter_t last)
 
 void destroy_failed_sequence_end(std::string seq_id, std::string& aa, std::string& nucs, std::string /*base_seq_aa*/, std::string base_seq_nucs)
 {
-    constexpr size_t last_nucs_to_check = 21;
+      // found in B/Vic before SSM TC1 2018-08-14, messy sequence end
+
+    constexpr size_t last_aa_pos_to_check = 13;
     const auto nucs_size = nucs.size();
     const auto aa_size = aa.size();
-    for (size_t last_nucs = last_nucs_to_check; last_nucs > 3; last_nucs -= 3) { // failure at the last AA pos not considered
-        if (const auto hamming_distance_last = string::hamming_distance(base_seq_nucs.substr(nucs_size - last_nucs), nucs.substr(nucs_size - last_nucs)); hamming_distance_last >= (last_nucs / 3)) {
-              // found in B/Vic before SSM TC1 2018-08-14, messy sequence end, perhaps sequencing failure, replace end with '-'
-            nucs.resize(nucs_size - last_nucs);
+
+    std::vector<size_t> dist(last_aa_pos_to_check + 1, 0);
+    for (size_t last_pos = last_aa_pos_to_check; last_pos > 0; --last_pos) {
+        dist[last_pos] = string::hamming_distance(base_seq_nucs.substr(nucs_size - last_pos * 3), nucs.substr(nucs_size - last_pos * 3));
+    }
+    for (size_t last_pos = last_aa_pos_to_check; last_pos > 1; --last_pos) {
+        if (dist[last_pos] > dist[last_pos - 1] && dist[last_pos] >= last_pos) {
+              // too much mess found at the end, perhaps sequencing failure, replace end with '-'
+            std::cerr << "INFO: " << seq_id << " last " << last_pos * 3 << " nucs replaced with -, sequencing failure at the end suspected\n"
+                      << "        base seq end: " << base_seq_nucs.substr(nucs_size - last_aa_pos_to_check * 3) << '\n'
+                      << "             seq end: " << nucs.substr(nucs_size - last_aa_pos_to_check * 3) << '\n';
+            nucs.resize(nucs_size - last_pos * 3);
             nucs.resize(nucs_size, '-');
-            aa.resize(aa_size - last_nucs / 3);
+            aa.resize(aa_size - last_pos);
             aa.resize(aa_size, 'X');
-            std::cerr << "INFO: " << seq_id << " last " << last_nucs << " nucs replaced with -, sequencing failure at the end suspected\n";
+            std::cerr << "   resulting seq end: " << nucs.substr(nucs_size - last_aa_pos_to_check * 3) << '\n';
+            std::cerr << "DEBUG: " << dist << '\n';
             break;
         }
     }
