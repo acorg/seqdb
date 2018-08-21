@@ -26,4 +26,4 @@ export LD_LIBRARY_PATH="${ACMACSD_ROOT}/lib:${LD_LIBRARY_PATH}"
 cd "$TESTDIR"
 ../bin/seqdb-create --db "$TDIR"/seqdb.json.xz ./test.fas.xz
 ../bin/test-copy --db "$TDIR"/seqdb.json.xz "$TDIR"/seqdb2.json.xz
-xzdiff "$TDIR"/seqdb.json.xz "$TDIR"/seqdb2.json.xz
+xzdiff --ignore-matching-lines='"  date":' "$TDIR"/seqdb.json.xz "$TDIR"/seqdb2.json.xz
