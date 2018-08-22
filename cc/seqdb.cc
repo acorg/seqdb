@@ -141,8 +141,12 @@ bool SeqdbSeq::match_update_amino_acids(const SeqdbSeq& aNewSeq)
 
 void SeqdbSeq::add_passage(std::string aPassage)
 {
-    if (!aPassage.empty() && std::find(mPassages.begin(), mPassages.end(), aPassage) == mPassages.end())
-        mPassages.push_back(aPassage);
+    if (!aPassage.empty()) {
+        if (aPassage.substr(0, 8) == "PASSAGE-") // artefact in few (400+) names in gisaid
+            aPassage = aPassage.substr(8);
+        if (std::find(mPassages.begin(), mPassages.end(), aPassage) == mPassages.end())
+            mPassages.push_back(aPassage);
+    }
 
 } // SeqdbSeq::add_passage
 
