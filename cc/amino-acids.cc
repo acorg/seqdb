@@ -122,7 +122,7 @@ struct AlignEntry : public AlignData
 // http://signalpeptide.com
 
 static AlignEntry ALIGN_RAW_DATA[] = {
-    {"A(H3N2)", "", "HA", Shift(),   std::regex("MKTIIA[FL][CS][CHY]I[FLS]C[LQ][AGIV][FL][AG]"), 40,  true, "h3-MKT-1"},
+    {"A(H3N2)", "", "HA", Shift(),   std::regex("MKTIIA[FL][CS][CHY]I[FLS]C[LQ][AGIV][FL][AGS]"), 40,  true, "h3-MKT-1"},
     {"A(H3N2)", "", "HA", Shift(),   std::regex("MKTIIVLSCFFCLAFS"),                        40,  true, "h3-MKT-12"},
     {"A(H3N2)", "", "HA", Shift(),   std::regex("MKTLIALSYIFCLVLG"),                        40,  true, "h3-MKT-13"},
     {"A(H3N2)", "", "HA", Shift(),   std::regex("MKTTTILILLTHWVHS"),                        40,  true, "h3-MKT-14"},
