@@ -113,17 +113,15 @@ void InsertionsDeletionsDetector::detect()
                 try {
                     entry.apply_pos_number();
                     ++num_with_deletions;
-                  // if (entry.pos_number.front().second > 1)
-                  //     std::cerr << entry.entry_seq.make_name() << std::endl << entry.pos_number << ' ' << entry.amino_acids << std::endl;
-                    if (entry.pos_number.size() > 1)
-                        std::cerr << entry.entry_seq.make_name() << ' ' << entry.pos_number << ' ' << entry.amino_acids << '\n';
+                    // if (entry.pos_number.size() > 1)
+                    //     std::cerr << entry.entry_seq.make_name() << ' ' << entry.pos_number << ' ' << entry.amino_acids << '\n';
                 }
                 catch (InvalidShift&) {
                 }
             }
         }
         if (num_with_deletions)
-            std::cout << mVirusType << ": " << num_with_deletions << " sequences with deletions detected, total sequences: " << mEntries.size() << std::endl;
+            std::cout << "INFO: " << mVirusType << ": " << num_with_deletions << " sequences with deletions detected, total sequences: " << mEntries.size() << std::endl;
     }
 
 } // InsertionsDeletionsDetector::detect
@@ -286,7 +284,7 @@ std::vector<std::pair<size_t, size_t>> InsertionsDeletionsDetector::Entry::align
             // dbg << "del_pos: " << del_pos << '\n';
             if (del_pos.num_common > current_common) {
                 if (yamagata_163_hack && entry_seq.entry().virus_type() == "B" && del_pos.num_deletions == 1 && del_pos.pos > (163 - 1) && del_pos.pos <= (166 - 1)) {
-                    std::cout << "INFO: yamagata_163_hack applied for " << entry_seq.make_name() << '\n';
+                      // std::cout << "INFO: yamagata_163_hack applied for " << entry_seq.make_name() << '\n';
                     // yamagata deletion must be at 163
                     // David Burke 2017-08-17: deletions ( and insertions) of amino acids usually occur in regions of the protein structure where it changes direction ( loops ).
                     // In the case of HA, this is after VPK and before NKTAT/YKNAT.
