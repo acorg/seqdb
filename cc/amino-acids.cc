@@ -118,7 +118,7 @@ struct AlignEntry : public AlignData
     std::string name;           // for debugging
 };
 
-// http://sbkb.org/
+// http://sbkb.org/ (dead since 20170705)
 // http://signalpeptide.com
 
 static AlignEntry ALIGN_RAW_DATA[] = {
@@ -135,7 +135,7 @@ static AlignEntry ALIGN_RAW_DATA[] = {
 
     {"A(H1N1)", "",         "HA", Shift(), std::regex("MKVK[LY]LVLLCTFTATYA"),                             20,  true, "h1-MKV-1"},
     {"A(H1N1)", "SEASONAL", "HA", Shift(), std::regex("MKVKLLVLLCTFSATYA"),                                20,  true, "h1-MKV-2"},
-    {"A(H1N1)", "2009PDM",  "HA", Shift(), std::regex("M[EK]AIL[VX][VX][LM]L[CHY][TA][FL][AT]T[AT][NS]A"), 30,  true, "h1-MKA-2"},
+    {"A(H1N1)", "2009PDM",  "HA", Shift(), std::regex("M[EK][AV]IL[VX][VX][LM]L[CHY][TA][FL][AT]T[AT][NS]A"), 30,  true, "h1-MKA-2"},
     {"A(H1N1)", "",         "HA",       0, std::regex("DT[IL]CI[GX][HY]H[AT][DNTX][DN]"),                  100, false, "h1-DTL-1"},
     {"A(H1N1)", "",         "HA",       5, std::regex("GYHANNS[AT]DTV"),                                   100, false, "h1-GYH"},
     {"A(H1N1)", "",         "HA",      96, std::regex("[DN]YEELREQL"),                                     120, false, "h1-DYE"},
@@ -155,6 +155,9 @@ static AlignEntry ALIGN_RAW_DATA[] = {
       // {"A(H5)",   "", "HA", Shift(),   std::regex("MEKIVLLFA[AT]ISLVKS"),        20,  true, "h5-MEK-3"}, // http://sbkb.org/
       // {"A(H5)",   "", "HA",       0,   std::regex("D[HQR]IC[IV]GY[HQ]ANNST[EK][KQR][IV]"), 60, false, "h5-DQI-1"},
     {"A(H5)",   "", "HA",       0,   std::regex("D[HQR]IC[IV]GY[HQ]AN[KN]S[KT][EK][KQR][IV]"), 60, false, "h5-DQI-1"},
+
+      // * in front means do not update subtype in sequences (because this very subtype is for different NA types)
+    {"*A(H7)", "", "HA",       Shift(),   std::regex("MNTQIL[IV][FL][AIT][ALTI][SICV][AV][FLAIV][FLI][YECPHK][ATV][NKR][GA]"), 60, true, "h7-1"},
 
     {"B", "", "HA", Shift(), std::regex("M[EKT][AGT][AIL][ICX]V[IL]L[IMT][AEILVX][AIVX][AMT]S[DHKNSTX][APX]"), 30,  true, "B-MKT"}, // http://repository.kulib.kyoto-u.ac.jp/dspace/bitstream/2433/49327/1/8_1.pdf, inferred by Eu for B/INDONESIA/NIHRD-JBI152/2015, B/CAMEROON/14V-8639/2014
     {"B", "", "HA",       0, std::regex("DR[ISV]C[AST][GX][ITV][IT][SWX]S[DKNX]SP[HXY][ILTVX][VX][KX]T[APT]T[QX][GV][EK][IV]NVTG[AV][IX][LPS]LT[AITX][AIST][LP][AIT][KRX]"), 50, false, "B-DRICT"},
