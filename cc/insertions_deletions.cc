@@ -65,7 +65,7 @@ void InsertionsDeletionsDetector::choose_master()
         else
             std::cerr << "WARNING: unknown normal sequence size for " << mVirusType << '\n';
 
-        std::string master_name{"???"};
+        std::string master_name;
         if (master_number_aa > 0) {
             for (auto& entry : mEntries) {
                 if (entry.amino_acids.size() == master_number_aa) {
@@ -75,9 +75,13 @@ void InsertionsDeletionsDetector::choose_master()
                 }
             }
         }
-        else {
+        if (mMaster.empty() || master_name.empty()) {
             mMaster = mEntries.front().amino_acids;
             master_name = mEntries.front().entry_seq.make_name();
+            master_switching_allowed_ = true;
+        }
+        else {
+            master_switching_allowed_ = false;
         }
         std::cout << "INFO: " << mVirusType << ": master: " << master_name << "\n                 " << mMaster << std::endl;
     }
@@ -138,11 +142,7 @@ void InsertionsDeletionsDetector::align_to_master()
                 entry.pos_number = entry.align_to(mMaster, entry.amino_acids, entry.entry_seq);
             }
             catch (SwitchMaster&) {
-                if (mVirusType == "A(H1N1)" || mVirusType == "A(H3N2)" || mVirusType == "B") {
-                      // switching master is not allowed for known flu types
-                      // there are sequences with insertions, e.g. B/PERTH/58/2012 MDCK?/MDCK1
-                }
-                else if (entry.amino_acids.size() > std::lround(mMaster.size() * 0.9)) { // do not switch master, if new sequence is too short
+                if (master_switching_allowed_ && entry.amino_acids.size() > std::lround(mMaster.size() * 0.9)) { // do not switch master, if new sequence is too short
                     try {
                         // perhaps master has deletions
                         entry.align_to(entry.amino_acids, mMaster, entry.entry_seq);
