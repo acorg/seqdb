@@ -217,9 +217,9 @@ AlignAminoAcidsData SeqdbSeq::align(bool aForce, Messages& aMessages)
                   mNucleotidesShift = - align_data.offset + align_data.shift * 3;
               }
           }
-          else {
-              aMessages.warning() << "Nucs not translated/aligned\n    AA:      " << mAminoAcids << '\n';
-          }
+          // else {
+          //     aMessages.warning() << "Nucs not translated/aligned\n"; //     AA:      " << mAminoAcids << '\n';
+          // }
           break;
       case aling_amino_acids:
           mAminoAcidsShift.reset();
@@ -528,10 +528,28 @@ std::string Seqdb::add_sequence(std::string aName, std::string aVirusType, std::
     inserted_seq->add_reassortant(aReassortant);
     inserted_seq->add_passage(aPassage);
     inserted_seq->add_lab_id(aLab, aLabId);
+    if ((inserted_seq->nucleotides_size() > (MINIMUM_SEQUENCE_AA_LENGTH * 3) || inserted_seq->amino_acids_size() > MINIMUM_SEQUENCE_AA_LENGTH) && align_data.shift.alignment_failed())
+        not_aligned_.emplace_back(aVirusType, inserted_entry->name() + ' ' + inserted_seq->passage(), inserted_seq->nucleotides_raw(), inserted_seq->amino_acids_raw());
 
     return messages;
 
 } // Seqdb::add_sequence
+
+// ----------------------------------------------------------------------
+
+void Seqdb::report_not_aligned_after_adding() const
+{
+    if (!not_aligned_.empty()) {
+        std::cerr << "WARNING: " << not_aligned_.size() << " sequences were not aligned\n";
+        for (const auto& [virus_type, name, nucs, aa] : not_aligned_) {
+            std::cerr << "    " << std::setw(9) << virus_type << ' ' << std::setw(60) << std::left << name << " aa:" << std::setw(3) << aa.size() << " nucs:" << nucs.size();
+            if (!aa.empty())
+                std::cerr << "   " << aa;
+            std::cerr << '\n';
+        }
+    }
+
+} // Seqdb::report_not_aligned
 
 // ----------------------------------------------------------------------
 
@@ -973,6 +991,7 @@ std::set<std::string> Seqdb::virus_types() const
 
 void Seqdb::detect_insertions_deletions()
 {
+    std::cerr << "========== Deletions/insertions ==========\n";
     for (std::string virus_type: virus_types()) {
         if (!virus_type.empty()) {
             std::cout << "Detect insertions/deletions for " << virus_type << '\n';
@@ -980,6 +999,7 @@ void Seqdb::detect_insertions_deletions()
             detector.detect();
         }
     }
+    std::cerr << "========== Deletions/insertions done ==========\n";
 
 } // Seqdb::detect_insertions_deletions
 
@@ -987,6 +1007,7 @@ void Seqdb::detect_insertions_deletions()
 
 void Seqdb::update_clades(seqdb::report aReport)
 {
+    std::cerr << "========== Clades ==========\n";
     std::map<std::string, size_t> clade_count;
     for (auto entry_seq: *this) {
         const auto& clades = entry_seq.seq().update_clades(entry_seq.entry().virus_type(), entry_seq.entry().lineage(), entry_seq.make_name());
@@ -995,6 +1016,7 @@ void Seqdb::update_clades(seqdb::report aReport)
     }
     if (aReport == report::yes)
         std::cerr << "INFO: clades: " << clade_count << '\n';
+    std::cerr << "========== Clades done ==========\n";
 
 } // Seqdb::update_clades
 

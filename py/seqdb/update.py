@@ -85,6 +85,7 @@ class SeqdbUpdater:
                     module_logger.warning("{}: {}".format(entry["name"], message.replace("\n", " ")))
             else:
                 module_logger.warning('Cannot add entry without name: {}'.format(entry["lab_id"]))
+        self.seqdb.report_not_aligned_after_adding()   # before doing cleanup!
         messages = self.seqdb.cleanup(remove_short_sequences=True)
         if messages:
             module_logger.warning(messages)

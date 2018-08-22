@@ -10,6 +10,7 @@
 #include <map>
 #include <vector>
 #include <numeric>
+#include <tuple>
 
 #include "acmacs-base/stream.hh"
 #include "acmacs-base/name-encode.hh"
@@ -154,6 +155,11 @@ namespace seqdb
           //         mPassages.erase(std::remove(mPassages.begin(), mPassages.end(), std::string()), mPassages.end());
           //     }
 
+        std::string amino_acids_raw() const { return mAminoAcids; }
+        size_t amino_acids_size() const { return mAminoAcids.size(); }
+        std::string nucleotides_raw() const { return mNucleotides; }
+        size_t nucleotides_size() const { return mNucleotides.size(); }
+
      private:
         std::vector<std::string> mPassages;
         std::string mNucleotides;
@@ -234,9 +240,9 @@ namespace seqdb
 
         void remove_not_translated_sequences()
             {
-                auto not_translated = [this](auto& seq) {
-                    if (!seq.translated())
-                        std::cerr << "Warning: removing not translated sequence in " << mName << std::endl;
+                auto not_translated = [&](auto& seq) {
+                    // if (!seq.translated())
+                    //     std::cerr << "WARNING: removing not translated sequence in " << mName << std::endl;
                     return !seq.translated();
                 };
                 mSeq.erase(std::remove_if(mSeq.begin(), mSeq.end(), not_translated), mSeq.end());
@@ -491,6 +497,7 @@ namespace seqdb
 
         // SeqdbEntry* new_entry(std::string aName);
         std::string add_sequence(std::string aName, std::string aVirusType, std::string aLineage, std::string aLab, std::string aDate, std::string aLabId, std::string aPassage, std::string aReassortant, std::string aSequence, std::string aGene);
+        void report_not_aligned_after_adding() const;
 
           // fills by_virus_type that maps virus type to the list of indices of mEntries
         std::set<std::string> virus_types() const;
@@ -546,6 +553,7 @@ namespace seqdb
         const std::regex sReYearSpace = std::regex("/[12][0-9][0-9][0-9] ");
         HiNameIndex mHiNameIndex;
         std::string mLoadedFromFilename;
+        std::vector<std::tuple<std::string,std::string,std::string,std::string>> not_aligned_; // virus_type, name, raw nuc sequence, raw aa sequence (perhaps empty)
 
         std::vector<SeqdbEntry>::iterator find_insertion_place(std::string aName)
             {

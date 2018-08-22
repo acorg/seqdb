@@ -62,7 +62,7 @@ void InsertionsDeletionsDetector::choose_master()
             master_number_aa = NORMAL_SEQUENCE_AA_LENGTH_H3;
         else if (mVirusType == "B")
             master_number_aa = NORMAL_SEQUENCE_AA_LENGTH_B;
-        else
+        else if (mEntries.size() > 10)
             std::cerr << "WARNING: unknown normal sequence size for " << mVirusType << '\n';
 
         std::string master_name;

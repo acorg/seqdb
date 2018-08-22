@@ -150,11 +150,12 @@ static AlignEntry ALIGN_RAW_DATA[] = {
     {"A(H1N1)", "",         "M1", Shift(), std::regex("MGLIYNRMGTVTTEAAFGLVCA"),                        200, false, "h1-M1-2"},
     {"A(H1N1)", "",         "M1", Shift(), std::regex("QRLESVFAGKNTDLEALMEWL"),                         200, false, "h1-M1-3"},
 
-      //{"A(H5)",   "", "HA", Shift(),   std::regex("MEKIVLL[FL]AI[IV]SLVKS"),     20,  true, "h5-MEK-1"}, // http://signalpeptide.com
-      // {"A(H5)",   "", "HA", Shift(),   std::regex("MEKIVLLLAVVSLVRS"),           20,  true, "h5-MEK-2"}, // http://signalpeptide.com H5N6, H5N2
-      // {"A(H5)",   "", "HA", Shift(),   std::regex("MEKIVLLFA[AT]ISLVKS"),        20,  true, "h5-MEK-3"}, // http://sbkb.org/
-      // {"A(H5)",   "", "HA",       0,   std::regex("D[HQR]IC[IV]GY[HQ]ANNST[EK][KQR][IV]"), 60, false, "h5-DQI-1"},
-    {"A(H5)",   "", "HA",       0,   std::regex("D[HQR]IC[IV]GY[HQ]AN[KN]S[KT][EK][KQR][IV]"), 60, false, "h5-DQI-1"},
+      // * in front means do not update subtype in sequences (because this very subtype is for different NA types)
+      //{"*A(H5)",   "", "HA", Shift(),   std::regex("MEKIVLL[FL]AI[IV]SLVKS"),     20,  true, "h5-MEK-1"}, // http://signalpeptide.com
+      // {"*A(H5)",   "", "HA", Shift(),   std::regex("MEKIVLLLAVVSLVRS"),           20,  true, "h5-MEK-2"}, // http://signalpeptide.com H5N6, H5N2
+      // {"*A(H5)",   "", "HA", Shift(),   std::regex("MEKIVLLFA[AT]ISLVKS"),        20,  true, "h5-MEK-3"}, // http://sbkb.org/
+      // {"*A(H5)",   "", "HA",       0,   std::regex("D[HQR]IC[IV]GY[HQ]ANNST[EK][KQR][IV]"), 60, false, "h5-DQI-1"},
+    {"*A(H5)",   "", "HA",       0,   std::regex("D[HQR]IC[IV]GY[HQ]AN[KN]S[KT][EK][KQR][IV]"), 60, false, "h5-DQI-1"},
 
       // * in front means do not update subtype in sequences (because this very subtype is for different NA types)
     {"*A(H7)", "", "HA",       Shift(),   std::regex("MNTQIL[IV][FL][AIT][ALTI][SICV][AV][FLAIV][FLI][YECPHK][ATV][NKR][GA]"), 60, true, "h7-1"},
