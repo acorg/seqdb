@@ -118,6 +118,11 @@ struct AlignEntry : public AlignData
     std::string name;           // for debugging
 };
 
+inline std::ostream& operator<<(std::ostream& out, const AlignEntry& data)
+{
+    return out << data.name;
+}
+
 // http://sbkb.org/ (dead since 20170705)
 // http://signalpeptide.com
 
@@ -189,6 +194,7 @@ AlignData seqdb::align(std::string_view aAminoAcids, Messages& aMessages)
             results.push_back(r);
         }
     }
+    // std::cerr << "DEBUG: seqdb::align: " << results << '\n';
     if (results.empty()) {
         aMessages.warning() << "Not aligned: " << aAminoAcids << std::endl;
         return AlignData();
@@ -204,7 +210,7 @@ AlignData seqdb::align(std::string_view aAminoAcids, Messages& aMessages)
                    << "    ";
                 std::transform(std::begin(results), std::end(results), polyfill::make_ostream_joiner(os, " "), [](const auto& e) -> std::string { return e.name; });
 
-                  //std::cerr << os.str() << std::endl;
+                std::cerr << "DEBUG: seqdb::align: " << os.str() << std::endl;
                 aMessages.warning() << os.str() << std::endl;
             }
         }

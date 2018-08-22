@@ -494,11 +494,15 @@ std::vector<std::string> SeqdbEntry::make_all_variants() const
 std::string Seqdb::add_sequence(std::string aName, std::string aVirusType, std::string aLineage, std::string aLab, std::string aDate, std::string aLabId, std::string aPassage, std::string aReassortant, std::string aSequence, std::string aGene)
 {
     Messages messages;
-    std::string name = virus_name::normalize(aName);
+    const std::string name = virus_name::normalize(aName);
+      // std::cerr << "DEBUG: Seqdb::add_sequence: " << name << ' ' << aPassage << '\n';
     SeqdbEntry entry(name, aVirusType, aLineage);
 
     SeqdbSeq new_seq(aSequence, aGene);
-    auto align_data = new_seq.align(false, messages);
+    const auto align_data = new_seq.align(false, messages);
+    if (!align_data.shift.aligned() && (new_seq.amino_acids_size() > MINIMUM_SEQUENCE_AA_LENGTH || new_seq.nucleotides_size() > (MINIMUM_SEQUENCE_AA_LENGTH * 3)))
+        not_aligned_.emplace_back(aVirusType, name + ' ' + aPassage, new_seq.nucleotides_raw(), new_seq.amino_acids_raw());
+      // std::cerr << "DEBUG: Seqdb::add_sequence: aligned: " << align_data.shift.aligned() << " nucs:" << new_seq.nucleotides_size() << '\n';
     entry.update_subtype_name(align_data.subtype, messages); // updates entry.mName!
     // std::cerr << "add " << align_data.subtype << ' ' << entry.name() << '\n';
 
@@ -528,8 +532,6 @@ std::string Seqdb::add_sequence(std::string aName, std::string aVirusType, std::
     inserted_seq->add_reassortant(aReassortant);
     inserted_seq->add_passage(aPassage);
     inserted_seq->add_lab_id(aLab, aLabId);
-    if ((inserted_seq->nucleotides_size() > (MINIMUM_SEQUENCE_AA_LENGTH * 3) || inserted_seq->amino_acids_size() > MINIMUM_SEQUENCE_AA_LENGTH) && align_data.shift.alignment_failed())
-        not_aligned_.emplace_back(aVirusType, inserted_entry->name() + ' ' + inserted_seq->passage(), inserted_seq->nucleotides_raw(), inserted_seq->amino_acids_raw());
 
     return messages;
 
@@ -542,7 +544,7 @@ void Seqdb::report_not_aligned_after_adding() const
     if (!not_aligned_.empty()) {
         std::cerr << "WARNING: " << not_aligned_.size() << " sequences were not aligned\n";
         for (const auto& [virus_type, name, nucs, aa] : not_aligned_) {
-            std::cerr << "    " << std::setw(9) << virus_type << ' ' << std::setw(60) << std::left << name << " aa:" << std::setw(3) << aa.size() << " nucs:" << nucs.size();
+            std::cerr << "    " << std::setw(9) << std::left << virus_type << ' ' << std::setw(60) << std::left << name << " aa:" << std::setw(3) << aa.size() << " nucs:" << nucs.size();
             if (!aa.empty())
                 std::cerr << "   " << aa;
             std::cerr << '\n';
