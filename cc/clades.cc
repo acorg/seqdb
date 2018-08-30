@@ -58,7 +58,7 @@ std::vector<std::string> seqdb::clades_b_victoria(std::string aSequence, Shift a
     else if (aSequence.size() > pos163 && aSequence[pos162] == '-' && aSequence[pos163] == '-')
         r.push_back("DEL2017"); // B/Vic deletion mutant 2017
     else if (aSequence.size() > pos164 && (aSequence[pos162] == '-' || aSequence[pos163] == '-' || aSequence[pos164] == '-'))
-        std::cerr << "WARNING: [" << aName << "]: strange B/Vic deletion mutant\n";
+        std::cerr << "WARNING: [" << aName << "]: strange B/Vic deletion mutant: " << aSequence << '\n';
     return r;
 
 } // clades_b_yamagata
