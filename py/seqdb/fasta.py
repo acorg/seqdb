@@ -266,8 +266,9 @@ def read_fasta_with_name_parsing(fasta_file, lab, virus_type, **_):
         detect_reassortant(entry)
         return entry
 
+    # module_logger.info(f'reading {fasta_file}')
     r = [make_entry(raw_name, sequence) for raw_name, sequence in read_from_string(read_text(fasta_file), fasta_file)]
-    module_logger.debug('{} sequences imported from {}'.format(len(r), fasta_file))
+    module_logger.info('{} sequences imported from {}'.format(len(r), fasta_file))
     return r
 
 # ----------------------------------------------------------------------

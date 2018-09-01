@@ -231,8 +231,8 @@ namespace seqdb
         void remove_short_sequences()
             {
                 auto short_seq = [&](auto& seq) {
-                    // if (seq.is_short())
-                    //     std::cerr << "WARNING: removing too short sequence in " << mName << std::endl;
+                    if (seq.is_short())
+                        std::cout << "INFO:     removing too short sequence: " << mName << '\n';
                     return seq.is_short();
                 };
                 mSeq.erase(std::remove_if(mSeq.begin(), mSeq.end(), short_seq), mSeq.end());
@@ -242,7 +242,7 @@ namespace seqdb
             {
                 auto not_translated = [&](auto& seq) {
                     // if (!seq.translated())
-                    //     std::cerr << "WARNING: removing not translated sequence in " << mName << std::endl;
+                    //     std::cerr << "WARNING: removing not translated sequence in " << mName << '\n';
                     return !seq.translated();
                 };
                 mSeq.erase(std::remove_if(mSeq.begin(), mSeq.end(), not_translated), mSeq.end());
@@ -483,7 +483,7 @@ namespace seqdb
             {
                 auto const first = find_insertion_place(aName);
                 // if (first != mEntries.end() && aName != first->name())
-                //     std::cerr << "Warining: looking for: \"" << aName << "\" found: \"" << first->name() << "\"" << std::endl;
+                //     std::cerr << "Warining: looking for: \"" << aName << "\" found: \"" << first->name() << "\"" << '\n';
                 return (first != mEntries.end() && aName == first->name()) ? &(*first) : nullptr;
             }
 
