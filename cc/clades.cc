@@ -33,20 +33,24 @@ std::vector<std::string> seqdb::clades_b_yamagata(std::string aSequence, Shift a
 
 std::vector<std::string> seqdb::clades_b_victoria(std::string aSequence, Shift aShift, std::string aName)
 {
-      // mark clade 1A (all strains if empty clade removed, otherwise clade 1B defined by L58P, clade 1 defined by N75K, N165K, S172P)
-
-      // 75K, 165K, 172P -> 1, 58P -> 1B, ? -> 1A
     auto r = std::vector<std::string>();
-    const size_t pos58 = static_cast<size_t>(57 - aShift),
+    const size_t
+            pos58 = static_cast<size_t>(57 - aShift),
             pos75 = static_cast<size_t>(74 - aShift),
             pos162 = static_cast<size_t>(161 - aShift),
             pos163 = static_cast<size_t>(162 - aShift),
             pos164 = static_cast<size_t>(163 - aShift),
-            pos165 = static_cast<size_t>(164 - aShift),
-            // pos166 = static_cast<size_t>(165 - aShift),
-            // pos167 = static_cast<size_t>(166 - aShift),
+              // pos165 = static_cast<size_t>(164 - aShift),
+              // pos166 = static_cast<size_t>(165 - aShift),
+              // pos167 = static_cast<size_t>(166 - aShift),
             pos172 = static_cast<size_t>(171 - aShift);
-    if (aSequence.size() > pos172 && aSequence[pos75] == 'K' && aSequence[pos165] == 'K' && aSequence[pos172] == 'P' && aSequence[pos58] != 'P')
+
+      // before 2018-09-03
+      // if (aSequence.size() > pos172 && aSequence[pos75] == 'K' && aSequence[pos165] == 'K' && aSequence[pos172] == 'P' && aSequence[pos58] != 'P')
+      //     r.push_back("1A");
+
+      // 2018-09-03, Sarah: clades should (technically) be defined by a phylogenetic tree rather than a set of amino acids
+    if (aSequence.size() > pos172 && aSequence[pos75] == 'K' && aSequence[pos172] == 'P' && aSequence[pos58] != 'P')
         r.push_back("1A");
     else if (aSequence.size() > pos58 && aSequence[pos58] == 'P')
         r.push_back("1B");
@@ -60,6 +64,9 @@ std::vector<std::string> seqdb::clades_b_victoria(std::string aSequence, Shift a
     else if (aSequence.size() > pos164 && (aSequence[pos162] == '-' || aSequence[pos163] == '-' || aSequence[pos164] == '-'))
         std::cerr << "WARNING: [" << aName << "]: strange B/Vic deletion mutant: " << aSequence << '\n';
     return r;
+
+      // earlier definitions:
+      // mark clade 1A (all strains if empty clade removed, otherwise clade 1B defined by L58P, clade 1 defined by N75K, N165K, S172P)
 
 } // clades_b_yamagata
 
