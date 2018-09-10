@@ -18,6 +18,13 @@ template <typename RW> json_writer::writer<RW>& operator <<(json_writer::writer<
 #include "acmacs-base/json-writer.hh"
 namespace jsw = json_writer;
 
+template <typename RW> inline json_writer::writer<RW>& operator<<(json_writer::writer<RW>& aWriter, SeqdbJsonKey aKey)
+{
+    const char k = static_cast<char>(aKey);
+    aWriter.Key(&k, 1, false);
+    return aWriter;
+}
+
 // ----------------------------------------------------------------------
 
 static constexpr const char* SEQDB_JSON_DUMP_VERSION = "sequence-database-v2";
