@@ -74,26 +74,44 @@ std::vector<std::string> seqdb::clades_b_victoria(std::string aSequence, Shift a
 
 std::vector<std::string> seqdb::clades_h1pdm(std::string aSequence, Shift aShift, std::string /*aName*/)
 {
-      // 84N+162N+216T - 6B.1, 152T+173I+501E - 6B.2
-      // ? 156 (see A/PUERTO RICO/15/2018 of CDC:20180511)
+    // ----------------------------------------------------------------------
+    // 2018-09-19 clade definitions changed by Sarah before SSM, see message subj: Trees & sig pages 2018-09-19 11:20 AM
+    // ----------------------------------------------------------------------
+    // Define label 6B1 as strains with 162N
+    // Define label 6B2 as strains with 162S
     auto r = std::vector<std::string>();
-    auto const pos84i = 83 - aShift;
-    if (pos84i > 0) {
-        const size_t pos84 = static_cast<size_t>(pos84i);
-        if (aSequence.size() > pos84 && aSequence[pos84] == 'N') {
-            const size_t pos162 = static_cast<size_t>(161 - aShift);
-            const size_t pos216 = static_cast<size_t>(215 - aShift);
-            if (aSequence.size() > pos216 && aSequence[pos162] == 'N' && aSequence[pos216] == 'T')
-                r.push_back("6B1");
-        }
-
-        const size_t pos152 = static_cast<size_t>(151 - aShift);
-        const size_t pos173 = static_cast<size_t>(172 - aShift);
-        const size_t pos501 = static_cast<size_t>(500 - aShift);
-        if (aSequence.size() > pos501 && aSequence[pos152] == 'T' && aSequence[pos173] == 'I' && aSequence[pos501] == 'E')
+    auto const pos162 = static_cast<size_t>(161 - aShift);
+    if (pos162 > 0 && aSequence.size() > pos162) {
+        if (aSequence[pos162] == 'N')
+            r.push_back("6B1");
+        else if (aSequence[pos162] == 'S')
             r.push_back("6B2");
     }
     return r;
+
+    // ----------------------------------------------------------------------
+    // Before 2018-09-19
+    // ----------------------------------------------------------------------
+    //   // 84N+162N+216T - 6B.1, 152T+173I+501E - 6B.2
+    //   // ? 156 (see A/PUERTO RICO/15/2018 of CDC:20180511)
+    // auto r = std::vector<std::string>();
+    // auto const pos84i = 83 - aShift;
+    // if (pos84i > 0) {
+    //     const size_t pos84 = static_cast<size_t>(pos84i);
+    //     if (aSequence.size() > pos84 && aSequence[pos84] == 'N') {
+    //         const size_t pos162 = static_cast<size_t>(161 - aShift);
+    //         const size_t pos216 = static_cast<size_t>(215 - aShift);
+    //         if (aSequence.size() > pos216 && aSequence[pos162] == 'N' && aSequence[pos216] == 'T')
+    //             r.push_back("6B1");
+    //     }
+
+    //     const size_t pos152 = static_cast<size_t>(151 - aShift);
+    //     const size_t pos173 = static_cast<size_t>(172 - aShift);
+    //     const size_t pos501 = static_cast<size_t>(500 - aShift);
+    //     if (aSequence.size() > pos501 && aSequence[pos152] == 'T' && aSequence[pos173] == 'I' && aSequence[pos501] == 'E')
+    //         r.push_back("6B2");
+    // }
+    // return r;
 
 } // clades_h1pdm
 
