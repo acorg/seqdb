@@ -75,17 +75,23 @@ std::vector<std::string> seqdb::clades_b_victoria(std::string aSequence, Shift a
 std::vector<std::string> seqdb::clades_h1pdm(std::string aSequence, Shift aShift, std::string /*aName*/)
 {
     // ----------------------------------------------------------------------
-    // 2018-09-19 clade definitions changed by Sarah before SSM, see message subj: Trees & sig pages 2018-09-19 11:20 AM
+    // 2018-09-19 clade definitions changed by Sarah before SSM
     // ----------------------------------------------------------------------
-    // Define label 6B1 as strains with 162N
-    // Define label 6B2 as strains with 162S
+    // 6B: 163Q
+    // 6B1: 162N, 163Q
+    // 6B2: 152T, 163Q
     auto r = std::vector<std::string>();
-    auto const pos162 = static_cast<size_t>(161 - aShift);
-    if (pos162 > 0 && aSequence.size() > pos162) {
-        if (aSequence[pos162] == 'N')
-            r.push_back("6B1");
-        else if (aSequence[pos162] == 'S')
-            r.push_back("6B2");
+    const auto pos152 = static_cast<size_t>(151 - aShift),
+            pos162 = static_cast<size_t>(161 - aShift),
+            pos163 = static_cast<size_t>(162 - aShift);
+    if (pos163 > 0 && aSequence.size() > pos163) {
+        if (aSequence[pos163] == 'Q') {
+            r.push_back("6B");
+            if (aSequence[pos162] == 'N')
+                r.push_back("6B1");
+            if (aSequence[pos152] == 'T')
+                r.push_back("6B2");
+        }
     }
     return r;
 
