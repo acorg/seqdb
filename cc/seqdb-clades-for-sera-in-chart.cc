@@ -38,7 +38,7 @@ int main(int argc, char* const argv[])
         const auto& seqdb = seqdb::get();
         auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, args["--time"] ? report_time::Yes : report_time::No);
         if (args["--chart-name"])
-            std::cout << chart->make_name() << '\n';
+            std::cout << chart->make_name() << "\n\n";
         auto sera = chart->sera();
         chart->set_homologous(acmacs::chart::Chart::find_homologous_for_big_chart::yes, sera);
         auto antigens = chart->antigens();
