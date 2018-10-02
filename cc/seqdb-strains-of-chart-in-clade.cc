@@ -27,8 +27,8 @@ int main(int argc, char* const argv[])
         }
         const bool verbose = args["-v"] || args["--verbose"];
         const bool index_only = args["--index-only"];
-        const std::string clade = args[0];
-        seqdb::setup_dbs(args["--db-dir"], verbose ? seqdb::report::yes : seqdb::report::no);
+        const std::string clade(args[0]);
+        seqdb::setup_dbs(args["--db-dir"].str(), verbose ? seqdb::report::yes : seqdb::report::no);
         const auto& seqdb = seqdb::get();
         auto chart = acmacs::chart::import_from_file(args[1], acmacs::chart::Verify::None, report_time::No);
         auto antigens = chart->antigens();

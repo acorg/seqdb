@@ -47,12 +47,12 @@ int main(int argc, char* const argv[])
             throw std::runtime_error("Usage: "s + args.program() + sUsage + args.usage_options());
         }
         const bool verbose = args["-v"] || args["--verbose"];
-        const auto [virus_type, lineage] = parse_flu(args["--flu"]);
+        const auto [virus_type, lineage] = parse_flu(std::string(args["--flu"]));
         // const size_t recent = args["--recent"];
         // const size_t hamming_distance_threshold = args["--hamming-distance-threshold"];
-        seqdb::setup_dbs(args["--db-dir"], verbose ? seqdb::report::yes : seqdb::report::no);
+        seqdb::setup_dbs(std::string(args["--db-dir"]), verbose ? seqdb::report::yes : seqdb::report::no);
 
-        const auto base_seq = find_base_seq(virus_type, lineage, args["--base-seq"]);
+        const auto base_seq = find_base_seq(virus_type, lineage, std::string(args["--base-seq"]));
         const auto all_sequences_sorted_by_date = collect(virus_type, lineage, base_seq);
         auto [aa_common_length, to_export] = pick(all_sequences_sorted_by_date, base_seq, args["--recent"], args["--hamming-distance-threshold"]);
         // add base_seq

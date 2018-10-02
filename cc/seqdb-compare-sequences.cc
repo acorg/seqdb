@@ -70,20 +70,20 @@ int main(int argc, char* const argv[])
             throw std::runtime_error("Usage: "s + args.program() + " [options] <name> ... [/ <name> ...]\n" + args.usage_options());
         }
         const bool verbose = args["-v"] || args["--verbose"];
-        seqdb::setup_dbs(args["--db-dir"], verbose ? seqdb::report::yes : seqdb::report::no);
+        seqdb::setup_dbs(args["--db-dir"].str(), verbose ? seqdb::report::yes : seqdb::report::no);
         Comparer comparer;
         const auto& seqdb = seqdb::get();
         for (auto arg_no : acmacs::range(args.number_of_arguments())) {
             if (args[arg_no] == "/"s)
                 comparer.second_group();
-            else if (const auto* entry_seq_1 = seqdb.find_hi_name(args[arg_no]); entry_seq_1 && entry_seq_1->seq().aligned()) {
+            else if (const auto* entry_seq_1 = seqdb.find_hi_name(std::string(args[arg_no])); entry_seq_1 && entry_seq_1->seq().aligned()) {
                 comparer.add(*entry_seq_1);
                 // std::cout << std::setw(60) << std::left << entry_seq_1->make_name() << entry_seq_1->seq().amino_acids(true) << '\n';
             }
-            else if (const auto entry_seq_2 = seqdb.find_by_seq_id(args[arg_no]); entry_seq_2 && entry_seq_2.seq().aligned()) {
+            else if (const auto entry_seq_2 = seqdb.find_by_seq_id(std::string(args[arg_no])); entry_seq_2 && entry_seq_2.seq().aligned()) {
                 comparer.add(entry_seq_2);
             }
-            else if (const auto* entry = seqdb.find_by_name(args[arg_no]); entry) {
+            else if (const auto* entry = seqdb.find_by_name(std::string(args[arg_no])); entry) {
                 for (const auto& seq : entry->seqs()) {
                     if (seq.aligned())
                         comparer.add({*entry, seq});

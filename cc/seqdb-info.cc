@@ -46,7 +46,7 @@ int main(int argc, char* const argv[])
         if (args["-h"] || args["--help"] || args.number_of_arguments() != 1)
             throw std::runtime_error("Usage: "s + args.program() + " <seqdb.json.xz>");
 
-        seqdb::setup(args[0], seqdb::report::yes);
+        seqdb::setup(std::string(args[0]), seqdb::report::yes);
         const auto& seqdb = seqdb::get(seqdb::ignore_errors::no, report_time::Yes);
 
         auto update = [](Info& target, const auto& entry) {

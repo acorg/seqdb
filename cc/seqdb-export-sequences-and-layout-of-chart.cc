@@ -39,7 +39,7 @@ int main(int argc, char* const argv[])
         const bool amino_acids = args["--amino-acids"];
         const bool encoded_names = args["--encoded-names"];
         const bool dates = args["--dates"];
-        seqdb::setup_dbs(args["--db-dir"], verbose ? seqdb::report::yes : seqdb::report::no);
+        seqdb::setup_dbs(args["--db-dir"].str(), verbose ? seqdb::report::yes : seqdb::report::no);
         const auto& seqdb = seqdb::get();
         auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, args["--time"] ? report_time::Yes : report_time::No);
         auto antigens = chart->antigens();

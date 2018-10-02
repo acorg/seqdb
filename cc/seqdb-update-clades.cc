@@ -23,7 +23,7 @@ int main(int argc, char* const argv[])
             throw std::runtime_error("Usage: "s + args.program() + sUsage + args.usage_options());
         }
         const bool verbose = args["-v"] || args["--verbose"];
-        seqdb::setup_dbs(args["--db-dir"], verbose ? seqdb::report::yes : seqdb::report::no);
+        seqdb::setup_dbs(args["--db-dir"].str(), verbose ? seqdb::report::yes : seqdb::report::no);
         auto& seqdb = seqdb::get_for_updating();
         seqdb.update_clades(verbose ? seqdb::report::yes : seqdb::report::no);
         seqdb.save(std::string{}, 2);

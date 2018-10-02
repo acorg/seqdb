@@ -39,12 +39,12 @@ int main(int argc, char* const argv[])
         }
         const bool verbose = args["-v"] || args["--verbose"];
 
-        seqdb::setup_dbs(args["--db-dir"], verbose ? seqdb::report::yes : seqdb::report::no);
+        seqdb::setup_dbs(args["--db-dir"].str(), verbose ? seqdb::report::yes : seqdb::report::no);
         const auto& seqdb = seqdb::get();
 
         std::vector<PosAA> aa_at;
         for (size_t arg_no = 0; arg_no < args.number_of_arguments(); ++arg_no) {
-            const std::string arg = args[arg_no];
+            const std::string arg(args[arg_no]);
             aa_at.emplace_back(std::strtoul(arg.c_str(), nullptr, 10), std::toupper(arg[arg.size() - 1]));
         }
         // std::cout << aa_at << '\n';
