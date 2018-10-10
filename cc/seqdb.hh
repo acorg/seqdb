@@ -493,7 +493,8 @@ namespace seqdb
                 return (first != mEntries.end() && aName == first->name()) ? &(*first) : nullptr;
             }
 
-        SeqdbEntrySeq find_by_seq_id(std::string aSeqId) const;
+        enum class ignore_not_found { no, yes };
+        SeqdbEntrySeq find_by_seq_id(std::string aSeqId, ignore_not_found ignore = ignore_not_found::no) const;
 
         // SeqdbEntry* new_entry(std::string aName);
         std::string add_sequence(std::string aName, std::string aVirusType, std::string aLineage, std::string aLab, std::string aDate, std::string aLabId, std::string aPassage, std::string aReassortant, std::string aSequence, std::string aGene);

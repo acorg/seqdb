@@ -798,7 +798,7 @@ void Seqdb::find_in_hidb_update_country_lineage_date(hidb::AntigenPList& found, 
 
 // ----------------------------------------------------------------------
 
-SeqdbEntrySeq Seqdb::find_by_seq_id(std::string aSeqId) const
+SeqdbEntrySeq Seqdb::find_by_seq_id(std::string aSeqId, ignore_not_found ignore) const
 {
     SeqdbEntrySeq result;
     const std::string seq_id = name_decode(aSeqId);
@@ -820,7 +820,8 @@ SeqdbEntrySeq Seqdb::find_by_seq_id(std::string aSeqId) const
             }
         }
         else {
-            std::cerr << "ERROR: no entry for \"" << std::string(seq_id, 0, passage_separator) << "\" in seqdb [" << __FILE__ << ":" << __LINE__ << ']' << '\n';
+            if (ignore == ignore_not_found::no)
+                std::cerr << "ERROR: no entry for \"" << std::string(seq_id, 0, passage_separator) << "\" in seqdb [" << __FILE__ << ":" << __LINE__ << ']' << '\n';
         }
     }
     else {
@@ -840,7 +841,8 @@ SeqdbEntrySeq Seqdb::find_by_seq_id(std::string aSeqId) const
     }
 
     if (!result) {
-        std::cerr << "ERROR: \"" << seq_id << "\" not in seqdb" << '\n';
+        if (ignore == ignore_not_found::no)
+            std::cerr << "ERROR: \"" << seq_id << "\" not in seqdb" << '\n';
     }
     return result;
 
