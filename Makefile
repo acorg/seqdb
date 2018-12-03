@@ -15,6 +15,7 @@ TARGETS = \
   $(DIST)/seqdb-report-dates \
   $(DIST)/seqdb-report-not-found-in-hidb \
   $(DIST)/seqdb-export-sequences-of-chart \
+  $(DIST)/seqdb-chart-clades \
   $(DIST)/seqdb-clades-for-sera-in-chart \
   $(DIST)/seqdb-export-sequences-and-layout-of-chart \
   $(DIST)/seqdb-sequenced-antigens-in-chart \
