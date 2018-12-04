@@ -40,7 +40,7 @@ int main(int argc, char* const argv[])
         if (args["--chart-name"])
             std::cout << chart->make_name() << "\n\n";
         auto sera = chart->sera();
-        chart->set_homologous(acmacs::chart::Chart::find_homologous_for_big_chart::yes, sera);
+        chart->set_homologous(acmacs::chart::find_homologous::strict, sera);
         auto antigens = chart->antigens();
         const auto per_antigen = seqdb.match(*antigens, chart->info()->virus_type());
         for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {

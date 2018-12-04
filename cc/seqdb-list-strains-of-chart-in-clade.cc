@@ -34,7 +34,7 @@ int main(int argc, char* const argv[])
         const auto& seqdb = seqdb::get();
         auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, args["--time"] ? report_time::Yes : report_time::No);
         auto sera = chart->sera();
-        chart->set_homologous(acmacs::chart::Chart::find_homologous_for_big_chart::yes, sera);
+        chart->set_homologous(acmacs::chart::find_homologous::strict, sera);
         auto antigens = chart->antigens();
         const auto per_antigen = seqdb.match(*antigens, chart->info()->virus_type());
         for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
