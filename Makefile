@@ -1,9 +1,4 @@
 # -*- Makefile -*-
-# Eugene Skepner 2017
-# ----------------------------------------------------------------------
-
-MAKEFLAGS = -w
-
 # ----------------------------------------------------------------------
 
 TARGETS = \
@@ -41,56 +36,43 @@ SEQDB_PY_LIB = $(DIST)/$(SEQDB_PY_LIB_NAME)$(PYTHON_MODULE_SUFFIX)
 
 # ----------------------------------------------------------------------
 
-include $(ACMACSD_ROOT)/share/makefiles/Makefile.g++
-include $(ACMACSD_ROOT)/share/makefiles/Makefile.python
-include $(ACMACSD_ROOT)/share/makefiles/Makefile.dist-build.vars
+all: install
 
-CXXFLAGS = -MMD -g $(OPTIMIZATION) $(PROFILE) -fPIC -std=$(STD) $(WARNINGS) -I$(AD_INCLUDE) $(PKG_INCLUDES)
-LDFLAGS = $(OPTIMIZATION) $(PROFILE)
+CONFIGURE_PYTHON = 1
+include $(ACMACSD_ROOT)/share/Makefile.config
+
 LDLIBS = \
 	$(AD_LIB)/$(call shared_lib_name,libacmacsbase,1,0) \
 	$(AD_LIB)/$(call shared_lib_name,liblocationdb,1,0) \
 	$(AD_LIB)/$(call shared_lib_name,libacmacschart,2,0) \
 	$(AD_LIB)/$(call shared_lib_name,libhidb,5,0) \
-	$(shell pkg-config --libs liblzma) \
-	$(shell $(PYTHON_CONFIG) --ldflags | sed -E 's/-Wl,-stack_size,[0-9]+//') \
-	$(CXX_LIB)
-
-PKG_INCLUDES = $(shell pkg-config --cflags liblzma) $(PYTHON_INCLUDES)
+	$(XZ_LIBS) $(PYTHON_LDLIBS) $(CXX_LIBS)
 
 # ----------------------------------------------------------------------
 
-all: check-acmacsd-root install-headers $(TARGETS)
-
-install: check-acmacsd-root install-headers $(TARGETS)
+install: install-headers $(TARGETS)
 	$(call install_lib,$(SEQDB_LIB))
 	$(call install_py_lib,$(SEQDB_PY_LIB))
-	ln -sf $(abspath dist)/seqdb-* $(AD_BIN)
-	ln -sf $(abspath py)/* $(AD_PY)
-	ln -sf $(abspath bin)/seqdb-* $(AD_BIN)
+	$(call symbolic_link_wildcard,$(DIST)/seqdb-*,$(AD_BIN))
+	$(call symbolic_link_wildcard,$(abspath py)/*,$(AD_PY))
+	$(call symbolic_link_wildcard,$(abspath bin)/seqdb-*,$(AD_BIN))
 
 test: install
 	test/test
 
 # ----------------------------------------------------------------------
 
--include $(BUILD)/*.d
-include $(ACMACSD_ROOT)/share/makefiles/Makefile.dist-build.rules
-include $(ACMACSD_ROOT)/share/makefiles/Makefile.rtags
-
-# ----------------------------------------------------------------------
-
 $(SEQDB_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(SEQDB_SOURCES)) | $(DIST) install-headers
-	@printf "%-16s %s\n" "SHARED" $@
-	@$(call make_shared,$(SEQDB_LIB_NAME),$(SEQDB_LIB_MAJOR),$(SEQDB_LIB_MINOR)) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	$(call echo_shared_lib,$@)
+	$(call make_shared_lib,$(SEQDB_LIB_NAME),$(SEQDB_LIB_MAJOR),$(SEQDB_LIB_MINOR)) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 $(SEQDB_PY_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(SEQDB_PY_SOURCES)) | $(DIST)
-	@printf "%-16s %s\n" "SHARED" $@
-	@$(call make_shared,$(SEQDB_PY_LIB_NAME),$(SEQDB_PY_LIB_MAJOR),$(SEQDB_PY_LIB_MINOR)) $(LDFLAGS) -o $@ $^ $(LDLIBS) $(PYTHON_LDLIBS)
+	$(call echo_shared_lib,$@)
+	$(call make_shared_lib,$(SEQDB_PY_LIB_NAME),$(SEQDB_PY_LIB_MAJOR),$(SEQDB_PY_LIB_MINOR)) $(LDFLAGS) -o $@ $^ $(LDLIBS) $(PYTHON_LDLIBS)
 
 $(DIST)/%: $(BUILD)/%.o | $(SEQDB_LIB)
-	@printf "%-16s %s\n" "LINK" $@
-	@$(CXX) $(LDFLAGS) -o $@ $^ $(SEQDB_LIB) $(LDLIBS) $(AD_RPATH)
+	$(call echo_link_exe,$@)
+	$(CXX) $(LDFLAGS) -o $@ $^ $(SEQDB_LIB) $(LDLIBS) $(AD_RPATH)
 
 # ======================================================================
 ### Local Variables:
