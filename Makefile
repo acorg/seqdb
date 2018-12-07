@@ -46,7 +46,7 @@ LDLIBS = \
 	$(AD_LIB)/$(call shared_lib_name,liblocationdb,1,0) \
 	$(AD_LIB)/$(call shared_lib_name,libacmacschart,2,0) \
 	$(AD_LIB)/$(call shared_lib_name,libhidb,5,0) \
-	$(XZ_LIBS) $(PYTHON_LDLIBS) $(CXX_LIBS)
+	$(XZ_LIBS) $(PYTHON_LIBS) $(CXX_LIBS)
 
 # ----------------------------------------------------------------------
 
@@ -68,7 +68,7 @@ $(SEQDB_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(SEQDB_SOURCES)) | $(DIST) install-h
 
 $(SEQDB_PY_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(SEQDB_PY_SOURCES)) | $(DIST)
 	$(call echo_shared_lib,$@)
-	$(call make_shared_lib,$(SEQDB_PY_LIB_NAME),$(SEQDB_PY_LIB_MAJOR),$(SEQDB_PY_LIB_MINOR)) $(LDFLAGS) -o $@ $^ $(LDLIBS) $(PYTHON_LDLIBS)
+	$(call make_shared_lib,$(SEQDB_PY_LIB_NAME),$(SEQDB_PY_LIB_MAJOR),$(SEQDB_PY_LIB_MINOR)) $(LDFLAGS) -o $@ $^ $(LDLIBS) $(PYTHON_LIBS)
 
 $(DIST)/%: $(BUILD)/%.o | $(SEQDB_LIB)
 	$(call echo_link_exe,$@)
