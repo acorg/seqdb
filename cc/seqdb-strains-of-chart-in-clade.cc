@@ -30,7 +30,7 @@ int main(int argc, char* const argv[])
         const std::string clade(args[0]);
         seqdb::setup_dbs(args["--db-dir"].str(), verbose ? seqdb::report::yes : seqdb::report::no);
         const auto& seqdb = seqdb::get();
-        auto chart = acmacs::chart::import_from_file(args[1], acmacs::chart::Verify::None, report_time::No);
+        auto chart = acmacs::chart::import_from_file(args[1], acmacs::chart::Verify::None, report_time::no);
         auto antigens = chart->antigens();
         const auto per_antigen = seqdb.match(*antigens, chart->info()->virus_type());
         bool first = true;

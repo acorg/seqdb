@@ -13,7 +13,7 @@ int main(int argc, char* const argv[])
             throw std::runtime_error("Usage: "s + argv[0] + " seqdb.json.xz");
 
         seqdb::setup(argv[1], seqdb::report::yes);
-        const auto& seqdb = seqdb::get(seqdb::ignore_errors::no, report_time::Yes);
+        const auto& seqdb = seqdb::get(seqdb::ignore_errors::no, report_time::yes);
 
         size_t not_matched = 0;
         for (const auto& entry: seqdb.entries()) {

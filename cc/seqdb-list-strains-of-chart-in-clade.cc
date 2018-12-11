@@ -32,7 +32,7 @@ int main(int argc, char* const argv[])
         const bool verbose = args["-v"] || args["--verbose"];
         seqdb::setup_dbs(args["--db-dir"], verbose ? seqdb::report::yes : seqdb::report::no);
         const auto& seqdb = seqdb::get();
-        auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, args["--time"] ? report_time::Yes : report_time::No);
+        auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, do_report_time(args["--time"]));
         auto sera = chart->sera();
         chart->set_homologous(acmacs::chart::find_homologous::strict, sera);
         auto antigens = chart->antigens();

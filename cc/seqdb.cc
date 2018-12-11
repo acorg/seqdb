@@ -44,7 +44,7 @@ const Seqdb& seqdb::get(ignore_errors ignore_err, report_time aTimeit)
 {
     using namespace std::string_literals;
     if (!sSeqdb) {
-        Timeit ti_seqdb{"DEBUG: SeqDb loading from " + sSeqdbFilename + ": ", sReport == report::yes ? report_time::Yes : aTimeit};
+        Timeit ti_seqdb{"DEBUG: SeqDb loading from " + sSeqdbFilename + ": ", sReport == report::yes ? report_time::yes : aTimeit};
             sSeqdb = std::make_unique<Seqdb>();
             try {
                 sSeqdb->load(sSeqdbFilename);
@@ -1038,7 +1038,7 @@ void Seqdb::detect_b_lineage()
 
 void seqdb::add_clades(acmacs::chart::ChartModify& chart, ignore_errors ignore_err, report a_report)
 {
-    if (const auto& seqdb = get(ignore_err, report_time::No); seqdb) {
+    if (const auto& seqdb = get(ignore_err, report_time::no); seqdb) {
         auto antigens = chart.antigens_modify();
         const auto per_antigen = seqdb.match(*antigens, chart.info()->virus_type(acmacs::chart::Info::Compute::Yes), a_report);
         size_t sequenced = 0;
