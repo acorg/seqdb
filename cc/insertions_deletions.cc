@@ -83,7 +83,7 @@ void InsertionsDeletionsDetector::choose_master()
         else {
             master_switching_allowed_ = false;
         }
-        std::cout << "INFO: " << mVirusType << ": master: " << master_name << "\n                 " << mMaster << std::endl;
+        // std::cout << "INFO: " << mVirusType << ": master: " << master_name << "\n                 " << mMaster << std::endl;
     }
     // else
     //     std::cerr << "ERROR: InsertionsDeletionsDetector::choose_master: no entries\n";
