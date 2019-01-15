@@ -49,7 +49,7 @@ int main(int argc, char* const argv[])
                 if (args["--replace-spaces-in-names"])
                     name = string::replace(name, " ", "_");
                 if (args["--name-from-chart"])
-                    name = antigens->at(ag_no)->full_name() + " ==> " + name;
+                    name = antigens->at(ag_no)->full_name(); // + " ==> " + name;
                 output += ">" + name + "\n";
                 try {
                     if (args["--amino-acids"])
