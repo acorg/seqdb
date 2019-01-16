@@ -5,6 +5,7 @@
 #include "acmacs-base/acmacsd.hh"
 #include "acmacs-base/read-file.hh"
 #include "acmacs-base/timeit.hh"
+#include "acmacs-base/string.hh"
 #include "acmacs-base/string-split.hh"
 #include "acmacs-base/virus-name.hh"
 #include "acmacs-base/to-json.hh"
@@ -67,11 +68,11 @@ Seqdb& seqdb::get_for_updating(report_time aTimeit)
 
 } // seqdb::get_for_updating
 
-void seqdb::setup_dbs(std::string aDbDir, seqdb::report aReport)
+void seqdb::setup_dbs(std::string_view aDbDir, seqdb::report aReport)
 {
     if (!aDbDir.empty()) {
-        setup(aDbDir + "/seqdb.json.xz", aReport);
-        locdb_setup(aDbDir + "/locationdb.json.xz", aReport == report::yes ? true : false);
+        setup(string::concat(aDbDir, "/seqdb.json.xz"), aReport);
+        locdb_setup(string::concat(aDbDir, "/locationdb.json.xz"), aReport == report::yes ? true : false);
     }
     else {
         setup(std::string{}, aReport);

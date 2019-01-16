@@ -98,7 +98,7 @@ namespace seqdb
         const std::vector<std::string>& update_clades(std::string aVirusType, std::string aLineage, std::string aName);
         const std::vector<std::string>& clades() const { return mClades; }
         std::vector<std::string>& clades() { return mClades; }
-        bool has_clade(std::string aClade) const { return std::find(std::begin(mClades), std::end(mClades), aClade) != std::end(mClades); }
+        bool has_clade(std::string_view aClade) const { return std::find(std::begin(mClades), std::end(mClades), aClade) != std::end(mClades); }
 
         bool is_short() const { return mAminoAcids.empty() ? mNucleotides.size() < (MINIMUM_SEQUENCE_AA_LENGTH * 3) : mAminoAcids.size() < MINIMUM_SEQUENCE_AA_LENGTH; }
         bool translated() const { return !mAminoAcids.empty(); }
@@ -718,7 +718,7 @@ namespace seqdb
     void add_clades(acmacs::chart::ChartModify& chart, ignore_errors ignore_err, report a_report);
 
     void setup(std::string aFilename, report aReport);
-    void setup_dbs(std::string aDbDir, report aReport);
+    void setup_dbs(std::string_view aDbDir, report aReport);
     const Seqdb& get(ignore_errors ignore_err = ignore_errors::no, report_time aTimeit = report_time::no);
     Seqdb& get_for_updating(report_time aTimeit = report_time::no);
 
