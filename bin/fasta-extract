@@ -16,7 +16,7 @@ from seqdb import fasta as fasta_m
 # ----------------------------------------------------------------------
 
 def main(args):
-    exporter = fasta_m.exporter(args.output[0], "fasta", encode_name=False, wrap=False)
+    exporter = fasta_m.exporter(Path(args.output[0]), "fasta", encode_name=False, wrap=False)
     for entry in fasta_m.read_from_file(args.input[0]):
         if any(name in entry[0] for name in args.name):
             exporter.write(*entry)
