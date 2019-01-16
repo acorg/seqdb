@@ -56,6 +56,7 @@ install: install-headers $(TARGETS)
 	$(call symbolic_link_wildcard,$(DIST)/seqdb-*,$(AD_BIN))
 	$(call symbolic_link_wildcard,$(abspath py)/*,$(AD_PY))
 	$(call symbolic_link_wildcard,$(abspath bin)/seqdb-*,$(AD_BIN))
+	$(call symbolic_link_wildcard,$(abspath bin)/fasta-*,$(AD_BIN))
 
 test: install
 	test/test
