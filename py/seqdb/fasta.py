@@ -445,6 +445,8 @@ def exporter(output, output_format, encode_name, wrap):
         r = FastaExporter(output=output, encode_name=encode_name, wrap=wrap)
     elif output_format == "phylip":
         r = PhylipExporter(output=output, encode_name=encode_name, wrap=wrap)
+    elif output_format == "bioseq": # https://github.com/mnbram/bioseq-mode
+        r = BioseqExporter(output=output, encode_name=encode_name, wrap=wrap)
     else:
         raise ValueError("Unrecognized output_format: {}".format(output_format))
     return r
@@ -507,6 +509,14 @@ class PhylipExporter (ExporterBase):
         else:
             for no, (n, s) in enumerate(zip(self.names, self.sequences)):
                 self.output += "{:<{}s}  {}{}\n".format(self.names[no], max_n_len, s, "-" * (max_s_len - len(s)))
+
+class BioseqExporter (PhylipExporter):
+
+    def do_write(self):
+        self.output = "\n".join(["-*- bioseq -*-\n",
+                                 "\n".join(f"{no+1:03d}>{name}" for no, name in enumerate(self.names)),
+                                 "\n".join(f"{no+1:03d}#{seq}" for no, seq in enumerate(self.sequences))
+                                 ])
 
 # ======================================================================
 ### Local Variables:

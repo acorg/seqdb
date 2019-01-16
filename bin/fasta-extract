@@ -16,7 +16,7 @@ from seqdb import fasta as fasta_m
 # ----------------------------------------------------------------------
 
 def main(args):
-    exporter = fasta_m.exporter(Path(args.output[0]), "fasta", encode_name=False, wrap=False)
+    exporter = fasta_m.exporter(Path(args.output[0]), args.format, encode_name=False, wrap=False)
     for entry in fasta_m.read_from_file(args.input[0]):
         if any(name in entry[0] for name in args.name):
             exporter.write(*entry)
@@ -26,8 +26,9 @@ def main(args):
 try:
     import argparse
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-f', "--format", dest="format", default="fasta", help='Exporting format: fasta, bioseq, phylip.')
     parser.add_argument('input', nargs=1, help='Fasta file to process.')
-    parser.add_argument('output', nargs=1, help='Output fasta file.')
+    parser.add_argument('output', nargs=1, help='Output file.')
     parser.add_argument('name', nargs="*", help='names to extract (substring match).')
     parser.add_argument('-d', '--debug', action='store_const', dest='loglevel', const=logging.DEBUG, default=logging.INFO, help='Enable debugging output.')
     args = parser.parse_args()
