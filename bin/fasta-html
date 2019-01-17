@@ -19,13 +19,28 @@ from acmacs_base.files import write_binary
 def main(args):
     source_entries = list(fasta_m.read_from_file(args.input[0]))
     rows = make_ruler() + "".join(f"<tr>{make_row(no, *entry)}</tr>\n" for no, entry in enumerate(source_entries)) + make_ruler()
+    rows_compare = make_ruler() + f"<tr>{make_row(0, *source_entries[0])}</tr>\n" + "".join(f"<tr>{make_row_compare(no, source_entries[0][1], *entry)}</tr>\n" for no, entry in enumerate(source_entries[1:])) + make_ruler()
+    data = f"<table class='entries'>{rows}</table><table class='entries'>{rows_compare}</table>"
     global sHtml
-    write_binary(args.output[0], (sHtml % {"title": "Sequences", "data": f"<table class='entries'>{rows}</table>"}).encode("utf-8"))
+    write_binary(args.output[0], (sHtml % {"title": "Sequences", "data": data}).encode("utf-8"))
 
 # ----------------------------------------------------------------------
 
 def make_row(no, name, sequence):
     aas = "\n".join(f"<td class='aa-{aa}' title='{pos} {name}'>{aa}</td>" for pos, aa in enumerate(sequence, start=1))
+    sequence = f"<table class='sequence'><tr>{aas}</tr></table>"
+    row_odd = "row-odd" if no % 2 != 0 else "row-even"
+    return f"<td class='name {row_odd}'>{name}</td><td class='sequence {row_odd}'>{sequence}</td>"
+
+# ----------------------------------------------------------------------
+
+def make_row_compare(no, master_sequence, name, sequence):
+    def show_aa(pos, aa):
+        if master_sequence[pos-1] == aa:
+            return "&middot;"
+        else:
+            return aa
+    aas = "\n".join(f"<td class='aa-{aa}' title='{pos}{aa} {name}'>{show_aa(pos, aa)}</td>" for pos, aa in enumerate(sequence, start=1))
     sequence = f"<table class='sequence'><tr>{aas}</tr></table>"
     row_odd = "row-odd" if no % 2 != 0 else "row-even"
     return f"<td class='name {row_odd}'>{name}</td><td class='sequence {row_odd}'>{sequence}</td>"
@@ -45,6 +60,7 @@ sHtml = """<!DOCTYPE html>
     <meta charset="utf-8" />
     <style>
      table { white-space: nowrap; }
+     table.entries { margin-bottom: 2em; }
      .row-even { background-color: #F0F0F0; }
      table.sequence { border-spacing: 0; font-family: "Go Mono", Menlo, monospace; }
      .aa-A { color: blue; }
@@ -58,12 +74,12 @@ sHtml = """<!DOCTYPE html>
      .aa-K { color: red; }
      .aa-L { color: blue; }
      .aa-M { color: blue; }
-     .aa-N { color: forestgreen; }
+     .aa-N { color: #228B22; }
      .aa-P { color: goldenrod; }
-     .aa-Q { color: forestgreen; }
+     .aa-Q { color: #228B22; }
      .aa-R { color: red; }
-     .aa-S { color: forestgreen; }
-     .aa-T { color: forestgreen; }
+     .aa-S { color: #228B22; }
+     .aa-T { color: #228B22; }
      .aa-V { color: blue; }
      .aa-W { color: blue; }
      .aa-Y { color: #008B8B; }
