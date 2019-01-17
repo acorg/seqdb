@@ -18,19 +18,26 @@ from acmacs_base.files import write_binary
 
 def main(args):
     source_entries = list(fasta_m.read_from_file(args.input[0]))
-    rows = make_ruler() + "".join(f"<tr>{make_row(no, *entry)}</tr>\n" for no, entry in enumerate(source_entries)) + make_ruler()
-    rows_compare = make_ruler() + f"<tr>{make_row(0, *source_entries[0])}</tr>\n" + "".join(f"<tr>{make_row_compare(no, source_entries[0][1], *entry)}</tr>\n" for no, entry in enumerate(source_entries[1:])) + make_ruler()
-    data = f"<table class='entries'>{rows}</table><table class='entries'>{rows_compare}</table>"
+    if args.full_table:
+        rows = make_ruler() + "".join(f"<tr>\n{make_row(no, *entry)}\n</tr>\n" for no, entry in enumerate(source_entries)) + make_ruler()
+        full_table = f"<table class='fasta-aa-entries'>{rows}</table>\n<br><br><br>"
+    else:
+        full_table = ""
+    rows_compare = make_ruler() + f"<tr>\n{make_row(0, *source_entries[0], cls='fasta-aa-master')}\n</tr>\n" + "".join(f"<tr>{make_row_compare(no, source_entries[0][1], *entry)}</tr>\n" for no, entry in enumerate(source_entries[1:])) + make_ruler()
+    compare_table = f"<table class='fasta-aa-entries'>{rows_compare}</table>\n"
     global sHtml
-    write_binary(args.output[0], (sHtml % {"title": "Sequences", "data": data}).encode("utf-8"))
+    write_binary(args.output[0], (sHtml % {"title": args.title, "data": full_table + compare_table}).encode("utf-8"))
 
 # ----------------------------------------------------------------------
 
-def make_row(no, name, sequence):
-    aas = "\n".join(f"<td class='aa-{aa}' title='{pos} {name}'>{aa}</td>" for pos, aa in enumerate(sequence, start=1))
-    sequence = f"<table class='sequence'><tr>{aas}</tr></table>"
-    row_odd = "row-odd" if no % 2 != 0 else "row-even"
-    return f"<td class='name {row_odd}'>{name}</td><td class='sequence {row_odd}'>{sequence}</td>"
+def make_row(no, name, sequence, cls=""):
+    aas = "".join(f"  <td class='aa-{aa}' title='{pos} {name}'>{aa}</td>\n" for pos, aa in enumerate(sequence, start=1))
+    sequence = f"<table class='fasta-aa-sequence'><tr>{aas}</tr></table>"
+    if cls == "":
+        row_odd = "row-odd" if no % 2 != 0 else "row-even"
+    else:
+        row_odd = ""
+    return f"<td class='fasta-aa-name {row_odd} {cls}'>{name}</td><td class='fasta-aa-sequence {row_odd}'>{sequence}</td>"
 
 # ----------------------------------------------------------------------
 
@@ -40,17 +47,17 @@ def make_row_compare(no, master_sequence, name, sequence):
             return "&middot;"
         else:
             return aa
-    aas = "\n".join(f"<td class='aa-{aa}' title='{pos}{aa} {name}'>{show_aa(pos, aa)}</td>" for pos, aa in enumerate(sequence, start=1))
-    sequence = f"<table class='sequence'><tr>{aas}</tr></table>"
+    aas = "".join(f"  <td class='aa-{aa}' title='{pos}{aa} {name}'>{show_aa(pos, aa)}</td>\n" for pos, aa in enumerate(sequence, start=1))
+    sequence = f"<table class='fasta-aa-sequence'><tr>{aas}</tr></table>"
     row_odd = "row-odd" if no % 2 != 0 else "row-even"
-    return f"<td class='name {row_odd}'>{name}</td><td class='sequence {row_odd}'>{sequence}</td>"
+    return f"<td class='fasta-aa-name {row_odd}'>{name}</td><td class='fasta-aa-sequence {row_odd}'>{sequence}</td>"
 
 # ----------------------------------------------------------------------
 
 def make_ruler():
     ruler_text = "....;....|10..;....|20..;....|30..;....|40..;....|50..;....|60..;....|70..;....|80..;....|90..;....|100.;....|110.;....|120.;....|130.;....|140.;....|150.;....|160.;....|170.;....|180.;....|190.;....|200.;....|210.;....|220.;....|230.;....|240.;....|250.;....|260.;....|270.;....|280.;....|290.;....|300.;....|310.;....|320.;....|330.;....|340.;....|350.;....|360.;....|370.;....|380.;....|390.;....|400.;....|410.;....|420.;....|430.;....|440.;....|450.;....|460.;....|470.;....|480.;....|490.;....|500.;....|510.;....|520.;....|530.;....|540.;....|550"
-    ruler = "\n".join(f"<td>{field}</td>" for field in ruler_text)
-    return f"<tr><td class='name'></td><td class='sequence'><table class='sequence'><tr>{ruler}</tr></table></td></tr>\n"
+    ruler = "".join(f"<td>{field}</td>" for field in ruler_text)
+    return f"<tr><td class='name'></td><td class='fasta-aa-sequence'><table class='fasta-aa-sequence'><tr>{ruler}</tr></table></td></tr>\n"
 
 # ----------------------------------------------------------------------
 
@@ -59,10 +66,10 @@ sHtml = """<!DOCTYPE html>
   <head>
     <meta charset="utf-8" />
     <style>
-     table { white-space: nowrap; }
-     table.entries { margin-bottom: 2em; }
-     .row-even { background-color: #F0F0F0; }
-     table.sequence { border-spacing: 0; font-family: "Go Mono", Menlo, monospace; }
+     table.fasta-aa-entries { white-space: nowrap; }
+     table.fasta-aa-entries td.fasta-aa-name.fasta-aa-master { color: magenta; }
+     table.fasta-aa-entries .row-even { background-color: #F0F0F0; }
+     table.fasta-aa-entries table.fasta-aa-sequence { border-spacing: 0; font-family: Menlo, monospace; }
      .aa-A { color: blue; }
      .aa-C { color: salmon; }
      .aa-D { color: magenta; }
@@ -101,6 +108,8 @@ try:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('input', nargs=1, help='Fasta file to process.')
     parser.add_argument('output', nargs=1, help='Output file.')
+    parser.add_argument('-f', '--full-table', action='store_true', dest='full_table', default=False, help='Include full table.')
+    parser.add_argument('-t', '--title', action='store', dest='title', default="Sequences")
     parser.add_argument('-d', '--debug', action='store_const', dest='loglevel', const=logging.DEBUG, default=logging.INFO, help='Enable debugging output.')
     args = parser.parse_args()
     logging.basicConfig(level=args.loglevel, format="%(levelname)s %(asctime)s: %(message)s")
