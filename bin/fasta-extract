@@ -16,10 +16,19 @@ from seqdb import fasta as fasta_m
 # ----------------------------------------------------------------------
 
 def main(args):
-    exporter = fasta_m.exporter(Path(args.output[0]), args.format, encode_name=False, wrap=False)
+    result = {}                 # args.name -> (name, sequence)
     for entry in fasta_m.read_from_file(args.input[0]):
-        if any(name in entry[0] for name in args.name):
-            exporter.write(*entry)
+        for name in args.name:
+            if name in entry[0]:
+                result[name] = entry
+                break
+
+    exporter = fasta_m.exporter(Path(args.output[0]), args.format, encode_name=False, wrap=False)
+    for name in args.name:
+        if name in result:
+            exporter.write(*result[name])
+        else:
+            module_logger.warning(f"{name} not found")
 
 # ----------------------------------------------------------------------
 
