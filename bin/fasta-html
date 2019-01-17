@@ -1,0 +1,93 @@
+#! /usr/bin/env python3
+# -*- Python -*-
+
+"""
+Generates html to present AA sequences from the fasta file
+"""
+
+import sys, os, traceback, pprint
+if sys.version_info.major != 3: raise RuntimeError("Run script with python3")
+from pathlib import Path
+sys.path[:0] = [str(Path(os.environ["ACMACSD_ROOT"]).resolve().joinpath("py"))]
+import logging; module_logger = logging.getLogger(__name__)
+
+from seqdb import fasta as fasta_m
+from acmacs_base.files import write_binary
+
+# ----------------------------------------------------------------------
+
+def main(args):
+    source_entries = list(fasta_m.read_from_file(args.input[0]))
+    rows = "\n".join(f"<tr>{make_row(no, *entry)}</tr>" for no, entry in enumerate(source_entries))
+    global sHtml
+    write_binary(args.output[0], (sHtml % {"title": "Sequences", "data": f"<table class='entries'>{rows}</table>"}).encode("utf-8"))
+
+# ----------------------------------------------------------------------
+
+def make_row(no, name, sequence):
+    aas = "\n".join(f"<td class='aa-{aa}' title='{pos}'>{aa}</td>" for pos, aa in enumerate(sequence, start=1))
+    sequence = f"<table class='sequence'><tr>{aas}</tr></table>"
+    row_odd = "row-odd" if no % 2 != 0 else "row-even"
+    return f"<td class='name {row_odd}'>{name}</td><td class='sequence {row_odd}'>{sequence}</td>"
+
+# ----------------------------------------------------------------------
+
+sHtml = """<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+     table { white-space: nowrap; }
+     .row-even { background-color: #F0F0F0; }
+     table.sequence { border-spacing: 0; font-family: "Go Mono", Menlo, monospace; }
+     .aa-A { color: blue; }
+     .aa-C { color: salmon; }
+     .aa-D { color: magenta; }
+     .aa-E { color: magenta; }
+     .aa-F { color: blue; }
+     .aa-G { color: #FF8C00; }
+     .aa-H { color: #008B8B; }
+     .aa-I { color: blue; }
+     .aa-K { color: red; }
+     .aa-L { color: blue; }
+     .aa-M { color: blue; }
+     .aa-N { color: forestgreen; }
+     .aa-P { color: goldenrod; }
+     .aa-Q { color: forestgreen; }
+     .aa-R { color: red; }
+     .aa-S { color: forestgreen; }
+     .aa-T { color: forestgreen; }
+     .aa-V { color: blue; }
+     .aa-W { color: blue; }
+     .aa-Y { color: #008B8B; }
+     .aa-X { color: grey; }
+    </style>
+    <title>%(title)s</title>
+  </head>
+  <body>
+    <h2>%(title)s</h2>
+%(data)s
+  </body>
+</html>
+"""
+
+# ----------------------------------------------------------------------
+
+try:
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('input', nargs=1, help='Fasta file to process.')
+    parser.add_argument('output', nargs=1, help='Output file.')
+    parser.add_argument('-d', '--debug', action='store_const', dest='loglevel', const=logging.DEBUG, default=logging.INFO, help='Enable debugging output.')
+    args = parser.parse_args()
+    logging.basicConfig(level=args.loglevel, format="%(levelname)s %(asctime)s: %(message)s")
+    exit_code = main(args)
+except Exception as err:
+    logging.error('{}\n{}'.format(err, traceback.format_exc()))
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================
+### Local Variables:
+### eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
+### End:
