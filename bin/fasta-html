@@ -18,17 +18,24 @@ from acmacs_base.files import write_binary
 
 def main(args):
     source_entries = list(fasta_m.read_from_file(args.input[0]))
-    rows = "\n".join(f"<tr>{make_row(no, *entry)}</tr>" for no, entry in enumerate(source_entries))
+    rows = make_ruler() + "".join(f"<tr>{make_row(no, *entry)}</tr>\n" for no, entry in enumerate(source_entries)) + make_ruler()
     global sHtml
     write_binary(args.output[0], (sHtml % {"title": "Sequences", "data": f"<table class='entries'>{rows}</table>"}).encode("utf-8"))
 
 # ----------------------------------------------------------------------
 
 def make_row(no, name, sequence):
-    aas = "\n".join(f"<td class='aa-{aa}' title='{pos}'>{aa}</td>" for pos, aa in enumerate(sequence, start=1))
+    aas = "\n".join(f"<td class='aa-{aa}' title='{pos} {name}'>{aa}</td>" for pos, aa in enumerate(sequence, start=1))
     sequence = f"<table class='sequence'><tr>{aas}</tr></table>"
     row_odd = "row-odd" if no % 2 != 0 else "row-even"
     return f"<td class='name {row_odd}'>{name}</td><td class='sequence {row_odd}'>{sequence}</td>"
+
+# ----------------------------------------------------------------------
+
+def make_ruler():
+    ruler_text = "....;....|10..;....|20..;....|30..;....|40..;....|50..;....|60..;....|70..;....|80..;....|90..;....|100.;....|110.;....|120.;....|130.;....|140.;....|150.;....|160.;....|170.;....|180.;....|190.;....|200.;....|210.;....|220.;....|230.;....|240.;....|250.;....|260.;....|270.;....|280.;....|290.;....|300.;....|310.;....|320.;....|330.;....|340.;....|350.;....|360.;....|370.;....|380.;....|390.;....|400.;....|410.;....|420.;....|430.;....|440.;....|450.;....|460.;....|470.;....|480.;....|490.;....|500.;....|510.;....|520.;....|530.;....|540.;....|550"
+    ruler = "\n".join(f"<td>{field}</td>" for field in ruler_text)
+    return f"<tr><td class='name'></td><td class='sequence'><table class='sequence'><tr>{ruler}</tr></table></td></tr>\n"
 
 # ----------------------------------------------------------------------
 
