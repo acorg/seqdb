@@ -105,7 +105,7 @@ namespace seqdb
         bool aligned() const { return mAminoAcidsShift.aligned(); }
         bool matched() const { return !mHiNames.empty(); }
 
-        bool has_lab(std::string aLab) const { return mLabIds.find(aLab) != mLabIds.end(); }
+        bool has_lab(std::string_view aLab) const { return mLabIds.find(std::string(aLab)) != mLabIds.end(); }
         std::string lab() const { return mLabIds.empty() ? std::string{} : mLabIds.begin()->first; }
         std::string lab_id() const { return mLabIds.empty() ? std::string{} : (mLabIds.begin()->second.empty() ? std::string{} : mLabIds.begin()->second[0]); }
         const std::vector<std::string> cdcids() const { auto i = mLabIds.find("CDC"); return i == mLabIds.end() ? std::vector<std::string>{} : i->second; }
@@ -266,9 +266,9 @@ namespace seqdb
                 return r;
             }
 
-        bool has_lab(std::string aLab) const
+        bool has_lab(std::string_view aLab) const
             {
-                return std::any_of(mSeq.begin(), mSeq.end(), [&aLab](auto const & seq) { return seq.has_lab(aLab); });
+                return std::any_of(mSeq.begin(), mSeq.end(), [&aLab](auto const& seq) { return seq.has_lab(aLab); });
             }
 
         std::vector<std::string> make_all_names() const;
@@ -717,7 +717,7 @@ namespace seqdb
 
     void add_clades(acmacs::chart::ChartModify& chart, ignore_errors ignore_err, report a_report);
 
-    void setup(std::string aFilename, report aReport);
+    void setup(std::string_view aFilename, report aReport);
     void setup_dbs(std::string_view aDbDir, report aReport);
     const Seqdb& get(ignore_errors ignore_err = ignore_errors::no, report_time aTimeit = report_time::no);
     Seqdb& get_for_updating(report_time aTimeit = report_time::no);

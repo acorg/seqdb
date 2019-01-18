@@ -2,7 +2,8 @@
 #include <string>
 using namespace std::string_literals;
 
-#include "acmacs-base/argc-argv.hh"
+#include "acmacs-base/argv.hh"
+#include "acmacs-base/string.hh"
 #include "seqdb.hh"
 
 // ----------------------------------------------------------------------
@@ -15,6 +16,7 @@ struct Info
     std::map<std::string, size_t> all_by_month;
     std::map<std::string, size_t> with_hi_names_by_month;
     std::map<std::string, size_t> clades;
+    std::map<std::string, size_t> clade_set;
 };
 
 inline std::ostream& operator<<(std::ostream& s, const Info& c)
@@ -28,25 +30,30 @@ inline std::ostream& operator<<(std::ostream& s, const Info& c)
     s << "By clade:\n";
     for (auto [clade, count] : c.clades)
         s << std::setw(10) << clade << ": " << count << '\n';
+    s << "By clade combination:\n";
+    for (auto [clade_set, count] : c.clade_set)
+        s << std::setw(10) << clade_set << ": " << count << '\n';
     return s;
 }
 
 // ----------------------------------------------------------------------
 
+using namespace acmacs::argv;
+
+struct Options : public argv
+{
+    Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
+
+    option<str>   lab{*this, "lab", dflt{"all"}, desc{"filter by lab that submitted the sequence"}};
+    argument<str> seqdb_file{*this, arg_name{"~/AD/data/seqdb.json.xz"}, mandatory};
+};
+
 int main(int argc, char* const argv[])
 {
     try {
-        argc_argv args(argc, argv,
-                       {
-                           {"--lab", "all", "filter by lab that submitted the sequence"},
-                           // {"--virus-type", "all", "filter by subtype: H1, H3, BV, BY"},
-                           {"-h", false},
-                           {"--help", false},
-                       });
-        if (args["-h"] || args["--help"] || args.number_of_arguments() != 1)
-            throw std::runtime_error("Usage: "s + args.program() + " <seqdb.json.xz>");
+        Options opt(argc, argv);
 
-        seqdb::setup(std::string(args[0]), seqdb::report::yes);
+        seqdb::setup(opt.seqdb_file, seqdb::report::yes);
         const auto& seqdb = seqdb::get(seqdb::ignore_errors::no, report_time::yes);
 
         auto update = [](Info& target, const auto& entry) {
@@ -64,12 +71,15 @@ int main(int argc, char* const argv[])
                     ++target.all_by_month[date.substr(0, 7)];
                     ++target.all_by_month[date.substr(0, 4) + "all"];
                 }
-                for (const auto& clade : seq.clades())
-                    ++target.clades[clade];
+                if (const auto& clades = seq.clades(); !clades.empty()) {
+                    for (const auto& clade : clades)
+                        ++target.clades[clade];
+                    ++target.clade_set[string::join(" ", clades)];
+                }
             }
         };
 
-        auto filter_lab = [lab = args["--lab"].str()](const auto& entry) -> bool {
+        auto filter_lab = [lab = *opt.lab](const auto& entry) -> bool {
             if (lab.empty() || lab == "all")
                 return true;
             return entry.has_lab(lab);

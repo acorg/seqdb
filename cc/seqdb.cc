@@ -34,7 +34,7 @@ static seqdb::report sReport = seqdb::report::no;
 
 #pragma GCC diagnostic pop
 
-void seqdb::setup(std::string aFilename, seqdb::report aReport)
+void seqdb::setup(std::string_view aFilename, seqdb::report aReport)
 {
     sReport = aReport;
     if (!aFilename.empty())
