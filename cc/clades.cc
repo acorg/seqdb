@@ -1,5 +1,7 @@
 #include <iostream>
 #include <algorithm>
+#include <array>
+#include <vector>
 
 #include "clades.hh"
 
@@ -140,45 +142,8 @@ std::vector<std::string> seqdb::clades_h1pdm(std::string aSequence, Shift aShift
 // PE09 - SW13: F159S
 // PE09 - HK14: F159Y
 
-// gly: 160S or 160T
-// no-gly: not gly
-// 3C3: 158N 159F
-// 3C3a: 158N 159S
-// 3C3b: 62K 83R 158N 261Q
-// 3C2a: 158N 159Y
-// 3C2a1: 158N 159Y 171K 406V 484E
-// defintions below provided by Sarah on 2018-02-17 21:53 based on the CDC TC2 report
-// 3C2a1a: 158N 159Y 479E
-// 3C2a1b: 92R 158N 159Y 311Q
-// 3C2a2: 131K 142K 158N 159Y 261Q
-// 3C2a3: 135K 150K 158N 159Y 261Q
-// 3C2a4: 31S 53N 142G 144R 158N 159Y 171K 192T 197H
-
-// clades per nextflu (2018-08-07, by Sarah):
-// "3b":    [('HA2',158,'N'), ('HA1',198,'S'), ('HA1',312,'S'), ('HA1',223,'I'),     ('HA1',145,'S')],
-// "3c":    [('HA1',45,'N'), ('HA1',48,'I'), ('nuc',456,'T'), ('HA1',198,'S'),     ('HA1',312,'S'), ('HA1',223,'I')],
-// "3c2":   [('HA2',160,'N'), ('HA1',145,'S'), ('nuc',693,'A'), ('nuc',1518,'G')],
-// "3c3":   [('nuc',285,'T'), ('nuc',430,'G'), ('nuc',472,'G'), ('nuc',1296,'A')],
-// "3c3.A": 128A 142G 159S
-// "3c2.A": [('HA1',144,'S'), ('HA1',159,'Y'), ('HA1',225,'D'),     ('HA1',311,'H'), ('nuc',1491,'A'), ('nuc', 234, 'A')],
-// "A1": 144S 159Y 171K 225D 311H   ('nuc',1491,'A'), ('HA2',77,'V'), ('HA2',155,'E'), ('HA2',160,'N')], # formerly clade 3c2.a1
-// "3c2":   [('HA1',144,'N'), ('HA1',159,'F'), ('HA1',225,'N'), ('HA1',160,'T'), ('HA1',142,'R')],
-// "3c3.B": [('HA1',83,'R'), ('HA1',261,'Q'), ('HA1',62,'K'),    ('HA1',122,'D')],
-// "A2": 131K 142K 144S 159Y 225D 261Q 311H  ('nuc',1491,'A'), ('nuc', 234, 'A'),     ], # formerly clade 3
-// "A3": 121K 144K 159Y 225D 311H     ('nuc',1491,'A'), ('nuc',234,'A'), ], # formerly clade 2
-// "A4": 53N 144R 159Y 171K 192T 197H 225D 311H    ('nuc',1491,'A'), ('nuc',234,'A'), ] # formerly clade 1
-
-// Clades defined by Sarah on 2018-08-09 for TC1 based on the tree made for TC1 and based on the older definitions above
-// 3C.3    158N 159F
-// 3C.3a   158N 159S
-// 3C.3b   62K 83R 158N 261Q
-// 3C.2a   158N 159Y
-// 2a1     3I 158N 159Y 171K 406V 484E   (3C2a1)
-// 2a1a    92K 158N 159Y 479E (3C2a1a)  (92K added by Sarah later: to eliminate the extra 2a1a label in the tree for TC1 2018-08-09)
-// 2a1b    92R 158N 159Y 311Q (3C2a1b)
-// 2a2     131K 142K 158N 159Y 261Q (3C2a2)
-// 2a3     3I 121K 144K (former 3C2a3)
-// 2a4     31S 53N 142G 144R 158N 159Y 171K 192T 197H
+// https://notebooks.antigenic-cartography.org/eu/results/eu/2019-0118-clades/clades.org
+// /scp:albertine:/syn/eu/ac/results/eu/2019-0118-clades/clades.org
 
 struct PosAA
 {
@@ -198,18 +163,20 @@ struct CladeDesc
 #pragma GCC diagnostic ignored "-Wglobal-constructors"
 #endif
 
-static const std::vector<CladeDesc> sClades =
+static const std::array sClades
 {
-    {"3C.3", {{158, 'N'}, {159, 'F'}}},
-    {"3C.3A", {{158, 'N'}, {159, 'S'}}},
-    {"3C.3B", {{62, 'K'}, {83, 'R'}, {158, 'N'}, {261, 'Q'}}},
-    {"3C.2A", {{158, 'N'}, {159, 'Y'}}},
-    {"2A1", {{3, 'I'}, {158, 'N'}, {159, 'Y'}, {171, 'K'}, {406, 'V'}, {484, 'E'}}},
-    {"2A1A", {{92, 'K'}, {158, 'N'}, {159, 'Y'}, {479, 'E'}}},
-    {"2A1B", {{92, 'R'}, {158, 'N'}, {159, 'Y'}, {311, 'Q'}}},
-    {"2A2", {{131, 'K'}, {142, 'K'}, {158, 'N'}, {159, 'Y'}, {261, 'Q'}}},
-    {"2A3", {{3, 'I'}, {121, 'K'}, {144, 'K'}}},
-    {"2A4", {{31, 'S'}, {53, 'N'}, {142, 'G'}, {144, 'R'}, {158, 'N'}, {159, 'Y'}, {171, 'K'}, {192, 'T'}, {197, 'H'}}},
+    CladeDesc{"3C.3",  {{158, 'N'}, {159, 'F'}}},
+    CladeDesc{"3C.3A", {{138, 'S'}, {159, 'S'}, {225, 'D'}, {326, 'R'}}},
+    CladeDesc{"3C.3B", {{ 62, 'K'}, { 83, 'R'}, {261, 'Q'}}},
+    CladeDesc{"2A",    {{158, 'N'}, {159, 'Y'}}},
+    CladeDesc{"2A1",   {{158, 'N'}, {159, 'Y'}, {171, 'K'}, {406, 'V'}, {484, 'E'}}},
+    CladeDesc{"2A1A",  {{121, 'K'}, {135, 'K'}, {158, 'N'}, {159, 'Y'}, {171, 'K'}, {406, 'V'}, {479, 'E'}, {484, 'E'}}},
+    CladeDesc{"2A1B",  {{ 92, 'R'}, {121, 'K'}, {158, 'N'}, {159, 'Y'}, {171, 'K'}, {311, 'Q'}, {406, 'V'}, {484, 'E'}}},
+    CladeDesc{"2A2",   {{131, 'K'}, {142, 'K'}, {158, 'N'}, {159, 'Y'}, {261, 'Q'}}},
+    CladeDesc{"2A3",   {{121, 'K'}, {135, 'K'}, {144, 'K'}, {150, 'K'}, {158, 'N'}, {159, 'Y'}, {261, 'Q'}}},
+    CladeDesc{"2A4",   {{ 31, 'S'}, { 53, 'N'}, {142, 'G'}, {144, 'R'}, {158, 'N'}, {159, 'Y'}, {171, 'K'}, {192, 'T'}, {197, 'H'}}},
+    CladeDesc{"GLY",   {{160, 'S'}}},
+    CladeDesc{"GLY",   {{160, 'T'}}},
 };
 
 #pragma GCC diagnostic pop
@@ -224,55 +191,9 @@ std::vector<std::string> seqdb::clades_h3n2(std::string aSequence, Shift aShift,
             r.emplace_back(clade_desc.clade);
     }
 
-      // 160S -> gly, 160T -> gly, 160x -> no gly
-    if (aa_at(160, aSequence, aShift) == 'S' || aa_at(160, aSequence, aShift) == 'T')
-        r.emplace_back("GLY");
-    else
-        r.emplace_back("NO-GLY");
-
     return r;
 
 } // clades_h3n2
-
-// std::vector<std::string> seqdb::clades_h3n2(std::string aSequence, Shift aShift)
-// {
-//     auto r = std::vector<std::string>();
-//     if (aa_at(158, aSequence, aShift) == 'N') {
-//         switch (aa_at(159, aSequence, aShift)) {
-//           case 'F':
-//               r.push_back("3C3");
-//               break;
-//           case 'Y':
-//               r.push_back("3C2A");
-//               if (aa_at(171, aSequence, aShift) == 'K' && aa_at(406, aSequence, aShift) == 'V' && aa_at(484, aSequence, aShift) == 'E') {
-//                     // Derek's message of 2016-12-23 10:32 "clade 3c.2a1"
-//                     // 3c.2a1 is a sub-clade of 3c2a
-//                   r.push_back("3C2A1");
-//               }
-//               break;
-//           case 'S':
-//               r.push_back("3C3A");
-//               break;
-//           default:
-//                 // std::cerr << "@159: " << aSequence[pos159] << std::endl;
-//               break;
-//         }
-//     }
-
-//     if (aa_at(159, aSequence, aShift) == 'F' && aa_at(83, aSequence, aShift) == 'R' && aa_at(261, aSequence, aShift) == 'Q') // && aa_at(62, aSequence, aShift) == 'K')
-//         r.push_back("3C3B");
-//       // if (aSequence.size()  > pos261 && aSequence[pos62] == 'K' && aSequence[pos83] == 'R' && aSequence[pos261] == 'Q')
-//       //     r.push_back("3C3b?");
-
-//       // 160S -> gly, 160T -> gly, 160x -> no gly
-//     if (aa_at(160, aSequence, aShift) == 'S' || aa_at(160, aSequence, aShift) == 'T')
-//         r.push_back("GLY");
-//     else
-//         r.push_back("NO-GLY");
-
-//     return r;
-
-// } // clades_h3n2
 
 // ----------------------------------------------------------------------
 /// Local Variables:
