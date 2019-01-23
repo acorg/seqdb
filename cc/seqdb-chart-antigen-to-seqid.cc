@@ -39,8 +39,7 @@ int main(int argc, char* const argv[])
         for (auto [ag_no, entry] : acmacs::enumerate(per_antigen)) {
             if (entry) {
                 if (!entry.seq().hi_name_present(antigens->at(ag_no)->full_name()))
-                    throw std::runtime_error("ERROR: internal: matched sequence " + entry.entry().name() + " has no matched HI name for " + antigens->at(ag_no)->full_name());
-                // std::cout << std::setw(5) << ag_no << ' ' << antigens->at(ag_no)->full_name() << ' ' << entry.seq().clades() << '\n';
+                    std::cerr << "WARNING: matched sequence " << entry.seq_id(seqdb::SeqdbEntrySeq::encoded_t::yes) << " has no matched HI name for " << antigens->at(ag_no)->full_name() << '\n';
                 auto antigen = antigens->at(ag_no);
                 csv << ag_no << antigen->name() << antigen->reassortant() << string::join(" ", antigen->annotations()) << antigen->passage()
                     << entry.seq_id(seqdb::SeqdbEntrySeq::encoded_t::yes) << acmacs::CsvWriter::end_of_row;
