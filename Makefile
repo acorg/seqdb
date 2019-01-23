@@ -15,6 +15,7 @@ TARGETS = \
   $(DIST)/seqdb-export-sequences-and-layout-of-chart \
   $(DIST)/seqdb-sequenced-antigens-in-chart \
   $(DIST)/seqdb-sequences-of-chart-for-ace-view \
+  $(DIST)/seqdb-chart-antigen-to-seqid \
   $(DIST)/seqdb-strains-of-chart-in-clade \
   $(DIST)/seqdb-update-clades \
   $(DIST)/seqdb-list-strains-in-the-clade \
