@@ -1,7 +1,7 @@
 #include <string>
 #include <fstream>
 
-#include "acmacs-base/argc-argv.hh"
+#include "acmacs-base/argv.hh"
 #include "acmacs-base/csv.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/stream.hh"
@@ -12,63 +12,135 @@
 
 // ----------------------------------------------------------------------
 
-constexpr const char* sUsage = " [options] <chart>\n";
+using namespace acmacs::argv;
+struct Options : public argv
+{
+    Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
+
+    option<str>  only_clade{*this, "clade", desc{"report antigens/sera of that clade only"}};
+    option<bool> sera_only{*this, "sera-only"};
+    option<bool> antigens_only{*this, "antigens-only"};
+    option<bool> indexes_only{*this, "indexes-only", desc{"requires --clade"}};
+    option<bool> csv{*this, "csv"};
+    option<bool> no_unknown{*this, "no-unknown"};
+    option<bool> gly{*this, "csv"};
+    option<str>  db_dir{*this, "db-dir"};
+    option<bool> report_time{*this, "time", desc{"report time of loading chart"}};
+    option<bool> verbose{*this, 'v', "verbose"};
+
+    argument<str> chart{*this, arg_name{"chart"}, mandatory};
+};
 
 int main(int argc, char* const argv[])
 {
     try {
-        using namespace std::string_literals;
-        argc_argv args(argc, argv,
-                       {
-                           {"--csv", false},
-                           {"--gly", false},
-                           {"--no-unknown", false},
-                           {"--db-dir", ""},
-                           {"--time", false, "report time of loading chart"},
-                           {"-v", false},
-                           {"--verbose", false},
-                           {"-h", false},
-                           {"--help", false},
-                       });
-        if (args["-h"] || args["--help"] || args.number_of_arguments() != 1) {
-            throw std::runtime_error("Usage: "s + args.program() + sUsage + args.usage_options());
-        }
-        const bool verbose = args["-v"] || args["--verbose"];
-        seqdb::setup_dbs(args["--db-dir"].str(), verbose ? seqdb::report::yes : seqdb::report::no);
+        Options opt(argc, argv);
+        seqdb::setup_dbs(opt.db_dir, opt.verbose ? seqdb::report::yes : seqdb::report::no);
         const auto& seqdb = seqdb::get();
-        auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, do_report_time(args["--time"]));
+        auto chart = acmacs::chart::import_from_file(opt.chart, acmacs::chart::Verify::None, do_report_time(opt.report_time));
         auto antigens = chart->antigens();
         const auto per_antigen = seqdb.match(*antigens, chart->info()->virus_type());
-        const bool csv = args["--csv"];
         acmacs::CsvWriter csv_writer;
-        for (auto [ag_no, antigen] : acmacs::enumerate(*antigens)) {
-            const auto write_name = [&csv_writer,csv](auto ag_no, auto antigen) {
-                if (csv) {
-                    csv_writer.field(acmacs::to_string(ag_no));
-                    csv_writer.field(antigen->full_name());
-                }
-                else
-                    std::cout << ag_no << ' ' << antigen->full_name();
-            };
-            if (const auto& entry_seq = per_antigen[ag_no]; entry_seq) {
-                write_name(ag_no, antigen);
-                for (const auto& clade : entry_seq.seq().clades()) {
-                    if (args["--gly"] || (clade != "GLY" && clade != "NO-GLY")) {
-                        if (csv)
-                            csv_writer.field(clade);
-                        else
-                            std::cout << ' ' << clade;
-                    }
-                }
+        std::vector<size_t> indexes;
+
+        const auto write_name = [&csv_writer, csv = *opt.csv](const char* ag_sr, auto ag_no, auto antigen) {
+            if (csv) {
+                csv_writer << ag_sr << ag_no << antigen->full_name();
+                // csv_writer.field(acmacs::to_string(ag_no));
+                // csv_writer.field(antigen->full_name());
             }
-            else if (!args["--no-unknown"])
-                write_name(ag_no, antigen);
+            else
+                std::cout << ag_sr << ' ' << ag_no << ' ' << antigen->full_name();
+        };
+        const auto write_clade = [&csv_writer, csv = *opt.csv](auto clade) {
+            if (csv)
+                csv_writer.field(clade);
+            else
+                std::cout << ' ' << clade;
+        };
+        const auto endl = [&csv_writer, csv = *opt.csv]() {
             if (csv)
                 csv_writer.new_row();
             else
                 std::cout << '\n';
+        };
+
+        if (!opt.sera_only) {
+            for (auto [ag_no, antigen] : acmacs::enumerate(*antigens)) {
+                bool new_row = false;
+                if (const auto& entry_seq = per_antigen[ag_no]; entry_seq) {
+                    if (opt.only_clade.has_value()) {
+                        if (entry_seq.seq().has_clade(opt.only_clade)) {
+                            if (opt.indexes_only) {
+                                indexes.push_back(ag_no);
+                            }
+                            else {
+                                write_name("AG", ag_no, antigen);
+                                new_row = true;
+                            }
+                        }
+                    }
+                    else {
+                        write_name("AG", ag_no, antigen);
+                        for (const auto& clade : entry_seq.seq().clades()) {
+                            if (opt.gly || (clade != "GLY" && clade != "NO-GLY"))
+                                write_clade(clade);
+                        }
+                        new_row = true;
+                    }
+                }
+                else if (!opt.no_unknown) {
+                    write_name("AG", ag_no, antigen);
+                    new_row = true;
+                }
+                if (new_row)
+                    endl();
+            }
         }
-        if (csv)
+
+        if (!opt.antigens_only) {
+            auto sera = chart->sera();
+            chart->set_homologous(acmacs::chart::find_homologous::relaxed, sera);
+            for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
+                std::set<std::string> clades;
+                for (auto ag_no : serum->homologous_antigens()) {
+                    if (const auto& entry_seq = per_antigen[ag_no]; entry_seq) {
+                        for (const auto& clade : entry_seq.seq().clades()) {
+                            if (opt.gly || (clade != "GLY" && clade != "NO-GLY"))
+                                clades.insert(clade);
+                        }
+                    }
+                }
+                bool new_row = false;
+                if (opt.only_clade.has_value()) {
+                    std::string clade{*opt.only_clade};
+                    if (clades.find(clade) != clades.end()) {
+                        if (opt.indexes_only) {
+                            indexes.push_back(sr_no);
+                        }
+                        else {
+                            write_name("SR", sr_no, serum);
+                            new_row = true;
+                        }
+                    }
+                }
+                else {
+                    if (!opt.no_unknown || !clades.empty()) {
+                        write_name("SR", sr_no, serum);
+                        for (auto clade : clades)
+                            write_clade(clade);
+                        new_row = true;
+                    }
+                }
+                if (new_row)
+                    endl();
+            }
+        }
+
+        if (!indexes.empty())
+            std::cout << string::join(",", indexes.begin(), indexes.end()) << '\n';
+        
+        if (opt.csv)
             std::cout << static_cast<std::string_view>(csv_writer) << '\n';
         return 0;
     }
