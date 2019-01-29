@@ -17,16 +17,20 @@ from acmacs_base.files import write_binary
 # ----------------------------------------------------------------------
 
 def main(args):
+    global sHtml
     source_entries = list(fasta_m.read_from_file(args.input[0]))
+    master_entries = source_entries[:args.master_entries]
+    test_entries = source_entries[args.master_entries:]
     if args.full_table:
         rows = make_ruler() + "".join(f"<tr>\n{make_row(no, *entry)}\n</tr>\n" for no, entry in enumerate(source_entries)) + make_ruler()
         full_table = f"<table class='fasta-aa-entries'>{rows}</table>\n<br><br><br>"
     else:
         full_table = ""
-    rows_compare = make_ruler() + f"<tr>\n{make_row(0, *source_entries[0], cls='fasta-aa-master')}\n</tr>\n" + "".join(f"<tr>{make_row_compare(no, source_entries[0][1], *entry)}</tr>\n" for no, entry in enumerate(source_entries[1:])) + make_ruler()
-    compare_table = f"<table class='fasta-aa-entries'>{rows_compare}</table>\n"
-    global sHtml
-    write_binary(args.output[0], (sHtml % {"title": args.title, "data": full_table + compare_table}).encode("utf-8"))
+    compare_tables = []
+    for master in master_entries:
+        rows_compare = make_ruler() + f"<tr>\n{make_row(0, *master, cls='fasta-aa-master')}\n</tr>\n" + "".join(f"<tr>{make_row_compare(no, master[1], *entry)}</tr>\n" for no, entry in enumerate(test_entries)) + make_ruler()
+        compare_tables.append(f"<p class='table-title'>Comapring with {master[0]}</p>\n<table class='fasta-aa-entries'>{rows_compare}</table>\n")
+    write_binary(args.output[0], (sHtml % {"title": args.title, "data": full_table + "\n".join(compare_tables)}).encode("utf-8"))
 
 # ----------------------------------------------------------------------
 
@@ -91,6 +95,7 @@ sHtml = """<!DOCTYPE html>
      .aa-W { color: blue; }
      .aa-Y { color: #008B8B; }
      .aa-X { color: grey; }
+     p.table-title { font-weight: bold; margin: 3em 0 0 2em; }
     </style>
     <title>%(title)s</title>
   </head>
@@ -108,6 +113,7 @@ try:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('input', nargs=1, help='Fasta file to process.')
     parser.add_argument('output', nargs=1, help='Output file.')
+    parser.add_argument('-m', '--master', type=int, dest='master_entries', default=1, help='Number of master entries to compare with.')
     parser.add_argument('-f', '--full-table', action='store_true', dest='full_table', default=False, help='Include full table.')
     parser.add_argument('-t', '--title', action='store', dest='title', default="Sequences")
     parser.add_argument('-d', '--debug', action='store_const', dest='loglevel', const=logging.DEBUG, default=logging.INFO, help='Enable debugging output.')
