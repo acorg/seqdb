@@ -855,7 +855,7 @@ void Seqdb::build_hi_name_index()
 {
     mHiNameIndex.clear();
     for (auto entry_seq: *this) {
-        for (auto hi_name: entry_seq.seq().hi_names()) {
+        for (const auto& hi_name: entry_seq.seq().hi_names()) {
               // const auto pos_inserted =
             mHiNameIndex.emplace(hi_name, entry_seq);
               // if (!pos_inserted.second)
@@ -864,15 +864,6 @@ void Seqdb::build_hi_name_index()
     }
 
 } // Seqdb::build_hi_name_index
-
-// ----------------------------------------------------------------------
-
-const SeqdbEntrySeq* Seqdb::find_hi_name(std::string aHiName) const
-{
-    const auto it = mHiNameIndex.find(aHiName);
-    return it == mHiNameIndex.end() ? nullptr : &it->second;
-
-} // Seqdb::find_hi_name
 
 // ----------------------------------------------------------------------
 

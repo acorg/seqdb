@@ -531,7 +531,7 @@ namespace seqdb
         template <typename Value> std::deque<std::vector<SeqdbEntrySeq>> find_identical_sequences(Value value) const;
 
         void build_hi_name_index();
-        const SeqdbEntrySeq* find_hi_name(std::string aHiName) const;
+        const SeqdbEntrySeq* find_hi_name(std::string_view aHiName) const noexcept { if (const auto it = mHiNameIndex.find(aHiName); it != mHiNameIndex.end()) return &it->second; else return nullptr; }
 
           // Matches antigens of a chart against seqdb, returns number of antigens matched.
           // Fills aPerAntigen with EntrySeq for each antigen.
@@ -548,7 +548,7 @@ namespace seqdb
             }
 
      private:
-        using HiNameIndex = std::map<std::string, SeqdbEntrySeq>;
+        using HiNameIndex = std::map<std::string_view, SeqdbEntrySeq>;
 
         std::vector<SeqdbEntry> mEntries;
         const std::regex sReYearSpace = std::regex("/[12][0-9][0-9][0-9] ");
