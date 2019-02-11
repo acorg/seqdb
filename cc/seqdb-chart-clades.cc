@@ -39,18 +39,22 @@ int main(int argc, char* const argv[])
         const auto& seqdb = seqdb::get();
         auto chart = acmacs::chart::import_from_file(opt.chart, acmacs::chart::Verify::None, do_report_time(opt.report_time));
         auto antigens = chart->antigens();
+        auto layout = chart->number_of_projections() > 0 ? chart->projection(0)->layout() : std::shared_ptr<acmacs::Layout>{};
         const auto per_antigen = seqdb.match(*antigens, chart->info()->virus_type());
         acmacs::CsvWriter csv_writer;
         std::vector<size_t> indexes;
 
-        const auto write_name = [&csv_writer, csv = *opt.csv](const char* ag_sr, auto ag_no, auto antigen) {
+        const auto write_name = [&csv_writer, &layout, csv = *opt.csv](const char* ag_sr, auto ag_no, auto antigen) {
             if (csv) {
                 csv_writer << ag_sr << ag_no << antigen->full_name();
                 // csv_writer.field(acmacs::to_string(ag_no));
                 // csv_writer.field(antigen->full_name());
             }
-            else
+            else {
                 std::cout << ag_sr << ' ' << ag_no << ' ' << antigen->full_name();
+                if (layout && !layout->point_has_coordinates(ag_no))
+                    std::cout << " <not-shown-on-map>";
+            }
         };
         const auto write_clade = [&csv_writer, csv = *opt.csv](auto clade) {
             if (csv)
@@ -89,7 +93,7 @@ int main(int argc, char* const argv[])
                         new_row = true;
                     }
                 }
-                else if (!opt.no_unknown) {
+                else if (!opt.no_unknown && !opt.only_clade.has_value()) {
                     write_name("AG", ag_no, antigen);
                     new_row = true;
                 }
