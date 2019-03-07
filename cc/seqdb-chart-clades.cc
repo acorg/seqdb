@@ -42,7 +42,6 @@ int main(int argc, char* const argv[])
         auto layout = chart->number_of_projections() > 0 ? chart->projection(0)->layout() : std::shared_ptr<acmacs::Layout>{};
         const auto per_antigen = seqdb.match(*antigens, chart->info()->virus_type());
         acmacs::CsvWriter csv_writer;
-        std::vector<size_t> indexes;
 
         const auto write_name = [&csv_writer, &layout, csv = *opt.csv](const char* ag_sr, auto ag_no, auto antigen) {
             if (csv) {
@@ -70,15 +69,14 @@ int main(int argc, char* const argv[])
         };
 
         if (!opt.sera_only) {
+            std::vector<size_t> indexes;
             for (auto [ag_no, antigen] : acmacs::enumerate(*antigens)) {
                 bool new_row = false;
                 if (const auto& entry_seq = per_antigen[ag_no]; entry_seq) {
                     if (opt.only_clade.has_value()) {
                         if (entry_seq.seq().has_clade(opt.only_clade)) {
-                            if (opt.indexes_only) {
-                                indexes.push_back(ag_no);
-                            }
-                            else {
+                            indexes.push_back(ag_no);
+                            if (!opt.indexes_only) {
                                 write_name("AG", ag_no, antigen);
                                 new_row = true;
                             }
@@ -100,9 +98,12 @@ int main(int argc, char* const argv[])
                 if (new_row)
                     endl();
             }
+            if (!indexes.empty())
+                std::cout << "AG (" << indexes.size() << ") " << string::join(",", indexes.begin(), indexes.end()) << '\n';
         }
 
         if (!opt.antigens_only) {
+            std::vector<size_t> indexes;
             auto sera = chart->sera();
             chart->set_homologous(acmacs::chart::find_homologous::relaxed, sera);
             for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
@@ -119,10 +120,8 @@ int main(int argc, char* const argv[])
                 if (opt.only_clade.has_value()) {
                     std::string clade{*opt.only_clade};
                     if (clades.find(clade) != clades.end()) {
-                        if (opt.indexes_only) {
-                            indexes.push_back(sr_no);
-                        }
-                        else {
+                        indexes.push_back(sr_no);
+                        if (!opt.indexes_only) {
                             write_name("SR", sr_no, serum);
                             new_row = true;
                         }
@@ -139,11 +138,10 @@ int main(int argc, char* const argv[])
                 if (new_row)
                     endl();
             }
+            if (!indexes.empty())
+                std::cout << "SR (" << indexes.size() << ") " << string::join(",", indexes.begin(), indexes.end()) << '\n';
         }
 
-        if (!indexes.empty())
-            std::cout << string::join(",", indexes.begin(), indexes.end()) << '\n';
-        
         if (opt.csv)
             std::cout << static_cast<std::string_view>(csv_writer) << '\n';
         return 0;
