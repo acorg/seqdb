@@ -143,6 +143,7 @@ class SeqdbUpdater:
         ]
 
     def fix_name(self, name):
+        name = name.strip()
         for repl in self.sNameReplacements:
             name = repl[0].sub(repl[1], name)
         return name
