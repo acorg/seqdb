@@ -10,8 +10,6 @@
 #include "acmacs-chart-2/chart.hh"
 #include "seqdb/seqdb.hh"
 
-using namespace std::string_literals;
-
 // ----------------------------------------------------------------------
 
 using namespace acmacs::argv;

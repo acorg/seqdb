@@ -312,8 +312,12 @@ namespace seqdb
     {
      public:
         SeqdbEntrySeq() : mEntry(nullptr), mSeq(nullptr) {}
+        SeqdbEntrySeq(const SeqdbEntrySeq&) = default;
         SeqdbEntrySeq(SeqdbEntry& aEntry, SeqdbSeq& aSeq) : mEntry(&aEntry), mSeq(&aSeq) {}
         SeqdbEntrySeq(const SeqdbEntry& aEntry, const SeqdbSeq& aSeq) : mEntry(const_cast<SeqdbEntry*>(&aEntry)), mSeq(const_cast<SeqdbSeq*>(&aSeq)) {}
+
+        SeqdbEntrySeq& operator=(const SeqdbEntrySeq&) = default;
+        SeqdbEntrySeq& operator=(SeqdbEntrySeq&&) = default;
 
         void assign(SeqdbEntrySeq&& aEntrySeq) { mEntry = aEntrySeq.mEntry; mSeq = aEntrySeq.mSeq; }
         void assign(SeqdbEntry& aEntry, SeqdbSeq& aSeq) { mEntry = &aEntry; mSeq = &aSeq; }
@@ -356,9 +360,9 @@ namespace seqdb
     class SeqdbIteratorBase : public std::iterator<std::input_iterator_tag, SeqdbEntrySeq>
     {
      public:
-        SeqdbIteratorBase(const SeqdbIteratorBase& a) = default;
-        SeqdbIteratorBase(SeqdbIteratorBase&& a) = default;
-        virtual ~SeqdbIteratorBase() {}
+        SeqdbIteratorBase(const SeqdbIteratorBase&) = default;
+        SeqdbIteratorBase(SeqdbIteratorBase&&) = default;
+        virtual ~SeqdbIteratorBase() = default;
 
         virtual bool operator==(const SeqdbIteratorBase& aNother) const { return mEntryNo == aNother.mEntryNo && mSeqNo == aNother.mSeqNo; }
         virtual bool operator!=(const SeqdbIteratorBase& aNother) const { return ! operator==(aNother); }
@@ -419,9 +423,8 @@ namespace seqdb
     class SeqdbIterator : public SeqdbIteratorBase
     {
      public:
-        SeqdbIterator(const SeqdbIterator& a) = default;
-        SeqdbIterator(SeqdbIterator&& a) = default;
-        virtual ~SeqdbIterator() {}
+        SeqdbIterator(const SeqdbIterator&) = default;
+        SeqdbIterator(SeqdbIterator&&) = default;
 
         bool operator==(const SeqdbIterator& aNother) const { return &mSeqdb == &aNother.mSeqdb && SeqdbIteratorBase::operator==(aNother); }
 
@@ -443,9 +446,8 @@ namespace seqdb
     class ConstSeqdbIterator : public SeqdbIteratorBase
     {
      public:
-        ConstSeqdbIterator(const ConstSeqdbIterator& a) = default;
-        ConstSeqdbIterator(ConstSeqdbIterator&& a) = default;
-        virtual ~ConstSeqdbIterator() {}
+        ConstSeqdbIterator(const ConstSeqdbIterator&) = default;
+        ConstSeqdbIterator(ConstSeqdbIterator&&) = default;
 
         bool operator==(const ConstSeqdbIterator& aNother) const { return &mSeqdb == &aNother.mSeqdb && SeqdbIteratorBase::operator==(aNother); }
 
