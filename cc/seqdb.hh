@@ -367,16 +367,16 @@ namespace seqdb
         virtual bool operator==(const SeqdbIteratorBase& aNother) const { return mEntryNo == aNother.mEntryNo && mSeqNo == aNother.mSeqNo; }
         virtual bool operator!=(const SeqdbIteratorBase& aNother) const { return ! operator==(aNother); }
 
-        SeqdbIteratorBase& filter_lab(std::string aLab) { mLab = aLab; filter_added(); return *this; }
-        SeqdbIteratorBase& filter_labid(std::string aLab, std::string aId) { mLabId = std::make_pair(aLab, aId); filter_added(); return *this; }
-        SeqdbIteratorBase& filter_subtype(std::string aSubtype) { mSubtype = aSubtype; filter_added(); return *this; }
-        SeqdbIteratorBase& filter_lineage(std::string aLineage) { mLineage = aLineage; filter_added(); return *this; }
+        SeqdbIteratorBase& filter_lab(std::string_view aLab) { mLab = aLab; filter_added(); return *this; }
+        SeqdbIteratorBase& filter_labid(std::string_view aLab, std::string_view aId) { mLabId.first = aLab; mLabId.second =aId; filter_added(); return *this; }
+        SeqdbIteratorBase& filter_subtype(std::string_view aSubtype) { mSubtype = aSubtype; filter_added(); return *this; }
+        SeqdbIteratorBase& filter_lineage(std::string_view aLineage) { mLineage = aLineage; filter_added(); return *this; }
         SeqdbIteratorBase& filter_aligned(bool aAligned) { mAligned = aAligned; filter_added(); return *this; }
-        SeqdbIteratorBase& filter_gene(std::string aGene) { mGene = aGene; filter_added(); return *this; }
-        SeqdbIteratorBase& filter_clade(std::string aClade) { mClade = aClade; filter_added(); return *this; }
-        SeqdbIteratorBase& filter_date_range(std::string aBegin, std::string aEnd) { mBegin = aBegin; mEnd = aEnd; filter_added(); return *this; }
+        SeqdbIteratorBase& filter_gene(std::string_view aGene) { mGene = aGene; filter_added(); return *this; }
+        SeqdbIteratorBase& filter_clade(std::string_view aClade) { mClade = aClade; filter_added(); return *this; }
+        SeqdbIteratorBase& filter_date_range(std::string_view aBegin, std::string_view aEnd) { mBegin = aBegin; mEnd = aEnd; filter_added(); return *this; }
         SeqdbIteratorBase& filter_hi_name(bool aHasHiName) { mHasHiName = aHasHiName; filter_added(); return *this; }
-        SeqdbIteratorBase& filter_name_regex(std::string aNameRegex) { mNameMatcher.assign(aNameRegex, std::regex::icase); mNameMatcherSet = true; filter_added(); return *this; }
+        SeqdbIteratorBase& filter_name_regex(std::string_view aNameRegex) { mNameMatcher.assign(std::string{aNameRegex}, std::regex::icase); mNameMatcherSet = true; filter_added(); return *this; }
 
         virtual const Seqdb& seqdb() const = 0;
         virtual std::string make_name(std::string aPassageSeparator = " ") const = 0;

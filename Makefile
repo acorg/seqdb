@@ -21,7 +21,8 @@ TARGETS = \
   $(DIST)/seqdb-list-strains-in-the-clade \
   $(DIST)/seqdb-list-strains-having-aa-at \
   $(DIST)/seqdb-compare-sequences \
-  $(DIST)/seqdb-find-by-hi-name
+  $(DIST)/seqdb-find-by-hi-name \
+  $(DIST)/seqdb-amino-acid-stat
 
 SEQDB_SOURCES = seqdb.cc seqdb-export.cc seqdb-import.cc seqdb-hidb.cc amino-acids.cc clades.cc insertions_deletions.cc
 SEQDB_PY_SOURCES = $(SEQDB_SOURCES) py.cc
