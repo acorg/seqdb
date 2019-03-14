@@ -18,7 +18,7 @@ from acmacs_base.files import write_binary
 
 def main(args):
     global sHtml
-    source_entries = list(fasta_m.read_from_file(args.input[0]))
+    source_entries = [entry for inp in args.input for entry in fasta_m.read_from_file(inp)]
     master_entries = source_entries[:args.master_entries]
     test_entries = source_entries[args.master_entries:]
     if args.full_table:
@@ -112,7 +112,7 @@ sHtml = """<!DOCTYPE html>
 try:
     import argparse
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('input', nargs=1, help='Fasta file to process.')
+    parser.add_argument('input', nargs='*', help='Fasta file to process.')
     parser.add_argument('output', nargs=1, help='Output file.')
     parser.add_argument('-m', '--master', type=int, dest='master_entries', default=1, help='Number of master entries to compare with.')
     parser.add_argument('-f', '--full-table', action='store_true', dest='full_table', default=False, help='Include full table.')
