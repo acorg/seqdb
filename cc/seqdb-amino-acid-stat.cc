@@ -87,7 +87,7 @@ amino_acids_data_t collect(const seqdb::Seqdb& seqdb, std::string_view date_rang
         max_pos = std::max(max_pos, seq.size());
         ++num_sequences;
     }
-    std::cout << "sequences: " << num_sequences << " max-pos: " << max_pos << '\n';
+    std::cerr << date_range << " sequences: " << num_sequences << " max-pos: " << max_pos << '\n';
     amino_acids_data.resize(max_pos);
 
     std::for_each(std::begin(amino_acids_data), std::end(amino_acids_data),
