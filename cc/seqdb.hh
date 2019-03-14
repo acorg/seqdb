@@ -373,6 +373,7 @@ namespace seqdb
         SeqdbIteratorBase& filter_lineage(std::string aLineage) { mLineage = aLineage; filter_added(); return *this; }
         SeqdbIteratorBase& filter_aligned(bool aAligned) { mAligned = aAligned; filter_added(); return *this; }
         SeqdbIteratorBase& filter_gene(std::string aGene) { mGene = aGene; filter_added(); return *this; }
+        SeqdbIteratorBase& filter_clade(std::string aClade) { mClade = aClade; filter_added(); return *this; }
         SeqdbIteratorBase& filter_date_range(std::string aBegin, std::string aEnd) { mBegin = aBegin; mEnd = aEnd; filter_added(); return *this; }
         SeqdbIteratorBase& filter_hi_name(bool aHasHiName) { mHasHiName = aHasHiName; filter_added(); return *this; }
         SeqdbIteratorBase& filter_name_regex(std::string aNameRegex) { mNameMatcher.assign(aNameRegex, std::regex::icase); mNameMatcherSet = true; filter_added(); return *this; }
@@ -406,6 +407,7 @@ namespace seqdb
         std::string mLineage;
         bool mAligned;
         std::string mGene;
+        std::string mClade;
         std::string mBegin;
         std::string mEnd;
         bool mHasHiName;
@@ -637,6 +639,7 @@ namespace seqdb
                 && (!mHasHiName || !seq.mHiNames.empty())
                 && (mLab.empty() || seq.has_lab(mLab))
                 && (mLabId.first.empty() || seq.match_labid(mLabId.first, mLabId.second))
+                && (mClade.empty() || seq.has_clade(mClade))
                 && (!mNameMatcherSet || std::regex_search(make_name(), mNameMatcher))
                 ;
 

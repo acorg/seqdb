@@ -8,12 +8,12 @@ using namespace seqdb;
 
 struct PySeqdbEntrySeqIterator
 {
-    inline PySeqdbEntrySeqIterator(Seqdb& aSeqdb, py::object aRef)
+    PySeqdbEntrySeqIterator(Seqdb& aSeqdb, py::object aRef)
         : mRef(aRef), mCurrent(aSeqdb.begin()), mEnd(aSeqdb.end())
         {
         }
 
-    inline SeqdbEntrySeq next()
+    SeqdbEntrySeq next()
         {
             if (mCurrent == mEnd)
                 throw py::stop_iteration();
@@ -22,15 +22,16 @@ struct PySeqdbEntrySeqIterator
             return r;
         }
 
-    inline PySeqdbEntrySeqIterator& filter_lab(std::string aLab) { mCurrent.filter_lab(aLab); return *this; }
-    inline PySeqdbEntrySeqIterator& filter_labid(std::string aLab, std::string aId) { mCurrent.filter_labid(aLab, aId); return *this; }
-    inline PySeqdbEntrySeqIterator& filter_subtype(std::string aSubtype) { mCurrent.filter_subtype(aSubtype); return *this; }
-    inline PySeqdbEntrySeqIterator& filter_lineage(std::string aLineage) { mCurrent.filter_lineage(aLineage); return *this; }
-    inline PySeqdbEntrySeqIterator& filter_aligned(bool aAligned) { mCurrent.filter_aligned(aAligned); return *this; }
-    inline PySeqdbEntrySeqIterator& filter_gene(std::string aGene) { mCurrent.filter_gene(aGene); return *this; }
-    inline PySeqdbEntrySeqIterator& filter_date_range(std::string aBegin, std::string aEnd) { mCurrent.filter_date_range(aBegin, aEnd); return *this; }
-    inline PySeqdbEntrySeqIterator& filter_hi_name(bool aHasHiName) { mCurrent.filter_hi_name(aHasHiName); return *this; }
-    inline PySeqdbEntrySeqIterator& filter_name_regex(std::string aNameRegex) { mCurrent.filter_name_regex(aNameRegex); return *this; }
+    PySeqdbEntrySeqIterator& filter_lab(std::string aLab) { mCurrent.filter_lab(aLab); return *this; }
+    PySeqdbEntrySeqIterator& filter_labid(std::string aLab, std::string aId) { mCurrent.filter_labid(aLab, aId); return *this; }
+    PySeqdbEntrySeqIterator& filter_subtype(std::string aSubtype) { mCurrent.filter_subtype(aSubtype); return *this; }
+    PySeqdbEntrySeqIterator& filter_lineage(std::string aLineage) { mCurrent.filter_lineage(aLineage); return *this; }
+    PySeqdbEntrySeqIterator& filter_aligned(bool aAligned) { mCurrent.filter_aligned(aAligned); return *this; }
+    PySeqdbEntrySeqIterator& filter_gene(std::string aGene) { mCurrent.filter_gene(aGene); return *this; }
+    PySeqdbEntrySeqIterator& filter_date_range(std::string aBegin, std::string aEnd) { mCurrent.filter_date_range(aBegin, aEnd); return *this; }
+    PySeqdbEntrySeqIterator& filter_hi_name(bool aHasHiName) { mCurrent.filter_hi_name(aHasHiName); return *this; }
+    PySeqdbEntrySeqIterator& filter_name_regex(std::string aNameRegex) { mCurrent.filter_name_regex(aNameRegex); return *this; }
+    PySeqdbEntrySeqIterator& filter_clade(std::string aClade) { mCurrent.filter_clade(aClade); return *this; }
 
     py::object mRef; // keep a reference
     SeqdbIterator mCurrent;
@@ -42,12 +43,12 @@ struct PySeqdbEntrySeqIterator
 
 struct PySeqdbEntryIterator
 {
-    inline PySeqdbEntryIterator(Seqdb& aSeqdb, py::object aRef)
+    PySeqdbEntryIterator(Seqdb& aSeqdb, py::object aRef)
         : mRef(aRef), mCurrent(aSeqdb.begin_entry()), mEnd(aSeqdb.end_entry())
         {
         }
 
-    inline auto& next()
+    auto& next()
         {
             if (mCurrent == mEnd)
                 throw py::stop_iteration();
@@ -66,12 +67,12 @@ struct PySeqdbEntryIterator
 
 struct PySeqdbSeqIterator
 {
-    inline PySeqdbSeqIterator(SeqdbEntry& aSeqdbEntry)
+    PySeqdbSeqIterator(SeqdbEntry& aSeqdbEntry)
         : mCurrent(aSeqdbEntry.begin_seq()), mEnd(aSeqdbEntry.end_seq())
         {
         }
 
-    inline auto& next()
+    auto& next()
         {
             if (mCurrent == mEnd)
                 throw py::stop_iteration();
@@ -147,6 +148,7 @@ PYBIND11_MODULE(seqdb_backend, m)
             .def("filter_lineage", &PySeqdbEntrySeqIterator::filter_lineage)
             .def("filter_aligned", &PySeqdbEntrySeqIterator::filter_aligned)
             .def("filter_gene", &PySeqdbEntrySeqIterator::filter_gene)
+            .def("filter_clade", &PySeqdbEntrySeqIterator::filter_clade)
             .def("filter_date_range", &PySeqdbEntrySeqIterator::filter_date_range)
             .def("filter_hi_name", &PySeqdbEntrySeqIterator::filter_hi_name)
             .def("filter_name_regex", &PySeqdbEntrySeqIterator::filter_name_regex)
