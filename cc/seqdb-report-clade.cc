@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "acmacs-base/argv.hh"
+#include "acmacs-base/normalize.hh"
 #include "seqdb.hh"
 
 // ----------------------------------------------------------------------
@@ -31,11 +32,7 @@ int main(int argc, char* const argv[])
     try {
         Options opt(argc, argv);
         seqdb::setup_dbs(opt.db_dir, seqdb::report::no);
-        std::string flu{*opt.flu};
-        if (flu == "h1" || flu == "H1")
-            flu = "A(H1N1)";
-        else if (flu == "h3" || flu == "H3")
-            flu = "A(H3N2)";
+        std::string flu{acmacs::normalize_virus_type(opt.flu)};
         if (*opt.clade == "all") {
             for (const auto entry_seq : seqdb::get()) {
                 if ((opt.lab->empty() || entry_seq.seq().has_lab(*opt.lab)) && (flu.empty() || entry_seq.entry().virus_type() == flu))
