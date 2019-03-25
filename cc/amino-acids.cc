@@ -131,6 +131,7 @@ static AlignEntry ALIGN_RAW_DATA[] = {
     {"A(H3N2)", "", "HA", Shift(),   std::regex("MKTIIVLSCFFCLAFS"),                        40,  true, "h3-MKT-12"},
     {"A(H3N2)", "", "HA", Shift(),   std::regex("MKTLIALSYIFCLVLG"),                        40,  true, "h3-MKT-13"},
     {"A(H3N2)", "", "HA", Shift(),   std::regex("MKTTTILILLTHWVHS"),                        40,  true, "h3-MKT-14"},
+    {"A(H3N2)", "", "HA",  0,        std::regex("QKIPGNDNSTATLCLGHHAVPNGTIVKTI"),          100, false, "h3-QKIP"},
     {"A(H3N2)", "", "HA", 10,        std::regex("ATLCLGHHAV"),                             100, false, "h3-ATL"},
     {"A(H3N2)", "", "HA", 36,        std::regex("TNATELVQ"),                               100, false, "h3-TNA"},
     {"A(H3N2)", "", "HA", 87,        std::regex("VERSKAYSN"),                              100, false, "h3-VER"},

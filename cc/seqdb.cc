@@ -496,7 +496,7 @@ std::string Seqdb::add_sequence(std::string aName, std::string aVirusType, std::
 {
     Messages messages;
     const std::string name = virus_name::normalize(aName);
-      // std::cerr << "DEBUG: Seqdb::add_sequence: " << name << ' ' << aPassage << '\n';
+    // std::cerr << "DEBUG: Seqdb::add_sequence: " << name << ' ' << aPassage << '\n';
     SeqdbEntry entry(name, aVirusType, aLineage);
 
     SeqdbSeq new_seq(aSequence, aGene);
