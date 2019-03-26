@@ -929,6 +929,21 @@ std::vector<SeqdbEntrySeq> Seqdb::match(const acmacs::chart::Antigens& aAntigens
 
 clades_t Seqdb::clades_for_name(std::string name, Seqdb::clades_for_name_inclusive inclusive) const
 {
+    clades_t result;
+    if (const auto* entry = find_by_name(name); entry) {
+        bool clades_found = false;
+        for (const auto& seq : entry->seqs()) {
+            if (inclusive == clades_for_name_inclusive::yes || !clades_found) {
+                for (const auto& clade : seq.clades())
+                    result.push_back(clade);
+            }
+            else {
+                result.erase(std::remove_if(std::begin(result), std::end(result), [&seq](const auto& clade) { return !seq.has_clade(clade); }), std::end(result));
+            }
+            clades_found |= !seq.clades().empty();
+        }
+    }
+    return result;
 
 } // Seqdb::clades_for_name
 

@@ -72,29 +72,48 @@ int main(int argc, char* const argv[])
             std::vector<size_t> indexes;
             for (auto [ag_no, antigen] : acmacs::enumerate(*antigens)) {
                 bool new_row = false;
-                if (const auto& entry_seq = per_antigen[ag_no]; entry_seq) {
-                    if (opt.only_clade.has_value()) {
-                        if (entry_seq.seq().has_clade(opt.only_clade)) {
-                            indexes.push_back(ag_no);
-                            if (!opt.indexes_only) {
-                                write_name("AG", ag_no, antigen);
-                                new_row = true;
-                            }
+                const auto clades = seqdb.clades_for_name(antigen->name());
+                if (opt.only_clade.has_value()) {
+                    if (std::find(std::begin(clades), std::end(clades), *opt.only_clade) != std::end(clades)) {
+                        indexes.push_back(ag_no);
+                        if (!opt.indexes_only) {
+                            write_name("AG", ag_no, antigen);
+                            new_row = true;
                         }
-                    }
-                    else {
-                        write_name("AG", ag_no, antigen);
-                        for (const auto& clade : entry_seq.seq().clades()) {
-                            if (opt.gly || (clade != "GLY" && clade != "NO-GLY"))
-                                write_clade(clade);
-                        }
-                        new_row = true;
                     }
                 }
-                else if (!opt.no_unknown && !opt.only_clade.has_value()) {
+                else {
                     write_name("AG", ag_no, antigen);
+                    for (const auto& clade : clades) {
+                        if (opt.gly || (clade != "GLY" && clade != "NO-GLY"))
+                            write_clade(clade);
+                    }
                     new_row = true;
                 }
+
+                // if (const auto& entry_seq = per_antigen[ag_no]; entry_seq) {
+                //     if (opt.only_clade.has_value()) {
+                //         if (entry_seq.seq().has_clade(opt.only_clade)) {
+                //             indexes.push_back(ag_no);
+                //             if (!opt.indexes_only) {
+                //                 write_name("AG", ag_no, antigen);
+                //                 new_row = true;
+                //             }
+                //         }
+                //     }
+                //     else {
+                //         write_name("AG", ag_no, antigen);
+                //         for (const auto& clade : entry_seq.seq().clades()) {
+                //             if (opt.gly || (clade != "GLY" && clade != "NO-GLY"))
+                //                 write_clade(clade);
+                //         }
+                //         new_row = true;
+                //     }
+                // }
+                // else if (!opt.no_unknown && !opt.only_clade.has_value()) {
+                //     write_name("AG", ag_no, antigen);
+                //     new_row = true;
+                // }
                 if (new_row)
                     endl();
             }
