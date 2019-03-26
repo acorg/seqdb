@@ -241,7 +241,7 @@ AlignAminoAcidsData SeqdbSeq::align(bool aForce, Messages& aMessages)
 
 // ----------------------------------------------------------------------
 
-const std::vector<std::string>& SeqdbSeq::update_clades(std::string aVirusType, std::string aLineage, std::string aName)
+const clades_t& SeqdbSeq::update_clades(std::string aVirusType, std::string aLineage, std::string aName)
 {
     if (aligned()) {
         if (aVirusType == "B") {
@@ -924,6 +924,13 @@ std::vector<SeqdbEntrySeq> Seqdb::match(const acmacs::chart::Antigens& aAntigens
     return per_antigen;
 
 } // Seqdb::match
+
+// ----------------------------------------------------------------------
+
+clades_t Seqdb::clades_for_name(std::string name, Seqdb::clades_for_name_inclusive inclusive) const
+{
+
+} // Seqdb::clades_for_name
 
 // ----------------------------------------------------------------------
 

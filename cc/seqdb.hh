@@ -32,6 +32,9 @@ namespace seqdb
 
     class import_error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
+    using clade_t = std::string;
+    using clades_t = std::vector<clade_t>;
+
 // ----------------------------------------------------------------------
 
     class SequenceNotAligned : public std::runtime_error
@@ -95,9 +98,9 @@ namespace seqdb
         void update_gene(std::string aGene, Messages& aMessages, bool replace_ha = false);
         void add_reassortant(std::string aReassortant);
         void add_lab_id(std::string aLab, std::string aLabId);
-        const std::vector<std::string>& update_clades(std::string aVirusType, std::string aLineage, std::string aName);
-        const std::vector<std::string>& clades() const { return mClades; }
-        std::vector<std::string>& clades() { return mClades; }
+        const clades_t& update_clades(std::string aVirusType, std::string aLineage, std::string aName);
+        const clades_t& clades() const { return mClades; }
+        clades_t& clades() { return mClades; }
         bool has_clade(std::string_view aClade) const { return std::find(std::begin(mClades), std::end(mClades), aClade) != std::end(mClades); }
 
         bool is_short() const { return mAminoAcids.empty() ? mNucleotides.size() < (MINIMUM_SEQUENCE_AA_LENGTH * 3) : mAminoAcids.size() < MINIMUM_SEQUENCE_AA_LENGTH; }
@@ -108,7 +111,7 @@ namespace seqdb
         bool has_lab(std::string_view aLab) const { return mLabIds.find(std::string(aLab)) != mLabIds.end(); }
         std::string lab() const { return mLabIds.empty() ? std::string{} : mLabIds.begin()->first; }
         std::string lab_id() const { return mLabIds.empty() ? std::string{} : (mLabIds.begin()->second.empty() ? std::string{} : mLabIds.begin()->second[0]); }
-        const std::vector<std::string> cdcids() const { auto i = mLabIds.find("CDC"); return i == mLabIds.end() ? std::vector<std::string>{} : i->second; }
+        const clades_t cdcids() const { auto i = mLabIds.find("CDC"); return i == mLabIds.end() ? clades_t{} : i->second; }
         const std::vector<std::string> lab_ids_for_lab(std::string lab) const { auto i = mLabIds.find(lab); return i == mLabIds.end() ? std::vector<std::string>{} : i->second; }
         const std::vector<std::string> lab_ids() const { std::vector<std::string> r; for (const auto& lid: mLabIds) { for (const auto& id: lid.second) { r.emplace_back(lid.first + "#" + id); } } return r; }
         const LabIds& lab_ids_raw() const { return mLabIds; }
@@ -170,7 +173,7 @@ namespace seqdb
         std::string mGene;
         std::vector<std::string> mHiNames;
         std::vector<std::string> mReassortant;
-        std::vector<std::string> mClades;
+        clades_t mClades;
 
         static inline std::string shift(std::string aSource, int aShift, char aFill)
             {
@@ -550,6 +553,9 @@ namespace seqdb
                 aa_at_positions_for_antigens(aAntigens, aPositions, result, aReport);
                 return result;
             }
+
+        enum class clades_for_name_inclusive { no /* only common clades for matching sequences */, yes /* all possible clades */ };
+        clades_t clades_for_name(std::string name, clades_for_name_inclusive inclusive = clades_for_name_inclusive::no) const;
 
      private:
         using HiNameIndex = std::map<std::string_view, SeqdbEntrySeq>;
