@@ -39,8 +39,8 @@ int main(int argc, char* const argv[])
         const auto& seqdb = seqdb::get();
         auto chart = acmacs::chart::import_from_file(opt.chart, acmacs::chart::Verify::None, do_report_time(opt.report_time));
         auto antigens = chart->antigens();
+        auto sera = chart->sera();
         auto layout = chart->number_of_projections() > 0 ? chart->projection(0)->layout() : std::shared_ptr<acmacs::Layout>{};
-        const auto per_antigen = seqdb.match(*antigens, chart->info()->virus_type());
         acmacs::CsvWriter csv_writer;
 
         const auto write_name = [&csv_writer, &layout, csv = *opt.csv](const char* ag_sr, auto ag_no, auto antigen) {
@@ -67,99 +67,39 @@ int main(int argc, char* const argv[])
             else
                 std::cout << '\n';
         };
-
-        if (!opt.sera_only) {
+        const auto show = [&](const auto& ag_sr, const char* prefix) {
             std::vector<size_t> indexes;
-            for (auto [ag_no, antigen] : acmacs::enumerate(*antigens)) {
+            for (auto [ag_no, antigen] : acmacs::enumerate(ag_sr)) {
                 bool new_row = false;
                 const auto clades = seqdb.clades_for_name(antigen->name());
                 if (opt.only_clade.has_value()) {
                     if (std::find(std::begin(clades), std::end(clades), *opt.only_clade) != std::end(clades)) {
                         indexes.push_back(ag_no);
                         if (!opt.indexes_only) {
-                            write_name("AG", ag_no, antigen);
+                            write_name(prefix, ag_no, antigen);
                             new_row = true;
                         }
                     }
                 }
                 else {
-                    write_name("AG", ag_no, antigen);
+                    write_name(prefix, ag_no, antigen);
                     for (const auto& clade : clades) {
                         if (opt.gly || (clade != "GLY" && clade != "NO-GLY"))
                             write_clade(clade);
                     }
                     new_row = true;
                 }
-
-                // if (const auto& entry_seq = per_antigen[ag_no]; entry_seq) {
-                //     if (opt.only_clade.has_value()) {
-                //         if (entry_seq.seq().has_clade(opt.only_clade)) {
-                //             indexes.push_back(ag_no);
-                //             if (!opt.indexes_only) {
-                //                 write_name("AG", ag_no, antigen);
-                //                 new_row = true;
-                //             }
-                //         }
-                //     }
-                //     else {
-                //         write_name("AG", ag_no, antigen);
-                //         for (const auto& clade : entry_seq.seq().clades()) {
-                //             if (opt.gly || (clade != "GLY" && clade != "NO-GLY"))
-                //                 write_clade(clade);
-                //         }
-                //         new_row = true;
-                //     }
-                // }
-                // else if (!opt.no_unknown && !opt.only_clade.has_value()) {
-                //     write_name("AG", ag_no, antigen);
-                //     new_row = true;
-                // }
                 if (new_row)
                     endl();
             }
             if (!indexes.empty())
-                std::cout << "AG (" << indexes.size() << ") " << string::join(",", indexes.begin(), indexes.end()) << '\n';
-        }
+                std::cout << prefix << " (" << indexes.size() << ") " << string::join(",", indexes.begin(), indexes.end()) << '\n';
+        };
 
-        if (!opt.antigens_only) {
-            std::vector<size_t> indexes;
-            auto sera = chart->sera();
-            chart->set_homologous(acmacs::chart::find_homologous::relaxed, sera);
-            for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
-                std::set<std::string> clades;
-                for (auto ag_no : serum->homologous_antigens()) {
-                    if (const auto& entry_seq = per_antigen[ag_no]; entry_seq) {
-                        for (const auto& clade : entry_seq.seq().clades()) {
-                            if (opt.gly || (clade != "GLY" && clade != "NO-GLY"))
-                                clades.insert(clade);
-                        }
-                    }
-                }
-                bool new_row = false;
-                if (opt.only_clade.has_value()) {
-                    std::string clade{*opt.only_clade};
-                    if (clades.find(clade) != clades.end()) {
-                        indexes.push_back(sr_no);
-                        if (!opt.indexes_only) {
-                            write_name("SR", sr_no, serum);
-                            new_row = true;
-                        }
-                    }
-                }
-                else {
-                    if (!opt.no_unknown || !clades.empty()) {
-                        write_name("SR", sr_no, serum);
-                        for (auto clade : clades)
-                            write_clade(clade);
-                        new_row = true;
-                    }
-                }
-                if (new_row)
-                    endl();
-            }
-            if (!indexes.empty())
-                std::cout << "SR (" << indexes.size() << ") " << string::join(",", indexes.begin(), indexes.end()) << '\n';
-        }
+        if (!opt.sera_only)
+            show(*antigens, "AG");
+        if (!opt.antigens_only)
+            show(*sera, "SR");
 
         if (opt.csv)
             std::cout << static_cast<std::string_view>(csv_writer) << '\n';
