@@ -230,7 +230,7 @@ AlignAminoAcidsData SeqdbSeq::align(bool aForce, Messages& aMessages)
               update_gene(align_data.gene, aMessages, true);
           }
           else {
-              aMessages.warning() << "AA not aligned" /* << mAminoAcids */ << '\n';
+              aMessages.warning() << " AA not aligned\n"; // << mAminoAcids << '\n';
           }
           break;
     }

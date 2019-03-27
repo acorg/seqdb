@@ -1,7 +1,7 @@
 #pragma once
 
+#include <iostream>
 #include <string>
-#include <set>
 
 #include "seqdb/messages.hh"
 #include "seqdb/sequence-shift.hh"
@@ -70,9 +70,11 @@ namespace seqdb
 
     inline bool is_nucleotides(std::string aSequence)
     {
-        constexpr char sNucleotideElements[] = "-ABCDGHKMNRSTUVWY"; // https://en.wikipedia.org/wiki/Nucleic_acid_notation
-        const std::set<char> elements(aSequence.begin(), aSequence.end());
-        return std::includes(std::begin(sNucleotideElements), std::end(sNucleotideElements), elements.begin(), elements.end());
+        constexpr char sNucleotideElements[] = "-ABCDGHKMNRSTUVWXY"; // https://en.wikipedia.org/wiki/Nucleic_acid_notation + X (gisaid nuc seqs contain X)
+        std::string sorted_seq = aSequence;
+        std::sort(std::begin(sorted_seq), std::end(sorted_seq));
+        const auto last = std::unique(std::begin(sorted_seq), std::end(sorted_seq));
+        return std::includes(std::begin(sNucleotideElements), std::end(sNucleotideElements), begin(sorted_seq), last);
     }
 
 // ----------------------------------------------------------------------
