@@ -16,6 +16,7 @@ namespace seqdb
     constexpr size_t NORMAL_SEQUENCE_AA_LENGTH_B = 570;
 
     constexpr size_t MINIMUM_SEQUENCE_AA_LENGTH = 400; // throw away everything shorter
+    constexpr size_t MINIMUM_SEQUENCE_NUC_LENGTH = MINIMUM_SEQUENCE_AA_LENGTH * 3; // throw away everything shorter
 
 // ----------------------------------------------------------------------
 
@@ -54,7 +55,7 @@ namespace seqdb
 
 // ----------------------------------------------------------------------
 
-    AlignAminoAcidsData translate_and_align(std::string aNucleotides, Messages& aMessages);
+    AlignAminoAcidsData translate_and_align(std::string aNucleotides, Messages& aMessages, std::string name);
 
     std::string translate_nucleotides_to_amino_acids(std::string aNucleotides, size_t aOffset, Messages& aMessages);
     AlignData align(std::string_view aAminoAcids, Messages& aMessages);

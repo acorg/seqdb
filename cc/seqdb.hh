@@ -88,7 +88,7 @@ namespace seqdb
         //     {
         //     }
 
-        AlignAminoAcidsData align(bool aForce, Messages& aMessages);
+        AlignAminoAcidsData align(bool aForce, Messages& aMessages, std::string name);
 
           // returns if aNucleotides matches mNucleotides or aAminoAcids matches mAminoAcids
         bool match_update(const SeqdbSeq& aNewSeq);
@@ -231,24 +231,32 @@ namespace seqdb
                 return (aBegin.empty() || date >= aBegin) && (aEnd.empty() || date < aEnd);
             }
 
-        void remove_short_sequences()
+        bool remove_short_sequences()
             {
-                auto short_seq = [&](auto& seq) {
-                    if (seq.is_short())
-                        std::cout << "INFO:     removing too short sequence: " << mName << '\n';
-                    return seq.is_short();
-                };
-                mSeq.erase(std::remove_if(mSeq.begin(), mSeq.end(), short_seq), mSeq.end());
+                // auto short_seq = [&](auto& seq) {
+                //     // if (seq.is_short())
+                //     //     std::cout << "INFO:     removing too short sequence: " << mName << '\n';
+                //     return seq.is_short();
+                // };
+                const auto last = std::remove_if(mSeq.begin(), mSeq.end(), [](const auto& seq) { return seq.is_short(); });
+                const bool removed = last != mSeq.end();
+                mSeq.erase(last, mSeq.end());
+                return removed;
             }
 
-        void remove_not_translated_sequences()
+        bool remove_not_translated_sequences()
             {
-                auto not_translated = [&](auto& seq) {
-                    // if (!seq.translated())
-                    //     std::cerr << "WARNING: removing not translated sequence in " << mName << '\n';
-                    return !seq.translated();
-                };
-                mSeq.erase(std::remove_if(mSeq.begin(), mSeq.end(), not_translated), mSeq.end());
+                // auto not_translated = [&](auto& seq) {
+                //     // if (!seq.translated())
+                //     //     std::cerr << "WARNING: removing not translated sequence in " << mName << '\n';
+                //     return !seq.translated();
+                // };
+                // mSeq.erase(std::remove_if(mSeq.begin(), mSeq.end(), not_translated), mSeq.end());
+
+                const auto last = std::remove_if(mSeq.begin(), mSeq.end(), [](const auto& seq) { return !seq.translated(); });
+                const bool removed = last != mSeq.end();
+                mSeq.erase(last, mSeq.end());
+                return removed;
             }
 
         std::vector<std::string> cdcids() const

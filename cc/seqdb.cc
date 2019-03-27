@@ -192,7 +192,7 @@ void SeqdbSeq::add_lab_id(std::string aLab, std::string aLabId)
 
 // ----------------------------------------------------------------------
 
-AlignAminoAcidsData SeqdbSeq::align(bool aForce, Messages& aMessages)
+AlignAminoAcidsData SeqdbSeq::align(bool aForce, Messages& aMessages, std::string name)
 {
     AlignAminoAcidsData align_data;
 
@@ -208,7 +208,7 @@ AlignAminoAcidsData SeqdbSeq::align(bool aForce, Messages& aMessages)
           break;
       case align_nucleotides:
           mAminoAcidsShift.reset();
-          align_data = translate_and_align(mNucleotides, aMessages);
+          align_data = translate_and_align(mNucleotides, aMessages, name);
           if (!align_data.amino_acids.empty())
               mAminoAcids = align_data.amino_acids;
           if (!align_data.shift.alignment_failed()) {
@@ -500,7 +500,7 @@ std::string Seqdb::add_sequence(std::string aName, std::string aVirusType, std::
     SeqdbEntry entry(name, aVirusType, aLineage);
 
     SeqdbSeq new_seq(aSequence, aGene);
-    const auto align_data = new_seq.align(false, messages);
+    const auto align_data = new_seq.align(false, messages, name);
       // std::cerr << "DEBUG: Seqdb::add_sequence: " << name << ' ' << aPassage << " nucs:" << new_seq.nucleotides_size() << " aa:" << new_seq.amino_acids_size() << '\n';
     if (!align_data.shift.aligned() && (new_seq.amino_acids_size() > MINIMUM_SEQUENCE_AA_LENGTH || new_seq.nucleotides_size() > (MINIMUM_SEQUENCE_AA_LENGTH * 3)))
         not_aligned_.emplace_back(aVirusType, name + ' ' + aPassage, new_seq.nucleotides_raw(), new_seq.amino_acids_raw());
@@ -553,7 +553,7 @@ void Seqdb::report_not_aligned_after_adding() const
         }
     }
 
-} // Seqdb::report_not_aligned
+} // Seqdb::report_not_aligned_after_adding
 
 // ----------------------------------------------------------------------
 
@@ -573,10 +573,18 @@ std::string Seqdb::cleanup(bool remove_short_sequences)
 {
     Messages messages;
     if (remove_short_sequences) {
-        std::for_each(mEntries.begin(), mEntries.end(), std::mem_fn(&SeqdbEntry::remove_short_sequences));
+        size_t num_short_sequences = 0;
+        std::for_each(mEntries.begin(), mEntries.end(), [&num_short_sequences](auto& entry) { if (entry.remove_short_sequences()) ++num_short_sequences; });
+        if (num_short_sequences)
+            std::cerr << "INFO: too short sequences removed: " << num_short_sequences << '\n';
     }
 
-    std::for_each(mEntries.begin(), mEntries.end(), std::mem_fn(&SeqdbEntry::remove_not_translated_sequences));
+    {
+        size_t num_not_translated_sequences = 0;
+        std::for_each(mEntries.begin(), mEntries.end(), [&num_not_translated_sequences](auto& entry) { if (entry.remove_not_translated_sequences()) ++num_not_translated_sequences; });
+        if (num_not_translated_sequences)
+            std::cerr << "INFO: not translated sequences removed: " << num_not_translated_sequences << '\n';
+    }
 
       // Note empty passages must not be removed, this is just for testing purposes
       // std::for_each(mEntries.begin(), mEntries.end(), std::mem_fn(&SeqdbEntry::remove_empty_passages));

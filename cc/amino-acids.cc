@@ -1,9 +1,12 @@
 #include <iostream>
 #include <map>
+#include <array>
 #include <regex>
 #include <numeric>
+#include <algorithm>
 
 #include "acmacs-base/string-split.hh"
+#include "acmacs-base/range.hh"
 #include "acmacs-base/stream.hh"
 #include "seqdb/amino-acids.hh"
 
@@ -17,16 +20,23 @@ using namespace seqdb;
 // (0, 1, 2) and not stoppoing at stop codons, then try to align all
 // of them. Most probably just one offset leads to finding correct
 // align shift.
-AlignAminoAcidsData seqdb::translate_and_align(std::string aNucleotides, Messages& aMessages)
+AlignAminoAcidsData seqdb::translate_and_align(std::string aNucleotides, Messages& aMessages, std::string name)
 {
-    std::vector<AlignAminoAcidsData> r;
     AlignAminoAcidsData not_aligned;
-    for (int offset = 0; offset < 3; ++offset) {
-        const auto amino_acids = translate_nucleotides_to_amino_acids(aNucleotides, static_cast<size_t>(offset), aMessages);
-        // std::cerr << offset << " " << amino_acids << std::endl;
-        const auto aa_parts = acmacs::string::split(amino_acids, "*");
+    if (aNucleotides.size() < MINIMUM_SEQUENCE_NUC_LENGTH) {
+        return not_aligned; // too short
+    }
+
+    std::array<std::string, 3> translated;
+    std::transform(acmacs::index_iterator(0UL), acmacs::index_iterator(translated.size()), std::begin(translated),
+                   [&aNucleotides, &aMessages](auto offset) { return translate_nucleotides_to_amino_acids(aNucleotides, offset, aMessages); });
+    std::vector<AlignAminoAcidsData> r;
+    size_t longest_part = 0;
+    for (auto offset : acmacs::range(translated.size())) {
+        const auto aa_parts = acmacs::string::split(translated[offset], "*");
         size_t prefix_len = 0;
-        for (const auto& part: aa_parts) {
+        for (const auto& part : aa_parts) {
+            longest_part = std::max(longest_part, part.size());
             if (part.size() >= MINIMUM_SEQUENCE_AA_LENGTH) {
                 // std::cerr << "part is big enough " << part.size() << std::endl;
                 Messages messages;
@@ -36,14 +46,14 @@ AlignAminoAcidsData seqdb::translate_and_align(std::string aNucleotides, Message
                         align_data.shift -= prefix_len;
                     }
                     // std::cerr << "good " << align_data << std::endl;
-                    r.push_back(AlignAminoAcidsData(align_data, amino_acids, offset));
+                    r.push_back(AlignAminoAcidsData(align_data, translated[offset], static_cast<int>(offset)));
                     aMessages.add(messages);
                     break;
                 }
                 else {
                     if (not_aligned.amino_acids.size() < part.size()) {
                         not_aligned.amino_acids = part;
-                        not_aligned.offset = offset;
+                        not_aligned.offset = static_cast<int>(offset);
                     }
                 }
             }
@@ -52,6 +62,11 @@ AlignAminoAcidsData seqdb::translate_and_align(std::string aNucleotides, Message
     }
     // std::cerr << "translate_and_align " << r.size() << std::endl;
     if (r.empty()) {
+        if (longest_part >= MINIMUM_SEQUENCE_AA_LENGTH) {
+            std::cerr << "WARNING: not aligned: " << name << " longest part: " << longest_part << '\n';
+            for (const auto& aa : translated)
+                std::cerr << "    " << aa << '\n';
+        }
         return not_aligned;
     }
     if (r.size() > 1)
@@ -125,13 +140,14 @@ inline std::ostream& operator<<(std::ostream& out, const AlignEntry& data)
 
 // http://sbkb.org/ (dead since 20170705)
 // http://signalpeptide.com
+// ~/AD/sources/seqdb/bin/seq-aa-regex-gen.py
 
 static AlignEntry ALIGN_RAW_DATA[] = {
     {"A(H3N2)", "", "HA", Shift(),   std::regex("MKTIIA[FL][CS][CHY]I[FLS]C[LQ][AGIV][FL][AGS]"), 40,  true, "h3-MKT-1"},
     {"A(H3N2)", "", "HA", Shift(),   std::regex("MKTIIVLSCFFCLAFS"),                        40,  true, "h3-MKT-12"},
     {"A(H3N2)", "", "HA", Shift(),   std::regex("MKTLIALSYIFCLVLG"),                        40,  true, "h3-MKT-13"},
     {"A(H3N2)", "", "HA", Shift(),   std::regex("MKTTTILILLTHWVHS"),                        40,  true, "h3-MKT-14"},
-    {"A(H3N2)", "", "HA",  0,        std::regex("QKIPGNDNSTATLCLGHHAVPNGTIVKTI"),          100, false, "h3-QKIP"},
+    {"A(H3N2)", "", "HA",  0,        std::regex("QK[IL]PGN[DN]NSTATLCLGHHAVPNGTIVKTI"),    100, false, "h3-QKIP"},
     {"A(H3N2)", "", "HA", 10,        std::regex("ATLCLGHHAV"),                             100, false, "h3-ATL"},
     {"A(H3N2)", "", "HA", 36,        std::regex("TNATELVQ"),                               100, false, "h3-TNA"},
     {"A(H3N2)", "", "HA", 87,        std::regex("VERSKAYSN"),                              100, false, "h3-VER"},
@@ -164,7 +180,11 @@ static AlignEntry ALIGN_RAW_DATA[] = {
     {"*A(H5)",   "", "HA",       0,   std::regex("D[HQR]IC[IV]GY[HQ]AN[KN]S[KT][EK][KQR][IV]"), 60, false, "h5-DQI-1"},
 
       // * in front means do not update subtype in sequences (because this very subtype is for different NA types)
-    {"*A(H7)", "", "HA",       Shift(),   std::regex("MNTQIL[IV][FL][AIT][ALTI][SICV][AV][FLAIV][FLI][YECPHK][ATV][NKR][GA]"), 60, true, "h7-1"},
+    {"*A(H7)", "", "HA",       Shift(),   std::regex("MNTQIL[IV][FL][AIT][ALTI][SICV][AV][FLAIV][FLI][YECPHK][ATV][NKR][GA]"), 60, true, "h7-1"}, // DKICL...
+
+    {"*A(H9)", "", "HA",       Shift(),   std::regex("ME[AT][KVI][AT][IL][MI][AT][AI]LL[ML][AV]T[AT][AS][NL]A"), 60, false, "h9-MET"}, // http://signalpeptide.com/index.php?m=listspdb_viruses -> H9N + Organism
+    {"*A(H10)","", "HA",       Shift(),   std::regex("MYK[IV][TV][LV][VI][LVI][TA]L[LF]GAV[KRN]GL"), 60, false, "h10-MYK"}, // http://signalpeptide.com/index.php?m=listspdb_viruses -> H10 + Organism
+    {"*A(H11)","", "HA",       Shift(),   std::regex("M[KE]K[LTVI]LLF[TA][TVA]I[FI][IFL][YC][AVI][RK]A"), 60, false, "h11-MEK"}, // http://signalpeptide.com/index.php?m=listspdb_viruses -> H11N + Organism
 
     {"B", "", "HA", Shift(), std::regex("M[EKT][AGT][AIL][ICX]V[IL]L[IMT][AEILVX][AIVX][AMT]S[DHKNSTX][APX]"), 30,  true, "B-MKT"}, // http://repository.kulib.kyoto-u.ac.jp/dspace/bitstream/2433/49327/1/8_1.pdf, inferred by Eu for B/INDONESIA/NIHRD-JBI152/2015, B/CAMEROON/14V-8639/2014
     {"B", "", "HA",       0, std::regex("DR[ISV]C[AST][GX][ITV][IT][SWX]S[DKNX]SP[HXY][ILTVX][VX][KX]T[APT]T[QX][GV][EK][IV]NVTG[AV][IX][LPS]LT[AITX][AIST][LP][AIT][KRX]"), 50, false, "B-DRICT"},
