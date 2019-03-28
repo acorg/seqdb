@@ -92,8 +92,11 @@ int main(int argc, char* const argv[])
                 if (new_row)
                     endl();
             }
-            if (!indexes.empty())
-                std::cout << prefix << " (" << indexes.size() << ") " << string::join(",", indexes.begin(), indexes.end()) << '\n';
+            if (!indexes.empty()) {
+                if (!opt.indexes_only)
+                    std::cout << prefix << " (" << indexes.size() << ") ";
+                std::cout << string::join(",", indexes.begin(), indexes.end()) << '\n';
+            }
         };
 
         if (!opt.sera_only)
