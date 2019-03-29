@@ -67,6 +67,7 @@ class SeqdbUpdater:
     def add(self, data):
         """data is list of dicts {"date":, "lab":, "name":, "passage":, "reassortant":, "sequence":, "virus_type":, "gene":}"""
         num_added = 0
+        errors = False
         for entry in data:
             if entry.get("name"):
                 entry["name"] = self.fix_name(entry["name"])
@@ -77,14 +78,20 @@ class SeqdbUpdater:
                     entry["reassortant"] = reassortant(entry["reassortant"])
                 # annotatitions?
                 # module_logger.debug('before add_sequence {}'.format({k:v for k,v in entry.items() if k != "sequence"}))
-                message = self.seqdb.add_sequence(name=entry["name"], virus_type=entry.get("virus_type", ""), lineage=entry.get("lineage", ""),
+                try:
+                    message = self.seqdb.add_sequence(name=entry["name"], virus_type=entry.get("virus_type", ""), lineage=entry.get("lineage", ""),
                                             lab=entry.get("lab", ""), date=entry.get("date", ""), lab_id=entry.get("lab_id", ""),
                                             passage=entry.get("passage", ""), reassortant=entry.get("reassortant", ""),
                                             sequence=entry.get("sequence", ""), gene=entry.get("gene", ""))
-                if message:
-                    module_logger.warning("{}: {}".format(entry["name"], message.replace("\n", " ")))
+                    if message:
+                        module_logger.warning("{}: {}".format(entry["name"], message.replace("\n", " ")))
+                except Exception as err:
+                    errors = True
+                    module_logger.error(err)
             else:
                 module_logger.warning('Cannot add entry without name: {}'.format(entry["lab_id"]))
+        if errors:
+            raise RuntimeError("Errors while adding sequences")
         self.seqdb.report_not_aligned_after_adding()   # before doing cleanup!
         messages = self.seqdb.cleanup(remove_short_sequences=True)
         if messages:
