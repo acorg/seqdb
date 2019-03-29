@@ -129,6 +129,7 @@ class SeqdbUpdater:
         [re.compile(r"\s+\([\d\-]+\)$", re.I), r""],   # "A/EGYPT/1323/2016 (96)", "B/ICELAND/33/2015 (15-02274)"
         [re.compile(r"\s+\(VS\d+\)$", re.I), r""],   # "B/BELGIUM/G668/2014 (VS0246)"
         [re.compile(r"/(\d+)_LIKE", re.I), r"/\1"],   # "A/WUHAN/395/95_LIKE"
+        [re.compile(r"^NYMC X-181$", re.I), "A/CALIFORNIA/7/2009 NYMC-181"],
         # [re.compile(r"/PERTH/16/2009 V0152-14\d", re.I), r"/PERTH/16/2009"], # reassortant?
         # [re.compile(r"B/PHUKET/3073/2013 BVR-1B", re.I), r"B/PHUKET/3073/2013"], # reassortant?
 
