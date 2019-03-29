@@ -116,30 +116,31 @@ class SeqdbUpdater:
     # convert
 
     sNameReplacements = [
-        [re.compile(r"CAPETOWN", re.I), "CAPE TOWN"],
         [re.compile(r"(/IRAN/\d+/2015)\s*\(\d.*", re.I), r"\1"],
-        [re.compile(r"/MALI\s*0*(\d+)\s*CI/", re.I), r"/MALI/\1 CI/"],
-        [re.compile(r"/ST[\.\-\s]*PETERSBURG/", re.I), r"/SAINT PETERSBURG/"],
         [re.compile(r"/MANAGUA/(\d+)_(\d+)/", re.I), r"/MANAGUA/\1.\2/"],
-        [re.compile(r"/NAKHONRATCHAISMA/", re.I), r"/NAKHON RATCHASIMA/"],
         [re.compile(r"\s+\([\d\-]+\)$", re.I), r""],   # "A/EGYPT/1323/2016 (96)", "B/ICELAND/33/2015 (15-02274)"
         [re.compile(r"\s+\(VS\d+\)$", re.I), r""],   # "B/BELGIUM/G668/2014 (VS0246)"
         [re.compile(r"/(\d+)_LIKE", re.I), r"/\1"],   # "A/WUHAN/395/95_LIKE"
-        [re.compile(r"/SICHUAN[/\-]QINGYANG/?(\d+)/", re.I), r"/SICHUAN QINGYANG/\1/"],
-        [re.compile(r"/GENOVA/", re.I), r"/GENOA/"],
-        [re.compile(r"/JILILN-NANGUAN/", re.I), r"/JILILN NANGUAN/"],
-        [re.compile(r"/NEW MEXCIO/", re.I), r"/NEW MEXICO/"],
-        [re.compile(r"/YUNNAN-MENGZI/", re.I), r"/YUNNAN MENGZI/"],
-        [re.compile(r"/PTO MONTT/?(\d+)/", re.I), r"/PUERTO MONTT/\1/"],
-        [re.compile(r"/PERTH/16/2009 V0152-14\d", re.I), r"/PERTH/16/2009"], # reassortant?
-        [re.compile(r"/JILIL?N[\-\s]*NANGUAN/", re.I), r"/JILIN NANGUAN/"],
-        [re.compile(r"B/PHUKET/3073/2013 BVR-1B", re.I), r"B/PHUKET/3073/2013"], # reassortant?
-        [re.compile(r"/NEIDERSACHSEN/", re.I), r"/NIEDERSACHSEN/"],
+        # [re.compile(r"/PERTH/16/2009 V0152-14\d", re.I), r"/PERTH/16/2009"], # reassortant?
+        # [re.compile(r"B/PHUKET/3073/2013 BVR-1B", re.I), r"B/PHUKET/3073/2013"], # reassortant?
+
+        # [re.compile(r"/SICHUAN[/\-]QINGYANG/?(\d+)/", re.I), r"/SICHUAN QINGYANG/\1/"],
+        # [re.compile(r"/JILILN-NANGUAN/", re.I), r"/JILILN NANGUAN/"],
+        # [re.compile(r"/NEW MEXCIO/", re.I), r"/NEW MEXICO/"],
+        # [re.compile(r"/YUNNAN-MENGZI/", re.I), r"/YUNNAN MENGZI/"],
+        # [re.compile(r"/PTO MONTT/?(\d+)/", re.I), r"/PUERTO MONTT/\1/"],
+        # [re.compile(r"/NAKHONRATCHAISMA/", re.I), r"/NAKHON RATCHASIMA/"],
+        # [re.compile(r"/MALI\s*0*(\d+)\s*CI/", re.I), r"/MALI/\1 CI/"],
+        # [re.compile(r"CAPETOWN", re.I), "CAPE TOWN"],
+        # [re.compile(r"/NEIDERSACHSEN/", re.I), r"/NIEDERSACHSEN/"],
+        # [re.compile(r"/JILIL?N[\-\s]*NANGUAN/", re.I), r"/JILIN NANGUAN/"],
+        # [re.compile(r"/ST[\.\-\s]*PETERSBURG/", re.I), r"/SAINT PETERSBURG/"],
+        # [re.compile(r"/GENOVA/", re.I), r"/GENOA/"],
+
         # [re.compile(r"", re.I), r""],
         # [re.compile(r"", re.I), r""],
 
-        # CDC-LV is reassortant?
-        [re.compile(r"[\s\-]+CDC-LV\d+[A-Z]?$", re.I), ""],   # [A(H1N1)/SOUTH AFRICA/3626/2013 CDC-LV14A]
+        # [re.compile(r"[\s\-]+CDC-LV\d+[A-Z]?$", re.I), ""],   # [A(H1N1)/SOUTH AFRICA/3626/2013 CDC-LV14A]
         ]
 
     def fix_name(self, name):

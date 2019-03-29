@@ -495,8 +495,10 @@ std::vector<std::string> SeqdbEntry::make_all_variants() const
 std::string Seqdb::add_sequence(std::string aName, std::string aVirusType, std::string aLineage, std::string aLab, std::string aDate, std::string aLabId, std::string aPassage, std::string aReassortant, std::string aSequence, std::string aGene)
 {
     Messages messages;
-    const std::string name = virus_name::normalize(aName);
-    // std::cerr << "DEBUG: Seqdb::add_sequence: " << name << ' ' << aPassage << '\n';
+    virus_name::Name name_fields(aName);
+    get_locdb().fix_location(name_fields);
+    const std::string name = name_fields.join();
+    std::cerr << "DEBUG: Seqdb::add_sequence: " << name << ' ' << aPassage << '\n';
     SeqdbEntry entry(name, aVirusType, aLineage);
 
     SeqdbSeq new_seq(aSequence, aGene);
