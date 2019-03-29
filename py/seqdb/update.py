@@ -17,6 +17,7 @@ def create(seqdb_filename, fasta_files, db_dir, match_hidb, add_clades, save, re
     db = Seqdb()
     db_updater = SeqdbUpdater(db, filename=seqdb_filename, load=False)
     for filename in fasta_files:
+        module_logger.info(f"Reading {filename}")
         data = fasta_m.read_fasta_with_name_parsing(fasta_file=filename, lab="", virus_type="")
         # module_logger.info('{} entries to update seqdb with'.format(len(data)))
         # pprint.pprint(data)
@@ -87,7 +88,7 @@ class SeqdbUpdater:
                         module_logger.warning("{}: {}".format(entry["name"], message.replace("\n", " ")))
                 except Exception as err:
                     errors = True
-                    module_logger.error(err)
+                    module_logger.error(f"{err} -- {entry}")
             else:
                 module_logger.warning('Cannot add entry without name: {}'.format(entry["lab_id"]))
         if errors:
