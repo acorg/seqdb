@@ -412,7 +412,9 @@ void SeqdbEntry::update_subtype_name(std::string aSubtype, Messages& aMessages)
                     mName[5] = '2';
             }
             else {
-                aMessages.warning() << mName << ": different subtypes " << mVirusType << " (stored) vs. " << aSubtype << " (ignored)" << '\n';
+                if (!(mVirusType == "A(H1N2)" && aSubtype == "A(H1N1)")) {
+                    aMessages.warning() << mName << ": different subtypes " << mVirusType << " (stored) vs. " << aSubtype << " (ignored)" << '\n';
+                }
             }
         }
           // fix subtype in the name too
@@ -496,6 +498,7 @@ std::string Seqdb::add_sequence(std::string aName, std::string aVirusType, std::
 {
     Messages messages;
     virus_name::Name name_fields(aName);
+    name_fields.fix_extra();
     get_locdb().fix_location(name_fields);
     const std::string name = name_fields.join();
     // std::cerr << "DEBUG: Seqdb::add_sequence: " << name << ' ' << aPassage << '\n';
@@ -773,8 +776,8 @@ void Seqdb::find_in_hidb_update_country_lineage_date(hidb::AntigenPList& found, 
         std::sort(found.begin(), found.end());
         found.erase(std::unique(found.begin(), found.end()), found.end());
     }
-    catch (hidb::get_error& err) {
-        std::cerr << "WARNING: no HiDb for " << entry.name() << ": " << err.what() << '\n';
+    catch (hidb::get_error& /*err*/) {
+        // std::cerr << "WARNING: no HiDb for " << entry.name() << ": " << err.what() << '\n';
     }
 
     if (!found.empty()) {
