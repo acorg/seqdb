@@ -501,8 +501,8 @@ std::string Seqdb::add_sequence(std::string aName, std::string aVirusType, std::
     virus_name::Name name_fields(aName);
     name_fields.fix_extra();
     get_locdb().fix_location(name_fields);
-    const std::string name = name_fields.join();
-    // std::cerr << "DEBUG: Seqdb::add_sequence: " << name << ' ' << aPassage << '\n';
+    const std::string name = name_fields.name_extra();
+    // std::cerr << "DEBUG: Seqdb::add_sequence: " << name << " P:" << aPassage << '\n';
     SeqdbEntry entry(name, aVirusType, aLineage);
 
     SeqdbSeq new_seq(aSequence, aGene);

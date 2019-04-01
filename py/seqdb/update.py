@@ -78,7 +78,7 @@ class SeqdbUpdater:
                 if entry.get("reassortant"):
                     entry["reassortant"] = reassortant(entry["reassortant"])
                 # annotatitions?
-                # module_logger.debug('before add_sequence {}'.format({k:v for k,v in entry.items() if k != "sequence"}))
+                module_logger.debug('before add_sequence {}'.format({k:v for k,v in entry.items() if k != "sequence"}))
                 try:
                     message = self.seqdb.add_sequence(name=entry["name"], virus_type=entry.get("virus_type", ""), lineage=entry.get("lineage", ""),
                                             lab=entry.get("lab", ""), date=entry.get("date", ""), lab_id=entry.get("lab_id", ""),
