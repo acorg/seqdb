@@ -172,6 +172,7 @@ void SeqdbSeq::update_gene(std::string aGene, Messages& aMessages, bool replace_
 
 void SeqdbSeq::add_reassortant(std::string aReassortant)
 {
+    // std::cerr << "DEBUG: add_reassortant " << aReassortant << '\n';
     if (!aReassortant.empty() && std::find(mReassortant.begin(), mReassortant.end(), aReassortant) == mReassortant.end())
         mReassortant.push_back(aReassortant);
 
@@ -536,7 +537,10 @@ std::string Seqdb::add_sequence(std::string aName, std::string aVirusType, std::
     if (!aDate.empty())
         inserted_entry->add_date(aDate);
 
-    inserted_seq->add_reassortant(aReassortant);
+    if (aReassortant.empty() && !name_fields.reassortant.empty())
+        inserted_seq->add_reassortant(name_fields.reassortant);
+    else
+        inserted_seq->add_reassortant(aReassortant);
     inserted_seq->add_passage(aPassage);
     inserted_seq->add_lab_id(aLab, aLabId);
 
@@ -775,6 +779,7 @@ void Seqdb::find_in_hidb_update_country_lineage_date(hidb::AntigenPList& found, 
         std::transform(antigen_index_list.begin(), antigen_index_list.end(), std::back_inserter(found), [](const hidb::AntigenPIndex& antigen_index) -> hidb::AntigenP { return antigen_index.first; });
         std::sort(found.begin(), found.end());
         found.erase(std::unique(found.begin(), found.end()), found.end());
+        // std::cerr << "DEBUG: find_in_hidb: " << found << '\n';
     }
     catch (hidb::get_error& /*err*/) {
         // std::cerr << "WARNING: no HiDb for " << entry.name() << ": " << err.what() << '\n';
