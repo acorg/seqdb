@@ -42,6 +42,7 @@ def main(args):
         random=args.random,
         recent=args.recent,
         base_seq=args.base_seq,
+        include_seq=args.include_seq,
         name_format=args.name_format,
         aligned=args.aligned,
         truncate_left=args.truncate_left,
@@ -82,6 +83,7 @@ with timeit(sys.argv[0]):
 
         parser.add_argument('--most-common-length', action='store_true', dest='most_common_length', default=False, help='Truncate or extend with - all sequences to make them all of the same length, most common among original sequences.')
         parser.add_argument('--base-seq', action='store', dest='base_seq', default=None, help='Base sequence to export together with other sequences. Value specified here is a regex, use seqdb-list --re <name> to check possible names. It must select just one sequence.')
+        parser.add_argument('--include', action='append', dest='include_seq', help='Additional sequence to export, e.g. vaccines. Value specified here is a regex, use seqdb-list --re <name> to check possible names.')
 
         parser.add_argument('--sort', action='store', dest='sort_by', default="date", help='Sort list before exporting by "date", "name".')
         parser.add_argument('-f', '--format', action='store', dest='output_format', default='fasta', help='Output format: fasta, phylip')

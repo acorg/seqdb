@@ -19,7 +19,7 @@ class FastaReaderError (Exception):
 
 # ======================================================================
 
-def export_from_seqdb(seqdb, filename, output_format, amino_acids, lab, virus_type, lineage, gene, clade, start_date, end_date, random, recent, base_seq, name_format, aligned, truncate_left, encode_name, wrap, truncate_to_most_common_length, hamming_distance_threshold, hamming_distance_report, sort_by, with_hi_name, name_match):
+def export_from_seqdb(seqdb, filename, output_format, amino_acids, lab, virus_type, lineage, gene, clade, start_date, end_date, random, recent, base_seq, include_seq, name_format, aligned, truncate_left, encode_name, wrap, truncate_to_most_common_length, hamming_distance_threshold, hamming_distance_report, sort_by, with_hi_name, name_match):
 
     def make_entry(e):
         r = {
@@ -50,6 +50,10 @@ def export_from_seqdb(seqdb, filename, output_format, amino_acids, lab, virus_ty
         else:
             r = True
         return r
+
+    def seq_present(seqs, e1):
+        present = [e2_no for e2_no, e2 in enumerate(seqs) if e1["n"] == e2["n"]]
+        return present[0] if present else None
 
     # ----------------------------------------------------------------------
 
@@ -130,11 +134,17 @@ def export_from_seqdb(seqdb, filename, output_format, amino_acids, lab, virus_ty
         if len(base_seqs) != 1:
             raise ValueError("{} base sequences selected:\n{}".format(len(base_seqs), "\n".join(repr(s["n"]) for s in base_seqs)))
         module_logger.info('base_seq: {}'.format(base_seqs[0]["n"]))
-        base_seq_present = [e_no for e_no, e in enumerate(sequences) if base_seqs[0]["n"] == e["n"]]
+        base_seq_present = seq_present(seqs=sequences, e1=base_seqs[0])
         if base_seq_present:
             # base seq is already there, remove it
-            del sequences[base_seq_present[0]]
+            del sequences[base_seq_present]
         sequences = base_seqs + sequences
+
+    if include_seq:
+        include_seqs = [get_sequence(make_entry(e1), left_part_size) for seq in include_seq for e1 in seqdb.iter_seq().filter_name_regex(seq)]
+        module_logger.info('include_seqs:\n  {}'.format("\n  ".join(ss["n"] for ss in include_seqs)))
+        include_seqs = list(filter(lambda e1: not seq_present(seqs=sequences, e1=e1), include_seqs)) # remove already present sequences
+        sequences.extend(include_seqs)
 
     # convert to most common length BEFORE excluding by hamming distance threshold
     if truncate_to_most_common_length:
