@@ -156,12 +156,12 @@ PYBIND11_MODULE(seqdb_backend, m)
 
     py::class_<PySeqdbEntryIterator>(m, "PySeqdbEntryIterator")
             .def("__iter__", [](PySeqdbEntryIterator& it) { return it; })
-            .def("__next__", &PySeqdbEntryIterator::next, py::return_value_policy::reference);
+            .def("__next__", &PySeqdbEntryIterator::next, py::return_value_policy::reference)
             ;
 
     py::class_<PySeqdbSeqIterator>(m, "PySeqdbSeqIterator")
             .def("__iter__", [](PySeqdbSeqIterator& it) { return it; })
-            .def("__next__", &PySeqdbSeqIterator::next, py::return_value_policy::reference);
+            .def("__next__", &PySeqdbSeqIterator::next, py::return_value_policy::reference)
             ;
 
     py::class_<Seqdb>(m, "Seqdb")
