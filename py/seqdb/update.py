@@ -88,7 +88,10 @@ class SeqdbUpdater:
                         module_logger.warning("{}: {}".format(entry["name"], message.replace("\n", " ")))
                 except Exception as err:
                     errors = True
-                    module_logger.error(f"{err} -- {entry}")
+                    if "unrecognized location" in str(err):
+                        module_logger.error(err)
+                    else:
+                        module_logger.error(f"{err} -- {entry}")
                     # raise RuntimeError("Errors while adding sequences")
             else:
                 module_logger.warning('Cannot add entry without name: {}'.format(entry["lab_id"]))

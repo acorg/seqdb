@@ -19,7 +19,7 @@ class FastaReaderError (Exception):
 
 # ======================================================================
 
-def export_from_seqdb(seqdb, filename, output_format, amino_acids, lab, virus_type, lineage, gene, clade, start_date, end_date, random, recent, base_seq, include_seq, name_format, aligned, truncate_left, encode_name, wrap, truncate_to_most_common_length, hamming_distance_threshold, hamming_distance_report, sort_by, with_hi_name, name_match):
+def export_from_seqdb(seqdb, filename, output_format, amino_acids, lab, virus_type, lineage, continent, country, gene, clade, start_date, end_date, random, recent, base_seq, include_seq, name_format, aligned, truncate_left, encode_name, wrap, truncate_to_most_common_length, hamming_distance_threshold, hamming_distance_report, sort_by, with_hi_name, name_match):
 
     def make_entry(e):
         r = {
@@ -67,6 +67,8 @@ def export_from_seqdb(seqdb, filename, output_format, amino_acids, lab, virus_ty
             .filter_lab(normalize.lab(lab) or "")
             .filter_subtype(virus_type or "")
             .filter_lineage(lineage or "")
+            .filter_continent(continent or "")
+            .filter_country(country or "")
             .filter_aligned(aligned)
             .filter_gene(gene)
             .filter_clade(clade or "")

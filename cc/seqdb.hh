@@ -382,6 +382,8 @@ namespace seqdb
         SeqdbIteratorBase& filter_labid(std::string_view aLab, std::string_view aId) { mLabId.first = aLab; mLabId.second =aId; filter_added(); return *this; }
         SeqdbIteratorBase& filter_subtype(std::string_view aSubtype) { mSubtype = aSubtype; filter_added(); return *this; }
         SeqdbIteratorBase& filter_lineage(std::string_view aLineage) { mLineage = aLineage; filter_added(); return *this; }
+        SeqdbIteratorBase& filter_continent(std::string_view aContinent) { mContinent = aContinent; filter_added(); return *this; }
+        SeqdbIteratorBase& filter_country(std::string_view aCountry) { mCountry = aCountry; filter_added(); return *this; }
         SeqdbIteratorBase& filter_aligned(bool aAligned) { mAligned = aAligned; filter_added(); return *this; }
         SeqdbIteratorBase& filter_gene(std::string_view aGene) { mGene = aGene; filter_added(); return *this; }
         SeqdbIteratorBase& filter_clade(std::string_view aClade) { mClade = aClade; filter_added(); return *this; }
@@ -416,6 +418,8 @@ namespace seqdb
         std::string mLab;
         std::string mSubtype;
         std::string mLineage;
+        std::string mContinent;
+        std::string mCountry;
         bool mAligned;
         std::string mGene;
         std::string mClade;
@@ -638,6 +642,8 @@ namespace seqdb
         auto const & entry = seqdb().mEntries[mEntryNo];
         return (mSubtype.empty() || entry.mVirusType == mSubtype)
                 && (mLineage.empty() || entry.mLineage == mLineage)
+                && (mContinent.empty() || entry.mContinent == mContinent)
+                && (mCountry.empty() || entry.mCountry == mCountry)
                 && entry.date_within_range(mBegin, mEnd)
                 ;
 

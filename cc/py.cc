@@ -26,6 +26,8 @@ struct PySeqdbEntrySeqIterator
     PySeqdbEntrySeqIterator& filter_labid(std::string aLab, std::string aId) { mCurrent.filter_labid(aLab, aId); return *this; }
     PySeqdbEntrySeqIterator& filter_subtype(std::string aSubtype) { mCurrent.filter_subtype(aSubtype); return *this; }
     PySeqdbEntrySeqIterator& filter_lineage(std::string aLineage) { mCurrent.filter_lineage(aLineage); return *this; }
+    PySeqdbEntrySeqIterator& filter_continent(std::string aContinent) { mCurrent.filter_continent(aContinent); return *this; }
+    PySeqdbEntrySeqIterator& filter_country(std::string aCountry) { mCurrent.filter_country(aCountry); return *this; }
     PySeqdbEntrySeqIterator& filter_aligned(bool aAligned) { mCurrent.filter_aligned(aAligned); return *this; }
     PySeqdbEntrySeqIterator& filter_gene(std::string aGene) { mCurrent.filter_gene(aGene); return *this; }
     PySeqdbEntrySeqIterator& filter_date_range(std::string aBegin, std::string aEnd) { mCurrent.filter_date_range(aBegin, aEnd); return *this; }
@@ -146,6 +148,8 @@ PYBIND11_MODULE(seqdb_backend, m)
             .def("filter_labid", &PySeqdbEntrySeqIterator::filter_labid, py::arg("lab"), py::arg("id"))
             .def("filter_subtype", &PySeqdbEntrySeqIterator::filter_subtype)
             .def("filter_lineage", &PySeqdbEntrySeqIterator::filter_lineage)
+            .def("filter_continent", &PySeqdbEntrySeqIterator::filter_continent)
+            .def("filter_country", &PySeqdbEntrySeqIterator::filter_country)
             .def("filter_aligned", &PySeqdbEntrySeqIterator::filter_aligned)
             .def("filter_gene", &PySeqdbEntrySeqIterator::filter_gene)
             .def("filter_clade", &PySeqdbEntrySeqIterator::filter_clade)
