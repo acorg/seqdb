@@ -500,9 +500,13 @@ std::string Seqdb::add_sequence(std::string aName, std::string aVirusType, std::
     Messages messages;
     virus_name::Name name_fields(aName);
     name_fields.fix_extra();
-    get_locdb().fix_location(name_fields);
+    try {
+        get_locdb().fix_location(name_fields);
+    }
+    catch (LocationNotFound&) {
+        throw std::runtime_error("unrecognized location in " + aName);
+    }
     const std::string name = name_fields.name_extra();
-    // std::cerr << "DEBUG: Seqdb::add_sequence: " << name << " P:" << aPassage << '\n';
     SeqdbEntry entry(name, aVirusType, aLineage);
 
     SeqdbSeq new_seq(aSequence, aGene);
@@ -510,7 +514,7 @@ std::string Seqdb::add_sequence(std::string aName, std::string aVirusType, std::
       // std::cerr << "DEBUG: Seqdb::add_sequence: " << name << ' ' << aPassage << " nucs:" << new_seq.nucleotides_size() << " aa:" << new_seq.amino_acids_size() << '\n';
     if (!align_data.shift.aligned() && (new_seq.amino_acids_size() > MINIMUM_SEQUENCE_AA_LENGTH || new_seq.nucleotides_size() > (MINIMUM_SEQUENCE_AA_LENGTH * 3)))
         not_aligned_.emplace_back(aVirusType, name + ' ' + aPassage, new_seq.nucleotides_raw(), new_seq.amino_acids_raw());
-      // std::cerr << "DEBUG: Seqdb::add_sequence: aligned: " << align_data.shift.aligned() << " nucs:" << new_seq.nucleotides_size() << '\n';
+    std::cerr << "DEBUG: Seqdb::add_sequence: aligned: " << align_data.shift.aligned() << " nucs:" << new_seq.nucleotides_size() << '\n';
     entry.update_subtype_name(align_data.subtype, messages); // updates entry.mName!
     // std::cerr << "add " << align_data.subtype << ' ' << entry.name() << '\n';
 

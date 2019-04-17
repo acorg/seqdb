@@ -89,6 +89,7 @@ class SeqdbUpdater:
                 except Exception as err:
                     errors = True
                     module_logger.error(f"{err} -- {entry}")
+                    # raise RuntimeError("Errors while adding sequences")
             else:
                 module_logger.warning('Cannot add entry without name: {}'.format(entry["lab_id"]))
         if errors:

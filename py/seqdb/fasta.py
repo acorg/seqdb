@@ -375,6 +375,7 @@ class NameParser:
                 .replace("National Institute of Infectious Diseases (NIID)", "NIID")
                 .replace("National Institute of Infectious Diseases", "NIID")
                 .replace("Erasmus Medical Center", "EMC")
+                .replace("WHO Chinese National Influenza Center", "CNIC")
                 )
 
     def _fix_gisaid_virus_type(self, virus_type):

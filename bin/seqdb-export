@@ -101,7 +101,7 @@ with timeit(sys.argv[0]):
         parser.add_argument('output', nargs="?", help='Fasta file to write.')
 
         args = parser.parse_args()
-        logging.basicConfig(level=args.loglevel, format="%(levelname)s %(asctime)s: %(message)s")
+        logging.basicConfig(level=args.loglevel, format="%(levelname)s %(asctime)s: %(message)s [%(name)s.%(funcName)s %(lineno)d]")
         exit_code = main(args)
     except Exception as err:
         logging.error('{}\n{}'.format(err, traceback.format_exc()))
