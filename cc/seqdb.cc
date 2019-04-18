@@ -495,7 +495,8 @@ std::vector<std::string> SeqdbEntry::make_all_variants() const
 
 // ----------------------------------------------------------------------
 
-std::string Seqdb::add_sequence(std::string aName, std::string aVirusType, std::string aLineage, std::string aLab, std::string aDate, std::string aLabId, std::string aPassage, std::string aReassortant, std::string aSequence, std::string aGene)
+std::string Seqdb::add_sequence(std::string aName, std::string aVirusType, std::string aLineage, std::string aLab, std::string aDate, std::string aLabId, std::string aPassage,
+                                std::string aReassortant, std::string aSequence, std::string aGene)
 {
     Messages messages;
     virus_name::Name name_fields(aName);
@@ -511,10 +512,10 @@ std::string Seqdb::add_sequence(std::string aName, std::string aVirusType, std::
 
     SeqdbSeq new_seq(aSequence, aGene);
     const auto align_data = new_seq.align(false, messages, name);
-      // std::cerr << "DEBUG: Seqdb::add_sequence: " << name << ' ' << aPassage << " nucs:" << new_seq.nucleotides_size() << " aa:" << new_seq.amino_acids_size() << '\n';
+    // std::cerr << "DEBUG: Seqdb::add_sequence: " << name << ' ' << aPassage << " nucs:" << new_seq.nucleotides_size() << " aa:" << new_seq.amino_acids_size() << '\n';
     if (!align_data.shift.aligned() && (new_seq.amino_acids_size() > MINIMUM_SEQUENCE_AA_LENGTH || new_seq.nucleotides_size() > (MINIMUM_SEQUENCE_AA_LENGTH * 3)))
         not_aligned_.emplace_back(aVirusType, name + ' ' + aPassage, new_seq.nucleotides_raw(), new_seq.amino_acids_raw());
-    std::cerr << "DEBUG: Seqdb::add_sequence: aligned: " << align_data.shift.aligned() << " nucs:" << new_seq.nucleotides_size() << '\n';
+    // std::cerr << "DEBUG: Seqdb::add_sequence: aligned: " << align_data.shift.aligned() << " nucs:" << new_seq.nucleotides_size() << '\n';
     entry.update_subtype_name(align_data.subtype, messages); // updates entry.mName!
     // std::cerr << "add " << align_data.subtype << ' ' << entry.name() << '\n';
 

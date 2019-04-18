@@ -177,6 +177,7 @@ static const std::array sClades
     CladeDesc{"2A4",   {{ 31, 'S'}, { 53, 'N'}, {142, 'G'}, {144, 'R'}, {158, 'N'}, {159, 'Y'}, {171, 'K'}, {192, 'T'}, {197, 'H'}}},
     CladeDesc{"GLY",   {{160, 'S'}}},
     CladeDesc{"GLY",   {{160, 'T'}}},
+    CladeDesc{"159S",  {{159, 'S'}}}, // explicit Derek's request on 2019-04-18
 };
 
 #pragma GCC diagnostic pop
