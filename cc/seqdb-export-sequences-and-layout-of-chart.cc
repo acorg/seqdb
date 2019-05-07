@@ -61,7 +61,7 @@ int main(int argc, char* const argv[])
             if (dates) {
                 writer.add_field((*antigens)[ag_no]->date());
             }
-            for (size_t dim = 0; dim < number_of_dimensions; ++dim)
+            for (auto dim : acmacs::range(number_of_dimensions))
                 writer.add_field(acmacs::to_string(layout->coordinate(ag_no, dim)));
             if (entry) {
                 try {
