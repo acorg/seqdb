@@ -7,10 +7,10 @@
 #include "acmacs-base/timeit.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-split.hh"
-#include "acmacs-base/virus-name.hh"
 #include "acmacs-base/to-json.hh"
 #include "acmacs-base/enumerate.hh"
 #include "locationdb/locdb.hh"
+#include "acmacs-virus/virus-name.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 #include "seqdb/seqdb.hh"
 #include "clades.hh"
@@ -502,7 +502,7 @@ std::string Seqdb::add_sequence(std::string aName, std::string aVirusType, std::
     virus_name::Name name_fields(aName);
     name_fields.fix_extra();
     try {
-        get_locdb().fix_location(name_fields);
+        ::virus_name::fix_location(name_fields);
     }
     catch (LocationNotFound&) {
         throw std::runtime_error("unrecognized location in " + aName);
