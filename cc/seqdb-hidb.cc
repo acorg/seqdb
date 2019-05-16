@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "acmacs-base/string-matcher.hh"
-#include "acmacs-base/passage.hh"
+#include "acmacs-virus/passage.hh"
 #include "locationdb/locdb.hh"
 #include "seqdb/seqdb.hh"
 
