@@ -7,6 +7,7 @@
 #include "acmacs-base/counter.hh"
 #include "acmacs-base/read-file.hh"
 #include "seqdb/seqdb.hh"
+#include "seqdb/hamming-distance.hh"
 
 // ----------------------------------------------------------------------
 
@@ -156,7 +157,7 @@ std::pair<size_t, std::vector<seqdb::SeqdbEntrySeq>> pick(const std::vector<seqd
     // acmacs::Counter<size_t> counter;
     for (auto seqp = sequences.begin(); seqp != sequences.end() && result.size() < number_to_pick; ++seqp) {
         const std::string nucs = seqp->seq().nucleotides(true, 0, aa_common_length * 3);
-        const auto hamming_distance_with_base = string::hamming_distance(base_seq_nucs, nucs);
+        const auto hamming_distance_with_base = acmacs::seqdb::hamming_distance(base_seq_nucs, nucs);
         if (hamming_distance_with_base < hamming_distance_threshold) {
             result.push_back(*seqp);
         }
@@ -193,7 +194,7 @@ void destroy_failed_sequence_end(std::string seq_id, std::string& aa, std::strin
 
     std::vector<size_t> dist(last_aa_pos_to_check + 1, 0);
     for (size_t last_pos = last_aa_pos_to_check; last_pos > 0; --last_pos) {
-        dist[last_pos] = string::hamming_distance(base_seq_nucs.substr(nucs_size - last_pos * 3), nucs.substr(nucs_size - last_pos * 3));
+        dist[last_pos] = acmacs::seqdb::hamming_distance(base_seq_nucs.substr(nucs_size - last_pos * 3), nucs.substr(nucs_size - last_pos * 3));
     }
     for (size_t last_pos = last_aa_pos_to_check; last_pos > 1; --last_pos) {
         if (dist[last_pos] > dist[last_pos - 1] && dist[last_pos] >= last_pos) {
