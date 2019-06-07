@@ -32,7 +32,7 @@ namespace seqdb
         Entries mEntries;
         std::string mMaster;
         bool master_switching_allowed_ = true;
-        
+
      private:
         void align_to_master();
 
