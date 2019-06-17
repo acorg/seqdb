@@ -7,7 +7,7 @@
 #include "acmacs-base/timeit.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-split.hh"
-#include "acmacs-base/to-json.hh"
+#include "acmacs-base/to-json-v1.hh"
 #include "acmacs-base/enumerate.hh"
 #include "locationdb/locdb.hh"
 #include "acmacs-virus/virus-name.hh"
@@ -1119,12 +1119,12 @@ std::string seqdb::sequences_of_chart_for_ace_view_1(acmacs::chart::Chart& chart
     const auto matches = get().match(*chart.antigens(), chart.info()->virus_type());
     constexpr size_t max_num_pos = 1000;
     std::vector<StatPerPos> stat_per_pos(max_num_pos);
-    auto json_antigens = to_json::object();
+    auto json_antigens = to_json::v1::object();
     for (auto [ag_no, entry_seq] : acmacs::enumerate(matches)) {
         if (entry_seq) {
             try {
                 const auto sequence = entry_seq.seq().amino_acids(true);
-                json_antigens = to_json::object_append(json_antigens, ag_no, sequence);
+                json_antigens = to_json::v1::object_append(json_antigens, ag_no, sequence);
                 for (auto [pos, aa] : acmacs::enumerate(sequence, 1))
                     ++stat_per_pos[pos].aa_count[aa];
             }
@@ -1141,12 +1141,12 @@ std::string seqdb::sequences_of_chart_for_ace_view_1(acmacs::chart::Chart& chart
         });
         per_pos.shannon_index = std::lround(shannon_index * 100);
     }
-    auto json_per_pos = to_json::object();
+    auto json_per_pos = to_json::v1::object();
     for (auto [pos, entry] : acmacs::enumerate(stat_per_pos)) {
         // if (entry.size() > 1) // && (entry.find('X') == entry.end() || entry.size() > 2))
-        json_per_pos = to_json::object_append(json_per_pos, pos, to_json::raw(to_json::object("shannon", entry.shannon_index, "aa_count", to_json::raw(to_json::object(entry.aa_count)))));
+        json_per_pos = to_json::v1::object_append(json_per_pos, pos, to_json::v1::raw(to_json::v1::object("shannon", entry.shannon_index, "aa_count", to_json::v1::raw(to_json::v1::object(entry.aa_count)))));
     }
-    return to_json::object("sequences", to_json::raw(to_json::object("antigens", to_json::raw(json_antigens), "per_pos", to_json::raw(json_per_pos))));
+    return to_json::v1::object("sequences", to_json::v1::raw(to_json::v1::object("antigens", to_json::v1::raw(json_antigens), "per_pos", to_json::v1::raw(json_per_pos))));
 
 } // seqdb::sequences_of_chart_for_ace_view_1
 
