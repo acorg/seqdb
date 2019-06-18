@@ -794,9 +794,9 @@ void Seqdb::find_in_hidb_update_country_lineage_date(hidb::AntigenPList& found, 
           // update country and continent
         if (entry.country().empty()) {
             try {
-                const std::string country = get_locdb().find(virus_name::location(entry.name())).country();
+                const std::string country{get_locdb().find(virus_name::location(entry.name())).country()};
                 entry.country(country);
-                entry.continent(get_locdb().continent_of_country(country));
+                entry.continent(std::string{get_locdb().continent_of_country(country)});
             }
             catch (LocationNotFound&) {
             }
