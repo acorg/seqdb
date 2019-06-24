@@ -24,7 +24,7 @@ int main(int argc, char* const argv[])
                 {"--aligned", false},
                 {"--encoded-names", false, "add field with encoded seq_id to match against newick tree names"},
                 {"--dates", false, "add field with isolation date"},
-                {"--projection", 0L},
+                {"--projection", 0},
                 {"--time", false, "report time of loading chart"},
                 {"-v", false},
                 {"--verbose", false},
