@@ -241,8 +241,11 @@ AlignData seqdb::align(std::string_view aAminoAcids, Messages& aMessages)
     }
     else if (results.size() > 1) {
         try {
-            const auto subtypes = std::accumulate(results.begin(), results.end(), std::set<std::string>(), [](auto& a, const auto& e) { a.insert(e.subtype); return a; });
-            const auto shifts = std::accumulate(results.begin(), results.end(), std::set<std::string>(), [](auto& a, const auto& e) { a.insert(e.shift); return a; });
+            std::set<std::string> subtypes, shifts;
+            for (const auto& en : results) {
+                subtypes.insert(en.subtype);
+                shifts.insert(en.shift);
+            }
             if (subtypes.size() > 1 || shifts.size() > 1) {
                 std::ostringstream os;
                 os << "Multiple alignment matches produce different subtypes and/or shifts: " << subtypes << "  " << shifts << std::endl
