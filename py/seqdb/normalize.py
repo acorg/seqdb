@@ -24,7 +24,7 @@ def virus_type_lineage(vt, lin):
 
 sVirusTypes = {
     "B": "B", "BV": "B", "BY": "B", "BVIC": "B", "BYAM": "B", "B/VIC": "B", "B/YAM": "B",
-    "H1PDM": "A(H1N1)", "H1SEAS": "A(H1N1)", "H1": "A(H1N1)", "A(H1N1)": "A(H1N1)",
+    "H1PDM": "A(H1N1)", "H1SEAS": "A(H1N1)", "H1": "A(H1N1)", "A(H1N1)": "A(H1N1)", "A(H1N2)": "A(H1N2)", "A(H1)": "A(H1)",
     "H3": "A(H3N2)", "A(H3N2)": "A(H3N2)",
     "ALL": "ALL",
     }
