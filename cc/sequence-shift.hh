@@ -17,24 +17,27 @@ namespace seqdb
     class Shift
     {
      public:
-        typedef int ShiftT;
+        using ShiftT = int;
+
+         // all entries have shift (i.e. aligned) starting 2019-07-10
 
         static constexpr ShiftT NotAligned = std::numeric_limits<ShiftT>::max();
         static constexpr ShiftT AlignmentFailed = std::numeric_limits<ShiftT>::max() - 1;
           // static constexpr ShiftT SequenceTooShort = std::numeric_limits<ShiftT>::max() - 2;
 
-        inline Shift(ShiftT aShift = NotAligned) : mShift(aShift) {}
-        inline Shift& operator=(ShiftT aShift) { mShift = aShift; return *this; }
-        inline Shift& operator=(std::string::difference_type aShift) { mShift = static_cast<ShiftT>(aShift); return *this; }
-        inline Shift& operator-=(std::string::difference_type a) { mShift -= static_cast<ShiftT>(a); return *this; }
-        inline Shift& operator-=(size_t a) { mShift -= static_cast<ShiftT>(a); return *this; }
-        inline bool operator==(Shift aShift) const { try { return mShift == aShift.mShift; } catch (InvalidShift&) { return false; } }
-        inline bool operator!=(Shift aShift) const { return !operator==(aShift); }
+        Shift() : mShift(0) {} // all entries have shift (i.e. aligned) by default starting 2019-07-10
+        Shift(ShiftT aShift) : mShift(aShift) {}
+        Shift& operator=(ShiftT aShift) { mShift = aShift; return *this; }
+        Shift& operator=(std::string::difference_type aShift) { mShift = static_cast<ShiftT>(aShift); return *this; }
+        Shift& operator-=(std::string::difference_type a) { mShift -= static_cast<ShiftT>(a); return *this; }
+        Shift& operator-=(size_t a) { mShift -= static_cast<ShiftT>(a); return *this; }
+        bool operator==(Shift aShift) const { try { return mShift == aShift.mShift; } catch (InvalidShift&) { return false; } }
+        bool operator!=(Shift aShift) const { return !operator==(aShift); }
 
-        inline bool aligned() const { return mShift != NotAligned && mShift != AlignmentFailed /* && mShift != SequenceTooShort */; }
-        inline bool alignment_failed() const { return mShift == AlignmentFailed; }
+        bool aligned() const { return mShift != NotAligned && mShift != AlignmentFailed /* && mShift != SequenceTooShort */; }
+        bool alignment_failed() const { return mShift == AlignmentFailed; }
 
-        inline operator ShiftT() const
+        operator ShiftT() const
             {
                 switch (mShift) {
                   case NotAligned:
@@ -47,10 +50,10 @@ namespace seqdb
                 return static_cast<int>(mShift);
             }
 
-        inline ShiftT raw() const { return mShift; }
-        inline ShiftT& raw() { return mShift; }
+        ShiftT raw() const { return mShift; }
+        ShiftT& raw() { return mShift; }
 
-        inline operator std::string() const
+        operator std::string() const
             {
                 switch (mShift) {
                   case NotAligned:
@@ -62,9 +65,9 @@ namespace seqdb
                 }
             }
 
-        inline void reset() { mShift = NotAligned; }
+        void reset() { mShift = NotAligned; }
 
-          // inline ShiftT to_json() const
+          // ShiftT to_json() const
           //     {
           //         try {
           //             return *this;
@@ -74,7 +77,7 @@ namespace seqdb
           //         }
           //     }
 
-          // inline void from_json(ShiftT& source)
+          // void from_json(ShiftT& source)
           //     {
           //         mShift = source;
           //     }
