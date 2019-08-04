@@ -111,6 +111,7 @@ namespace seqdb
             {"h", jsi::field(&SeqdbSeq::hi_names)},
             {"l", jsi::field<LabIdStorer, SeqdbSeq, LabIds>(&SeqdbSeq::lab_ids_raw)}, // {"lab": ["lab_id"]},
             {"n", jsi::field(&SeqdbSeq::nucleotides)},
+            {"A", jsi::field(&SeqdbSeq::annotations)},
             {"p", jsi::field(&SeqdbSeq::passages)},
             {"r", jsi::field(&SeqdbSeq::reassortant)},
             {"s", jsi::field(&SeqdbSeq::amino_acids_shift_raw)},

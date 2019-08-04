@@ -121,6 +121,7 @@ namespace seqdb
         auto& passages() { return mPassages; }
         std::string passage() const { return mPassages.empty() ? std::string{} : mPassages[0]; }
         bool passage_present(std::string aPassage) const { return mPassages.empty() ? aPassage.empty() : std::find(mPassages.begin(), mPassages.end(), aPassage) != mPassages.end(); }
+        const auto& annotations() const { return mAnnotations; }
         const auto& reassortant() const { return mReassortant; }
         auto& reassortant() { return mReassortant; }
         bool reassortant_match(std::string aReassortant) const { return mReassortant.empty() ? aReassortant.empty() : std::find(mReassortant.begin(), mReassortant.end(), aReassortant) != mReassortant.end(); }
@@ -146,6 +147,7 @@ namespace seqdb
 
         void amino_acids(const char* str, size_t length) { mAminoAcids.assign(str, length); }
         void nucleotides(const char* str, size_t length) { mNucleotides.assign(str, length); }
+        void annotations(const char* str, size_t length) { mAnnotations.assign(str, length); }
 
         std::vector<std::string> make_all_reassortant_passage_variants() const;
 
@@ -172,6 +174,7 @@ namespace seqdb
         LabIds mLabIds;
         std::string mGene;
         std::vector<std::string> mHiNames;
+        std::string mAnnotations;
         std::vector<std::string> mReassortant;
         clades_t mClades;
 
