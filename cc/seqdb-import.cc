@@ -104,6 +104,18 @@ namespace seqdb
 
     void seqdb_import(std::string aFilename, Seqdb& aSeqdb)
     {
+        jsi::data<GisaidData> gisaid_data = {
+            {"i", jsi::field(&GisaidData::list)},
+            {"S", jsi::field(&GisaidData::list)},
+            {"s", jsi::field(&GisaidData::list)},
+            {"m", jsi::field(&GisaidData::list)},
+            {"o", jsi::field(&GisaidData::list)},
+            {"n", jsi::field(&GisaidData::list)},
+            {"t", jsi::field(&GisaidData::list)},
+            {"D", jsi::field(&GisaidData::list)},
+            {"d", jsi::field(&GisaidData::list)},
+        };
+
         jsi::data<SeqdbSeq> seq_data = {
             {"a", jsi::field(&SeqdbSeq::amino_acids)},
             {"c", jsi::field(&SeqdbSeq::clades)},
@@ -116,6 +128,7 @@ namespace seqdb
             {"r", jsi::field(&SeqdbSeq::reassortant)},
             {"s", jsi::field(&SeqdbSeq::amino_acids_shift_raw)},
             {"t", jsi::field(&SeqdbSeq::nucleotides_shift_raw)},
+            {"G", jsi::field(&SeqdbSeq::gisaid, gisaid_data)},
         };
 
         using ESS = void (SeqdbEntry::*)(const char*, size_t);

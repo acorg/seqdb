@@ -45,6 +45,17 @@ namespace seqdb
 
 // ----------------------------------------------------------------------
 
+    struct GisaidData
+    {
+        using vs_t = std::vector<std::string>;
+
+        auto& list() { return mList; }
+
+        vs_t mList;
+    };
+
+// ----------------------------------------------------------------------
+
     class SeqdbSeq
     {
      public:
@@ -165,6 +176,8 @@ namespace seqdb
         std::string nucleotides_raw() const { return mNucleotides; }
         size_t nucleotides_size() const { return mNucleotides.size(); }
 
+        auto& gisaid() { return mGisaid; }
+
      private:
         std::vector<std::string> mPassages;
         std::string mNucleotides;
@@ -177,6 +190,7 @@ namespace seqdb
         std::string mAnnotations;
         std::vector<std::string> mReassortant;
         clades_t mClades;
+        GisaidData mGisaid;
 
         static inline std::string shift(std::string aSource, int aShift, char aFill)
             {
