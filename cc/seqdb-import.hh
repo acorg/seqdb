@@ -7,7 +7,7 @@
 namespace seqdb
 {
     class Seqdb;
-    void seqdb_import(std::string aFilename, Seqdb& aSeqdb);
+    void seqdb_import(std::string_view aFilename, Seqdb& aSeqdb);
 }
 
 // ----------------------------------------------------------------------

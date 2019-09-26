@@ -20,7 +20,7 @@ using namespace seqdb;
 // (0, 1, 2) and not stoppoing at stop codons, then try to align all
 // of them. Most probably just one offset leads to finding correct
 // align shift.
-AlignAminoAcidsData seqdb::translate_and_align(std::string aNucleotides, Messages& aMessages, std::string name)
+AlignAminoAcidsData seqdb::translate_and_align(std::string_view aNucleotides, Messages& aMessages, std::string_view name)
 {
     AlignAminoAcidsData not_aligned;
     if (aNucleotides.size() < MINIMUM_SEQUENCE_NUC_LENGTH) {
@@ -101,7 +101,7 @@ static const std::map<std::string, char> CODON_TO_PROTEIN = {
     {"TAA", '*'}, {"UAA", '*'}, {"TAG", '*'}, {"UAG", '*'}, {"TGA", '*'}, {"UGA", '*'}, {"TAR", '*'}, {"TRA", '*'}, {"UAR", '*'}, {"URA", '*'},
 };
 
-std::string seqdb::translate_nucleotides_to_amino_acids(std::string aNucleotides, size_t aOffset, Messages& /*aMessages*/)
+std::string seqdb::translate_nucleotides_to_amino_acids(std::string_view aNucleotides, size_t aOffset, Messages& /*aMessages*/)
 {
     typedef decltype(CODON_TO_PROTEIN)::difference_type Diff;
     std::string result;
@@ -125,7 +125,7 @@ struct AlignEntry : public AlignData
 {
     inline AlignEntry() = default;
     inline AlignEntry(const AlignEntry&) = default;
-    inline AlignEntry(std::string aSubtype, std::string aLineage, std::string aGene, Shift aShift, const std::regex& aRe, size_t aEndpos, bool aSignalpeptide, std::string aName)
+    inline AlignEntry(std::string_view aSubtype, std::string_view aLineage, std::string_view aGene, Shift aShift, const std::regex& aRe, size_t aEndpos, bool aSignalpeptide, std::string_view aName)
         : AlignData(aSubtype, aLineage, aGene, aShift), re(aRe), endpos(aEndpos), signalpeptide(aSignalpeptide), name(aName) {}
 
     std::regex re;

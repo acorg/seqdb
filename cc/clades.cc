@@ -9,7 +9,7 @@ using namespace seqdb;
 
 // ----------------------------------------------------------------------
 
-std::vector<std::string> seqdb::clades_b_yamagata(std::string aSequence, Shift aShift, std::string /*aName*/)
+std::vector<std::string> seqdb::clades_b_yamagata(std::string_view aSequence, Shift aShift, std::string_view /*aName*/)
 {
       // 165N -> Y2, 165Y -> Y3 (yamagata numeration, 163 is not -)
       // 166N -> Y2, 166Y -> Y3 (victoria numeration, 163 is -)
@@ -33,7 +33,7 @@ std::vector<std::string> seqdb::clades_b_yamagata(std::string aSequence, Shift a
 
 // ----------------------------------------------------------------------
 
-std::vector<std::string> seqdb::clades_b_victoria(std::string aSequence, Shift aShift, std::string aName)
+std::vector<std::string> seqdb::clades_b_victoria(std::string_view aSequence, Shift aShift, std::string_view aName)
 {
     auto r = std::vector<std::string>();
     const size_t
@@ -74,7 +74,7 @@ std::vector<std::string> seqdb::clades_b_victoria(std::string aSequence, Shift a
 
 // ----------------------------------------------------------------------
 
-std::vector<std::string> seqdb::clades_h1pdm(std::string aSequence, Shift aShift, std::string /*aName*/)
+std::vector<std::string> seqdb::clades_h1pdm(std::string_view aSequence, Shift aShift, std::string_view /*aName*/)
 {
     // ----------------------------------------------------------------------
     // 2018-09-19 clade definitions changed by Sarah before SSM
@@ -184,7 +184,7 @@ static const std::array sClades
 
 #pragma GCC diagnostic pop
 
-std::vector<std::string> seqdb::clades_h3n2(std::string aSequence, Shift aShift, std::string /*aName*/)
+std::vector<std::string> seqdb::clades_h3n2(std::string_view aSequence, Shift aShift, std::string_view /*aName*/)
 {
     auto has_aa = [aShift,&aSequence](const auto& pos_aa) -> bool { return aa_at(pos_aa.pos, aSequence, aShift) == pos_aa.aa; };
 

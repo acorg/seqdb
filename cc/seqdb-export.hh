@@ -7,7 +7,7 @@
 namespace seqdb
 {
     class Seqdb;
-    void seqdb_export(std::string aFilename, const Seqdb& aSeqdb, size_t aIndent);
+    void seqdb_export(std::string_view aFilename, const Seqdb& aSeqdb, size_t aIndent);
 }
 
 // ----------------------------------------------------------------------

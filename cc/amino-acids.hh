@@ -24,7 +24,7 @@ namespace seqdb
     {
         inline AlignData() : shift(Shift::AlignmentFailed) {}
           // inline AlignData(const AlignData&) = default;
-        inline AlignData(std::string aSubtype, std::string aLineage, std::string aGene, Shift aShift)
+        inline AlignData(std::string_view aSubtype, std::string_view aLineage, std::string_view aGene, Shift aShift)
             : subtype(aSubtype), lineage(aLineage), gene(aGene), shift(aShift) {}
 
         std::string subtype;
@@ -36,7 +36,7 @@ namespace seqdb
     struct AlignAminoAcidsData : public AlignData
     {
         inline AlignAminoAcidsData() = default;
-        inline AlignAminoAcidsData(const AlignData& aAlignData, std::string aAminoAcids, int aOffset)
+        inline AlignAminoAcidsData(const AlignData& aAlignData, std::string_view aAminoAcids, int aOffset)
             : AlignData(aAlignData), amino_acids(aAminoAcids), offset(aOffset) {}
         inline AlignAminoAcidsData(AlignData&& aAlignData)
             : AlignData(aAlignData), offset(0) {}
@@ -55,24 +55,24 @@ namespace seqdb
 
 // ----------------------------------------------------------------------
 
-    AlignAminoAcidsData translate_and_align(std::string aNucleotides, Messages& aMessages, std::string name);
+    AlignAminoAcidsData translate_and_align(std::string_view aNucleotides, Messages& aMessages, std::string_view name);
 
-    std::string translate_nucleotides_to_amino_acids(std::string aNucleotides, size_t aOffset, Messages& aMessages);
+    std::string translate_nucleotides_to_amino_acids(std::string_view aNucleotides, size_t aOffset, Messages& aMessages);
     AlignData align(std::string_view aAminoAcids, Messages& aMessages);
 
 // ----------------------------------------------------------------------
 
-    inline AlignAminoAcidsData align_amino_acids(std::string aAminoAcids, Messages& aMessages)
+    inline AlignAminoAcidsData align_amino_acids(std::string_view aAminoAcids, Messages& aMessages)
     {
         return AlignAminoAcidsData(align(aAminoAcids, aMessages));
     }
 
 // ----------------------------------------------------------------------
 
-    inline bool is_nucleotides(std::string aSequence)
+    inline bool is_nucleotides(std::string_view aSequence)
     {
         constexpr char sNucleotideElements[] = "-ABCDGHKMNRSTUVWXY"; // https://en.wikipedia.org/wiki/Nucleic_acid_notation + X (gisaid nuc seqs contain X)
-        std::string sorted_seq = aSequence;
+        std::string sorted_seq{aSequence};
         std::sort(std::begin(sorted_seq), std::end(sorted_seq));
         const auto last = std::unique(std::begin(sorted_seq), std::end(sorted_seq));
         return std::includes(std::begin(sNucleotideElements), std::end(sNucleotideElements), begin(sorted_seq), last);

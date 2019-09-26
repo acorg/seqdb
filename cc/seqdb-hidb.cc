@@ -60,7 +60,7 @@ static void make_matching(SeqdbEntry& entry, const Found& found, Matching& match
 {
     enum class CellOrEgg {Unknown, Cell, Egg, CellAndEgg};
 
-    const auto cell_or_egg = [](std::string aPassage) -> CellOrEgg
+    const auto cell_or_egg = [](std::string_view aPassage) -> CellOrEgg
     {
         acmacs::virus::Passage passage(aPassage);
         return passage.is_egg() ? CellOrEgg::Egg : (passage.is_cell() ? CellOrEgg::Cell : CellOrEgg::CellAndEgg); // OR is CellAndEgg
@@ -99,9 +99,9 @@ static void make_matching(SeqdbEntry& entry, const Found& found, Matching& match
                 std::vector<score_size_t> scores; // score and min passage length (to avoid too incomplete matches)
                 if (!seq.passages().empty())
                     std::transform(seq.passages().begin(), seq.passages().end(), std::back_inserter(scores),
-                                   [&f_passage](const auto& passage) -> score_size_t { return {string_match::match(passage, f_passage), std::min(passage.size(), f_passage.size())}; });
+                                   [&f_passage](const auto& passage) -> score_size_t { return {string_match::match(passage, *f_passage), std::min(passage.size(), f_passage.size())}; });
                 else
-                    scores.emplace_back(string_match::match(std::string{}, f_passage), 0);
+                    scores.emplace_back(string_match::match(std::string{}, *f_passage), 0);
                 matching_for_seq.emplace_back(*std::max_element(scores.begin(), scores.end() /*$, [](const auto& a, const auto& b) { return a.first < b.first; }*/), seq_no, found_no);
                   // report_stream << "  @" << seq.passages() << " @ " << f_passage << " " << score_size->first << " " << score_size->second << '\n';
             }

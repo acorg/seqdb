@@ -94,7 +94,7 @@ template <typename RW> jsw::writer<RW>& operator <<(jsw::writer<RW>& writer, con
 
 // ----------------------------------------------------------------------
 
-void seqdb::seqdb_export(std::string aFilename, const seqdb::Seqdb& aSeqdb, size_t aIndent)
+void seqdb::seqdb_export(std::string_view aFilename, const seqdb::Seqdb& aSeqdb, size_t aIndent)
 {
     if (aFilename.empty())
         throw std::runtime_error{"Empty filename to export seqdb to"};
@@ -374,7 +374,7 @@ void seqdb::seqdb_export(std::string aFilename, const seqdb::Seqdb& aSeqdb, size
 
 // // ----------------------------------------------------------------------
 
-// void seqdb::seqdb_import(std::string aFilename, Seqdb& aSeqdb)
+// void seqdb::seqdb_import(std::string_view aFilename, Seqdb& aSeqdb)
 // {
 //     json_reader::read_from_file<Seqdb, SeqdbRootHandler>(aFilename, aSeqdb);
 

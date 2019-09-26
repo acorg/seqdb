@@ -23,7 +23,7 @@ class AAsPerPos : public std::vector<AAsPerPosEntry>
  public:
     inline AAsPerPos() {}
     inline void adjust_size(size_t new_size) { if (size() < new_size) resize(new_size); }
-    inline void update(std::string aa) { adjust_size(aa.size()); for (size_t pos = 0; pos < aa.size(); ++pos) operator[](pos).add(aa[pos]); }
+    inline void update(std::string_view aa) { adjust_size(aa.size()); for (size_t pos = 0; pos < aa.size(); ++pos) operator[](pos).add(aa[pos]); }
     inline void collect(const InsertionsDeletionsDetector::Entries& entries) { std::for_each(entries.begin(), entries.end(), [this](const auto& entry) { this->update(entry.amino_acids); }); }
     template <typename Func> inline void collect_if(const InsertionsDeletionsDetector::Entries& entries, Func aFunc) { std::for_each(entries.begin(), entries.end(), [this,&aFunc](const auto& entry) { if (aFunc(entry)) update(entry.amino_acids); }); }
     inline std::vector<size_t> common_pos() const { std::vector<size_t> common; for (size_t pos = 0; pos < size(); ++pos) { if (operator[](pos).common()) { common.push_back(pos); } } return common; }
@@ -34,7 +34,7 @@ class SwitchMaster : public std::exception { public: using std::exception::excep
 
 // ----------------------------------------------------------------------
 
-InsertionsDeletionsDetector::InsertionsDeletionsDetector(Seqdb& aSeqdb, std::string aVirusType)
+InsertionsDeletionsDetector::InsertionsDeletionsDetector(Seqdb& aSeqdb, std::string_view aVirusType)
     : mVirusType(aVirusType)
 {
     auto iter = aSeqdb.begin();
@@ -166,7 +166,7 @@ void InsertionsDeletionsDetector::align_to_master()
 
 // ----------------------------------------------------------------------
 
-static inline size_t number_of_common(const std::string a, size_t start_a, const std::string b, size_t start_b)
+static inline size_t number_of_common(const std::string_view a, size_t start_a, const std::string_view b, size_t start_b)
 {
     size_t num = 0;
     for (; start_a < a.size() && start_b < b.size(); ++start_a, ++start_b) {
@@ -176,12 +176,12 @@ static inline size_t number_of_common(const std::string a, size_t start_a, const
     return num;
 }
 
-static inline size_t number_of_common(const std::string a, const std::string b)
+static inline size_t number_of_common(const std::string_view a, const std::string_view b)
 {
     return number_of_common(a, 0, b, 0);
 }
 
-static inline size_t number_of_common_before(const std::string a, const std::string b, size_t last)
+static inline size_t number_of_common_before(const std::string_view a, const std::string_view b, size_t last)
 {
     size_t num = 0;
     last = std::min(std::min(last, a.size()), b.size());
@@ -197,8 +197,8 @@ static inline size_t number_of_common_before(const std::string a, const std::str
 class adjust_pos
 {
  public:
-    static inline adjust_pos begin(std::string to_align, std::string master, size_t pos = 0) { return {to_align, master, pos}; }
-    static inline adjust_pos end(std::string to_align, std::string master) { return {to_align, master}; }
+    static inline adjust_pos begin(std::string_view to_align, std::string_view master, size_t pos = 0) { return {to_align, master, pos}; }
+    static inline adjust_pos end(std::string_view to_align, std::string_view master) { return {to_align, master}; }
 
     bool operator==(const adjust_pos& an) const { return /* mToAlign == an.mToAlign && mMaster == an.mMaster && */ mPos == an.mPos; }
     bool operator!=(const adjust_pos& an) const { return ! operator==(an); }
@@ -208,7 +208,7 @@ class adjust_pos
     adjust_pos& operator++() { ++mPos; find(); return *this; }
 
  private:
-    adjust_pos(std::string to_align, std::string master, size_t pos)
+    adjust_pos(std::string_view to_align, std::string_view master, size_t pos)
         : mToAlign(to_align), mMaster(master), mLastPos(std::min(to_align.size(), master.size())), mPos(pos)
         {
             // acmacs::debug dbg(true);
@@ -216,7 +216,7 @@ class adjust_pos
             find();
             // dbg << "adjust_pos2 pos:" << mPos << " last_pos:" << mLastPos << '\n';
         }
-    adjust_pos(std::string to_align, std::string master)
+    adjust_pos(std::string_view to_align, std::string_view master)
         : mToAlign(to_align), mMaster(master), mLastPos(std::min(to_align.size(), master.size())), mPos(mLastPos) {}
     std::string mToAlign, mMaster;
     size_t mLastPos, mPos;
@@ -242,7 +242,7 @@ struct DeletionPos
 
 using DeletionPosSet = std::vector<DeletionPos>;
 
-static inline void update(DeletionPosSet& pos_set, std::string master, std::string to_align, size_t pos, size_t common_before)
+static inline void update(DeletionPosSet& pos_set, std::string_view master, std::string_view to_align, size_t pos, size_t common_before)
 {
     constexpr const size_t max_num_deletions = 5;
     const size_t last_pos = std::min(master.size(), to_align.size());
@@ -258,7 +258,7 @@ static inline void update(DeletionPosSet& pos_set, std::string master, std::stri
     }
 }
 
-std::vector<std::pair<size_t, size_t>> InsertionsDeletionsDetector::Entry::align_to(const std::string master, std::string& to_align, const SeqdbEntrySeq& entry_seq)
+std::vector<std::pair<size_t, size_t>> InsertionsDeletionsDetector::Entry::align_to(const std::string_view master, std::string& to_align, const SeqdbEntrySeq& entry_seq)
 {
     // acmacs::debug dbg(false);
 

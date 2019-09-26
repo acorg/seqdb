@@ -102,7 +102,7 @@ namespace seqdb
         std::string mLab;
     };
 
-    void seqdb_import(std::string aFilename, Seqdb& aSeqdb)
+    void seqdb_import(std::string_view aFilename, Seqdb& aSeqdb)
     {
         jsi::data<GisaidData> gisaid_data = {
             {"i", jsi::field(&GisaidData::list)},

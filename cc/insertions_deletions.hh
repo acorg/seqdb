@@ -7,7 +7,7 @@ namespace seqdb
     class InsertionsDeletionsDetector
     {
      public:
-        InsertionsDeletionsDetector(Seqdb& aSeqdb, std::string aVirusType);
+        InsertionsDeletionsDetector(Seqdb& aSeqdb, std::string_view aVirusType);
 
         void detect();
 
@@ -19,7 +19,7 @@ namespace seqdb
               // void insert_if(size_t pos, char aa, size_t num_insertions) { if (amino_acids[pos] == aa) amino_acids.insert(pos, num_insertions, '-'); }
 
             static inline bool common(char a, char b) { return a == b && a != 'X' && a != '-'; }
-            static std::vector<std::pair<size_t, size_t>> align_to(const std::string master, std::string& to_align, const SeqdbEntrySeq& entry_seq);
+            static std::vector<std::pair<size_t, size_t>> align_to(const std::string_view master, std::string& to_align, const SeqdbEntrySeq& entry_seq);
             void apply_pos_number();
 
             SeqdbEntrySeq entry_seq;
