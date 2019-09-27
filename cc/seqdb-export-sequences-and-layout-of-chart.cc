@@ -59,7 +59,7 @@ int main(int argc, char* const argv[])
                     writer.add_empty_field();
             }
             if (dates) {
-                writer.add_field((*antigens)[ag_no]->date());
+                writer.add_field(*(*antigens)[ag_no]->date());
             }
             for (auto dim : acmacs::range(number_of_dimensions))
                 writer.add_field(acmacs::to_string(layout->coordinate(ag_no, dim)));
