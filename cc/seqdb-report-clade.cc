@@ -46,7 +46,7 @@ int main(int argc, char* const argv[])
 
             for (const auto entry_seq : seqdb) {
                 if (entry_seq.seq().has_clade(*opt.clade) && (opt.lab->empty() || entry_seq.seq().has_lab(*opt.lab)) && (flu.empty() || entry_seq.entry().virus_type() == flu))
-                    seqs.push_back({entry_seq.make_name(), entry_seq.entry().date(), entry_seq.seq().lab(), entry_seq.seq_id(seqdb::SeqdbEntrySeq::encoded_t::yes)});
+                    seqs.push_back({entry_seq.make_name(), std::string{entry_seq.entry().date()}, std::string{entry_seq.seq().lab()}, entry_seq.seq_id(seqdb::SeqdbEntrySeq::encoded_t::yes)});
             }
             if (opt.sort_by_date)
                 std::sort(std::begin(seqs), std::end(seqs), [](const auto& e1, const auto& e2) { return e1.date < e2.date; });

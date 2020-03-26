@@ -266,13 +266,14 @@ void Comparer::report_old() const
 
     std::vector<EntryPos> entries_pos{600};
     for (const auto& entry : entries_) {
-        for (const auto [pos, aa] : acmacs::enumerate(entry.seq().amino_acids(true))) {
+        const auto amino_acids = entry.seq().amino_acids(true);
+        for (const auto [pos, aa] : acmacs::enumerate(amino_acids)) {
             if (aa != 'X')
                 ++entries_pos[pos].aa_count[aa];
         }
     }
 
-    for (const auto [pos, entry_pos] : acmacs::enumerate(entries_pos, 1)) {
+    for (const auto [pos, entry_pos] : acmacs::enumerate(entries_pos, 1UL)) {
         if (entry_pos.aa_count.size() > 1) {
             const auto max_occur = std::accumulate(entry_pos.aa_count.begin(), entry_pos.aa_count.end(), 0UL, [](auto max_count, const auto& elt) { return std::max(max_count, elt.second); });
             const auto max_occur_percent = max_occur * 100.0 / entries_.size();

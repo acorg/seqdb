@@ -63,13 +63,13 @@ int main(int argc, char* const argv[])
                 if (!seq.hi_names().empty()) {
                     ++target.with_hi_names;
                     if (const auto date = entry.date(); !date.empty()) {
-                        ++target.with_hi_names_by_month[date.substr(0, 7)];
-                        ++target.with_hi_names_by_month[date.substr(0, 4) + "all"];
+                        ++target.with_hi_names_by_month[std::string{date.substr(0, 7)}];
+                        ++target.with_hi_names_by_month[std::string{date.substr(0, 4)} + "all"];
                     }
                 }
                 if (const auto date = entry.date(); !date.empty()) {
-                    ++target.all_by_month[date.substr(0, 7)];
-                    ++target.all_by_month[date.substr(0, 4) + "all"];
+                    ++target.all_by_month[std::string{date.substr(0, 7)}];
+                    ++target.all_by_month[std::string{date.substr(0, 4)} + "all"];
                 }
                 if (const auto& clades = seq.clades(); !clades.empty()) {
                     for (const auto& clade : clades)
@@ -90,16 +90,16 @@ int main(int argc, char* const argv[])
         for (const auto& entry : seqdb.entries()) {
             if (filter_lab(entry)) {
                 update(total, entry);
-                const auto& vt = entry.virus_type();
-                update(by_virus_type[vt], entry);
+                const auto vt = entry.virus_type();
+                update(by_virus_type[std::string{vt}], entry);
                 if (vt.empty())
                     std::cerr << "No virus_type for " << entry.name() << '\n';
                 else if (vt == "B") {
-                    const auto& lineage = entry.lineage();
+                    const auto lineage = entry.lineage();
                     if (lineage.empty())
                         std::cerr << "No lineage for " << entry.name() << '\n';
                     else
-                        update(by_virus_type[vt + lineage], entry);
+                        update(by_virus_type[std::string{vt} + std::string{lineage}], entry);
                 }
             }
         }

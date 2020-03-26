@@ -25,7 +25,7 @@ int main(int argc, char* const argv[])
         for (const auto entry: seqdb) {
             const auto seq_date = entry.entry().date();
             if (seq_date.substr(0, date_to_match.size()) == date_to_match)
-                std::cout << string::strip(entry.entry().name() + " " + entry.seq().passage()) << ' ' << entry.seq().hi_names() << ' ' << seq_date << '\n';
+                std::cout << string::strip(fmt::format("{} {}", entry.entry().name(), entry.seq().passage())) << ' ' << entry.seq().hi_names() << ' ' << seq_date << '\n';
         }
         return 0;
     }

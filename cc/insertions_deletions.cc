@@ -348,8 +348,8 @@ void BLineageDetector::detect()
             //       // throw std::runtime_error("Invalid deletion in B sequence for " + iter.make_name());
             //     std::cerr << "ERROR: Invalid deletion in B sequence for " << iter.make_name() << std::endl;
             // }
-            const std::string stored_lineage = entry_seq.entry().lineage();
-            const std::string detected_lineage = (seq.amino_acid_at(162) != '-' && (seq.amino_acid_at(163) == '-' || seq.amino_acid_at(164) == '-' || seq.amino_acid_at(165) == '-' || seq.amino_acid_at(166) == '-')) ? "YAMAGATA" : "VICTORIA"; // if deletion in both 162 and 163, it's Vic 2016-2017 outlier
+            const auto stored_lineage = entry_seq.entry().lineage();
+            const std::string_view detected_lineage = (seq.amino_acid_at(162) != '-' && (seq.amino_acid_at(163) == '-' || seq.amino_acid_at(164) == '-' || seq.amino_acid_at(165) == '-' || seq.amino_acid_at(166) == '-')) ? "YAMAGATA" : "VICTORIA"; // if deletion in both 162 and 163, it's Vic 2016-2017 outlier
             // std::cerr << detected_lineage << ' ' << entry_seq.make_name() << '\n' << seq.amino_acids(true) << '\n';
             if (stored_lineage.empty())
                 entry_seq.entry().lineage(detected_lineage);

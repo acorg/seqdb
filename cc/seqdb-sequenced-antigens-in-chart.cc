@@ -35,7 +35,7 @@ int main(int argc, char* const argv[])
         for (auto [ag_no, entry] : acmacs::enumerate(per_antigen)) {
             if (entry) {
                 if (!entry.seq().hi_name_present(antigens->at(ag_no)->full_name()))
-                    throw std::runtime_error("ERROR: internal: matched sequence " + entry.entry().name() + " has no matched HI name for " + antigens->at(ag_no)->full_name());
+                    throw std::runtime_error(fmt::format("ERROR: internal: matched sequence {} has no matched HI name for {}", entry.entry().name(), antigens->at(ag_no)->full_name()));
                 if (opt.with_known_clade) {
                     auto clades = entry.seq().clades(); // copy!
                     clades.erase(std::find_if(clades.begin(), clades.end(), [](const auto& clade) -> bool { return clade == "GLY" || clade == "NO-GLY"; }), clades.end());

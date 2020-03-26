@@ -46,7 +46,7 @@ int main(int argc, char* const argv[])
             if (entry && (!opt.clade || entry.seq().has_clade(opt.clade))) {
                 ++seq_found;
                 if (!entry.seq().hi_name_present(antigens->at(ag_no)->full_name()))
-                    throw std::runtime_error("ERROR: internal: matched sequence " + entry.entry().name() + " has no matched HI name for " + antigens->at(ag_no)->full_name());
+                    throw std::runtime_error(fmt::format("ERROR: internal: matched sequence {} has no matched HI name for {}", entry.entry().name(), antigens->at(ag_no)->full_name()));
                 auto name = entry.make_name();
                 if (opt.replace_spaces_in_names)
                     name = string::replace(name, " ", "_");

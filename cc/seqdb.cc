@@ -619,27 +619,27 @@ std::string Seqdb::report() const
     std::ostringstream os;
     os << "Entries: " << mEntries.size() << '\n';
 
-    std::map<std::string, size_t> virus_types;
+    std::map<std::string_view, size_t> virus_types;
     for_each(mEntries.begin(), mEntries.end(), [&virus_types](auto& e) { ++virus_types[e.virus_type()]; });
     os << "Virus types: " << virus_types << '\n';
 
-    std::map<std::string, size_t> lineages;
+    std::map<std::string_view, size_t> lineages;
     for_each(mEntries.begin(), mEntries.end(), [&lineages](auto& e) { ++lineages[e.lineage()]; });
     os << "Lineages: " << lineages << '\n';
 
-    std::map<std::string, size_t> aligned;
+    std::map<std::string_view, size_t> aligned;
     for_each(mEntries.begin(), mEntries.end(), [&aligned](auto& e) { if (any_of(e.mSeq.begin(), e.mSeq.end(), std::mem_fn(&SeqdbSeq::aligned))) ++aligned[e.virus_type()]; });
     os << "Aligned: " << aligned << '\n';
 
-    std::map<std::string, size_t> matched;
+    std::map<std::string_view, size_t> matched;
     for_each(mEntries.begin(), mEntries.end(), [&matched](auto& e) { if (any_of(e.mSeq.begin(), e.mSeq.end(), std::mem_fn(&SeqdbSeq::matched))) ++matched[e.virus_type()]; });
     os << "Matched: " << matched << '\n';
 
-    std::map<std::string, size_t> have_dates;
+    std::map<std::string_view, size_t> have_dates;
     for_each(mEntries.begin(), mEntries.end(), [&have_dates](auto& e) { if (!e.mDates.empty()) ++have_dates[e.virus_type()]; });
     os << "Have dates: " << have_dates << '\n';
 
-    std::map<std::string, size_t> have_clades;
+    std::map<std::string_view, size_t> have_clades;
     for_each(mEntries.begin(), mEntries.end(), [&have_clades](auto& e) { if (any_of(e.mSeq.begin(), e.mSeq.end(), [](auto& seq) { return !seq.mClades.empty(); })) ++have_clades[e.virus_type()]; });
     os << "Have clades: " << have_clades << '\n';
 
@@ -755,7 +755,7 @@ std::vector<std::string> Seqdb::all_passages() const
 void Seqdb::find_in_hidb_update_country_lineage_date(hidb::AntigenPList& found, SeqdbEntry& entry) const
 {
     try {
-        auto hidb_antigens = hidb::get(entry.virus_type()).antigens();
+        auto hidb_antigens = hidb::get(acmacs::virus::type_subtype_t{entry.virus_type()}).antigens();
         if (const auto cdcids = entry.cdcids(); !cdcids.empty()) {
             for (const auto& cdcid: cdcids) {
                 const auto f_cdcid = hidb_antigens->find_labid(cdcid);
@@ -763,7 +763,7 @@ void Seqdb::find_in_hidb_update_country_lineage_date(hidb::AntigenPList& found, 
             }
         }
 
-        std::string name = entry.name();
+        std::string name{entry.name()};
         hidb::AntigenPIndexList antigen_index_list;
         try {
             antigen_index_list = hidb_antigens->find(name, hidb::fix_location::yes, hidb::find_fuzzy::no);
@@ -807,7 +807,7 @@ void Seqdb::find_in_hidb_update_country_lineage_date(hidb::AntigenPList& found, 
           // update lineage
         if (entry.virus_type() == "B") {
             Messages messages;
-            entry.update_lineage(found.front()->lineage(), messages);
+            entry.update_lineage(found.front()->lineage().to_string(), messages);
             if (messages)
                 std::cerr << messages << '\n';
         }
@@ -915,7 +915,7 @@ size_t Seqdb::match(const acmacs::chart::Antigens& aAntigens, std::vector<SeqdbE
                 if (aReport == report::yes)
                     std::cerr << "WARNING: Seqdb::match: virus type mismatch: chart:" << aChartVirusType << " seq:" << entry->entry().virus_type() << " name: " << antigen->full_name() << '\n';
             }
-            else if (antigen->lineage() != acmacs::chart::BLineage::Unknown && static_cast<std::string>(antigen->lineage()) != entry->entry().lineage()) {
+            else if (antigen->lineage() != acmacs::chart::BLineage::Unknown && antigen->lineage().to_string() != entry->entry().lineage()) {
                 std::cerr << "WARNING: Seqdb::match: lineage mismatch: antigen:" << antigen->lineage() << " seq:" << entry->entry().lineage() << " name: " << antigen->full_name() << '\n';
             }
             else {
@@ -1013,7 +1013,7 @@ void Seqdb::save(std::string_view filename, size_t indent) const
 std::set<std::string> Seqdb::virus_types() const
 {
     std::set<std::string> result;
-    std::transform(mEntries.begin(), mEntries.end(), std::inserter(result, result.end()), [](const auto& entry) { return entry.virus_type(); });
+    std::transform(mEntries.begin(), mEntries.end(), std::inserter(result, result.end()), [](const auto& entry) { return std::string{entry.virus_type()}; });
     return result;
 
 } // Seqdb::virus_types
@@ -1125,8 +1125,8 @@ std::string seqdb::sequences_of_chart_for_ace_view_1(acmacs::chart::Chart& chart
             try {
                 const auto sequence = entry_seq.seq().amino_acids(true);
                 json_antigens = to_json::v1::object_append(json_antigens, ag_no, sequence);
-                for (auto [pos, aa] : acmacs::enumerate(sequence, 1))
-                    ++stat_per_pos[pos].aa_count[aa];
+                for (auto [pos, aa] : acmacs::enumerate(sequence))
+                    ++stat_per_pos[pos+1].aa_count[aa];
             }
             catch (seqdb::SequenceNotAligned& err) {
                 std::cerr << "WARNING: " << err.what() << ' ' << entry_seq.entry().name() << '\n';

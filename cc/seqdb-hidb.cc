@@ -203,7 +203,7 @@ std::vector<std::string> Seqdb::match_hidb(seqdb::report aReport, bool aGreedy)
             find_in_hidb_update_country_lineage_date(found, entry);
         }
         catch (LocationNotFound& err) {
-            not_found_locations.push_back(err.what() + " in "s + entry.name());
+            not_found_locations.push_back(fmt::format("{} in {}", err, entry.name()));
         }
 
         if (!found.empty()) {

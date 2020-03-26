@@ -217,24 +217,24 @@ namespace seqdb
         SeqdbEntry(std::string_view aName) : mName(aName) {}
         SeqdbEntry(std::string_view aName, std::string_view aVirusType, std::string_view aLineage) : mName(aName), mVirusType(aVirusType), mLineage(aLineage) {}
 
-        std::string name() const { return mName; }
+        std::string_view name() const { return mName; }
         void name(const char* str, size_t length) { mName.assign(str, length); }
-        std::string country() const { return mCountry; }
+        std::string_view country() const { return mCountry; }
         void country(std::string_view aCountry) { mCountry = aCountry; }
         void country(const char* str, size_t length) { mCountry.assign(str, length); }
-        std::string continent() const { return mContinent; }
+        std::string_view continent() const { return mContinent; }
         void continent(std::string_view aContinent) { mContinent = aContinent; }
         void continent(const char* str, size_t length) { mContinent.assign(str, length); }
         bool empty() const { return mSeq.empty(); }
 
-        std::string virus_type() const { return mVirusType; }
+        std::string_view virus_type() const { return mVirusType; }
         void virus_type(std::string_view aVirusType) { mVirusType = aVirusType; }
         void virus_type(const char* str, size_t length) { mVirusType.assign(str, length); }
         void add_date(std::string_view aDate);
         const auto& dates() const { return mDates; }
         auto& dates() { return mDates; }
-        std::string date() const { return mDates.empty() ? std::string() : mDates.back(); }
-        std::string lineage() const { return mLineage; }
+        std::string_view date() const { return mDates.empty() ? std::string_view() : mDates.back(); }
+        std::string_view lineage() const { return mLineage; }
         void lineage(std::string_view aLineage) { mLineage = aLineage; }
         void lineage(const char* str, size_t length) { mLineage.assign(str, length); }
         void update_lineage(std::string_view aLineage, Messages& aMessages);
@@ -364,14 +364,14 @@ namespace seqdb
 
         std::string make_name(std::string_view aPassageSeparator = " ") const
             {
-                return mEntry && mSeq ? (mSeq->hi_names().empty() ? string::strip(mEntry->name() + std::string{aPassageSeparator} + mSeq->passage()) : mSeq->hi_names()[0]) : "*NOT-FOUND*";
+                return mEntry && mSeq ? (mSeq->hi_names().empty() ? string::strip(fmt::format("{}{}{}", mEntry->name(), aPassageSeparator, mSeq->passage())) : mSeq->hi_names()[0]) : "*NOT-FOUND*";
             }
 
         enum class encoded_t { no, yes };
           // seq_id is concatenation of sequence name and passage separeted by __
         std::string seq_id(encoded_t encoded) const
             {
-                std::string r = (mEntry && mSeq) ? (string::strip(mEntry->name() + "__" + mSeq->passage())) : "*NOT-FOUND*";
+                std::string r = (mEntry && mSeq) ? string::strip(fmt::format("{}__{}", mEntry->name(), mSeq->passage())) : "*NOT-FOUND*";
                 if (encoded == encoded_t::yes)
                     r = name_encode(r);
                 return r;
